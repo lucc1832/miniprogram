@@ -1,0 +1,86 @@
+<view class="wrap">
+  <view class="card form">
+    <view class="row">
+      <text class="label">物品名称</text>
+      <input class="input" placeholder="请输入物品名称" value="{{form.name}}" bindinput="setName" />
+    </view>
+
+    <view class="row">
+      <text class="label">分类</text>
+      <picker mode="selector" range="{{catNames}}" value="{{catIndex}}" bindchange="onCatPick">
+        <view class="picker">{{catNames[catIndex] || '请选择分类'}}</view>
+      </picker>
+    </view>
+
+    <view class="row">
+      <text class="label">到期时间</text>
+      <switch checked="{{form.expireEnabled}}" bindchange="toggleExpire" />
+    </view>
+    <view wx:if="{{form.expireEnabled}}" class="row">
+      <text class="label muted">选择日期</text>
+      <picker mode="date" value="{{form.expireDate}}" bindchange="pickExpire">
+        <view class="picker">{{form.expireDate || '请选择日期 >'}}</view>
+      </picker>
+    </view>
+
+    <view class="row">
+      <text class="label">购买价格(¥)</text>
+      <switch checked="{{priceEnabled}}" bindchange="togglePrice" />
+    </view>
+    <view wx:if="{{priceEnabled}}" class="row">
+      <text class="label muted">金额</text>
+      <input class="input" type="digit" placeholder="请输入金额" value="{{form.buyPrice}}" bindinput="setPrice" />
+    </view>
+
+    <view wx:if="{{priceEnabled}}" class="row">
+      <text class="label">回本方式</text>
+      <picker mode="selector" range="{{modeNames}}" value="{{modeIndex}}" bindchange="onModePick">
+        <view class="picker">{{modeNames[modeIndex]}}</view>
+      </picker>
+    </view>
+
+    <view wx:if="{{priceEnabled && form.breakevenMode==='per_use_value'}}" class="row">
+      <text class="label muted">单次价值(元/次)</text>
+      <input class="input" type="digit" placeholder="如：10" value="{{form.perUseValue}}" bindinput="setPerUse" />
+    </view>
+
+    <view wx:if="{{priceEnabled && form.breakevenMode==='compare_cost'}}" class="row">
+      <text class="label muted">替代成本(元/次)</text>
+      <input class="input" type="digit" placeholder="如：25" value="{{form.compareCost}}" bindinput="setCompare" />
+    </view>
+
+    <view class="row">
+      <text class="label">购买日期</text>
+      <picker mode="date" value="{{form.buyDate}}" bindchange="pickBuyDate">
+        <view class="picker">{{form.buyDate}}</view>
+      </picker>
+    </view>
+
+    <view class="row">
+      <text class="label">使用状态</text>
+      <radio-group bindchange="onStatus">
+        <label class="radio">
+          <radio value="using" checked="{{form.status==='using'}}" /> 使用中
+        </label>
+        <label class="radio">
+          <radio value="archived" checked="{{form.status==='archived'}}" /> 归档
+        </label>
+      </radio-group>
+    </view>
+
+    <view class="row">
+      <text class="label">购买渠道</text>
+      <input class="input" placeholder="请选择常见渠道/手动输入" value="{{form.channel}}" bindinput="setChannel" />
+    </view>
+
+    <view class="row">
+      <text class="label">备注</text>
+      <input class="input" maxlength="30" placeholder="请输入备注（30字内）" value="{{form.note}}" bindinput="setNote" />
+    </view>
+  </view>
+
+  <view class="bottom-bar">
+    <button wx:if="{{isEdit}}" class="btn btn-del" bindtap="remove">删除</button>
+    <button class="btn btn-save" bindtap="save">保存</button>
+  </view>
+</view>

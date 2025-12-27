@@ -1,0 +1,13 @@
+
+.wrap{ 
+  padding: 24rpx;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+.card{ padding:16rpx; }
+.mt{ margin-top:16rpx; }
+.title{ font-size:32rpx; font-weight:900; margin-bottom:10rpx; }
+.btn{ border-radius:16rpx; background:#6b5cff; color:#fff; font-weight:900; margin-top:10rpx; }
+.danger{ background:#ef4444 !important; }
+.box{ margin-top:12rpx; border:2rpx solid #eef0f4; border-radius:14rpx; padding:14rpx; }
+textarea{ width:100%; font-size:24rpx; }

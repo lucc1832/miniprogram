@@ -1,0 +1,149 @@
+<view class="container">
+  <view class="title">到期便签</view>
+
+  <view class="seg">
+    <view class="seg-item {{mode==='expire'?'active':''}}" bindtap="switchMode" data-mode="expire">📌 到期了吗</view>
+    <view class="seg-item {{mode==='roi'?'active-green':''}}" bindtap="switchMode" data-mode="roi">🧾 使用成本</view>
+  </view>
+
+  <view class="search card">
+    <input class="search-input" placeholder="搜索名称或分类" value="{{keyword}}" bindinput="onKeyword" />
+    <view class="search-icon">🔍</view>
+  </view>
+
+  <!-- summary -->
+  <view class="summary card {{mode==='expire'?'summary-purple':'summary-green'}}">
+
+    <!-- 到期模式保持原样 -->
+    <block wx:if="{{mode==='expire'}}">
+      <view class="sum-left">
+        <view class="sum-label">总资产</view>
+        <view class="sum-value">¥{{summary.totalAsset}}</view>
+        <view class="sum-mini">
+          <text>📅 30天内将到期 </text><text class="sum-strong">{{summary.expireSoonCount}}</text><text> 件</text>
+        </view>
+      </view>
+      <view class="sum-right">
+        <view class="sum-mini-right">
+          <text>📦 全部物品 </text><text class="sum-strong">{{summary.totalCount}}</text><text> 件</text>
+        </view>
+        <view class="date-pill">{{today}}</view>
+      </view>
+    </block>
+
+    <!-- 使用成本模式：三列布局 -->
+    <block wx:if="{{mode==='roi'}}">
+      <view class="sum-3col">
+        <!-- 左列 -->
+        <view class="sum-col left">
+          <view class="sum-label">总投入</view>
+          <view class="sum-value">¥{{summary.totalAsset}}</view>
+          <view class="sum-mini">
+            <text>📅 今日摊销 </text><text class="sum-strong">¥{{summary.todayCost}}</text>
+          </view>
+        </view>
+
+        <!-- 中列 -->
+        <view class="sum-col mid">
+          <view class="sum-mini">🔥 最高日成本</view>
+          <view class="sum-value-sm">¥{{summary.maxDailyCost}}/天</view>
+        </view>
+
+        <!-- 右列 -->
+        <view class="sum-col right">
+          <view class="date-pill">{{today}}</view>
+        </view>
+      </view>
+
+      <view class="sum-bottom muted">最高日成本物品：{{summary.maxDailyName}}</view>
+    </block>
+
+  </view>
+
+
+  <!-- categories -->
+  <view class="cat-wrap card {{mode==='expire'?'cat-purple':'cat-green'}}">
+    <view class="cat-head">
+      <text>分类</text>
+      <text class="manage" bindtap="goCategories">管理 ></text>
+    </view>
+
+    <scroll-view scroll-x="true" class="cat-scroll">
+      <view class="cat-item {{selectedCatId===''?'cat-active':''}}" bindtap="pickCat" data-id="">
+        <view class="cat-num">{{catCounts.all || 0}}</view>
+        <view class="cat-name">全部 ></view>
+      </view>
+
+      <block wx:for="{{categories}}" wx:key="_id">
+        <view class="cat-item {{selectedCatId===item._id?'cat-active':''}}" bindtap="pickCat" data-id="{{item._id}}">
+          <view class="cat-num">{{catCounts[item._id] || 0}}</view>
+          <view class="cat-name">{{item.name}} ></view>
+        </view>
+      </block>
+    </scroll-view>
+
+    <!-- status filter -->
+    <view class="pill-row">
+      <view wx:if="{{mode==='expire'}}" class="pill {{statusFilter==='all'?'pill-active':''}}" bindtap="pickStatus"
+        data-s="all">全部物品</view>
+      <view wx:if="{{mode==='expire'}}" class="pill {{statusFilter==='valid'?'pill-active':''}}" bindtap="pickStatus"
+        data-s="valid">未过期</view>
+      <view wx:if="{{mode==='expire'}}" class="pill {{statusFilter==='expired'?'pill-active':''}}" bindtap="pickStatus"
+        data-s="expired">已过期</view>
+
+      <view wx:if="{{mode==='roi'}}" class="pill {{statusFilter==='all'?'pill-active':''}}" bindtap="pickStatus"
+        data-s="all">全部物品</view>
+      <view wx:if="{{mode==='roi'}}" class="pill {{statusFilter==='using'?'pill-active':''}}" bindtap="pickStatus"
+        data-s="using">使用中</view>
+      <view wx:if="{{mode==='roi'}}" class="pill {{statusFilter==='archived'?'pill-active':''}}" bindtap="pickStatus"
+        data-s="archived">归档</view>
+    </view>
+  </view>
+
+  <view class="list card">
+    <view class="list-head">
+      <text>全部 · {{filtered.length}} 条</text>
+      <picker mode="selector" range="{{sortOptions}}" value="{{sortIndex}}" bindchange="onSort">
+        <view class="sort">排序：{{sortOptions[sortIndex]}} ↑</view>
+      </picker>
+    </view>
+
+    <block wx:if="{{filtered.length===0}}">
+      <view class="empty muted">暂无数据，点击右下角 + 添加物品</view>
+    </block>
+
+    <block wx:for="{{filtered}}" wx:key="_id">
+      <view class="cost-card" bindtap="goDetail" data-id="{{item._id}}">
+
+<view class="cost-left">
+  <view class="cost-name">{{item.name}}</view>
+
+  <view class="cost-price">
+    <text class="cost-price-num">¥{{item.buyPrice}}</text>
+    <text class="muted">(价格)</text>
+  </view>
+
+  <text>¥{{item._dailyCostStr}}/天</text>
+</view>
+
+<view class="cost-mid">
+  <view class="tag">{{item.categoryName || '未分类'}}</view>
+  <view class="tag tag-status">{{item.statusText}}</view>
+  <view class="cost-date">📅 {{item.buyDate}}</view>
+</view>
+
+<view class="days-box">
+  <view class="days-num">{{item._useDays}}</view>
+  <view class="days-text">使用天数</view>
+</view>
+
+</view>
+
+
+      <view class="divider"></view>
+    </block>
+
+  </view>
+
+  <view class="fab" bindtap="goAdd">+</view>
+</view>

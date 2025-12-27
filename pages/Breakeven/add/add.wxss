@@ -1,0 +1,43 @@
+
+.wrap{ padding:24rpx; }
+.form{ padding:10rpx 18rpx; }
+.row{ display:flex; align-items:center; justify-content:space-between; padding:18rpx 6rpx; border-bottom:2rpx solid #f0f2f6;}
+.row:last-child{ border-bottom:none;}
+.label{ color:#111; font-weight:700; font-size:28rpx; }
+.input{ flex:1; text-align:right; font-size:28rpx; padding:8rpx 0; }
+.picker{ text-align:right; font-size:28rpx; color:#374151; padding:8rpx 0; }
+.radio{ margin-left:18rpx; font-size:28rpx; color:#111; }
+.btn{ margin-top:26rpx; border-radius:16rpx; background: linear-gradient(90deg,#6b5cff,#34d399); color:#fff; font-weight:800; }
+.bottom-bar{
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* 适配底部安全区 */
+  padding: 18rpx 24rpx;
+  padding-bottom: calc(28rpx + env(safe-area-inset-bottom));
+  background: #fff;
+  display: flex;
+  gap: 18rpx;
+  box-shadow: 0 -8rpx 24rpx rgba(0,0,0,.06);
+  z-index: 100;
+}
+
+.btn{
+  flex: 1;
+  border-radius: 14rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.btn-del{
+  background: #eaeaea;
+  color: #666;
+}
+
+.btn-save{
+  background: #5b7cfa;
+  color: #fff;
+}

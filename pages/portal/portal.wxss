@@ -1,0 +1,55 @@
+.wrap{
+  padding: 28rpx 24rpx 40rpx;
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding-bottom: calc(40rpx + env(safe-area-inset-bottom));
+}
+
+.hero{
+  padding: 18rpx 10rpx 26rpx;
+}
+.hero-title{
+  font-size: 44rpx;
+  font-weight: 900;
+  color: #111827;
+}
+.hero-sub{
+  margin-top: 10rpx;
+  font-size: 26rpx;
+  color: #6b7280;
+}
+
+.grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18rpx;
+}
+
+.card{
+  background: #ffffff;
+  border-radius: 22rpx;
+  padding: 20rpx 18rpx;
+  box-shadow: 0 14rpx 32rpx rgba(0,0,0,0.06);
+  border: 2rpx solid rgba(0,0,0,0.03);
+}
+
+.card-ico{
+  font-size: 46rpx;
+  line-height: 1;
+  margin-bottom: 16rpx;
+}
+.card-title{
+  font-size: 30rpx;
+  font-weight: 800;
+  color: #111827;
+}
+.card-desc{
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.ghost{
+  opacity: .72;
+}

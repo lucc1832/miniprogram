@@ -1,0 +1,51 @@
+<view class="wrap">
+  <view wx:if="{{!good}}" class="muted center">加载中…</view>
+
+  <view wx:else class="card head">
+    <view class="name">{{good.name}}</view>
+    <view class="muted">{{good.categoryName}} · {{good.status==='archived'?'归档':'使用中'}}</view>
+    <view class="line muted">
+      <text wx:if="{{good.buyPrice!=null}}">购买价：¥{{good.buyPrice}}</text>
+      <view class="line muted" wx:if="{{good.buyPrice!=null}}">
+        <text>日均成本：¥{{dailyCostStr}}/天</text>
+        <text wx:if="{{usedDays>0}}"> · 使用天数：{{usedDays}} 天</text>
+      </view>
+
+      <text> 购买日：{{good.buyDate}}</text>
+      <text wx:if="{{good.expireEnabled && good.expireDate}}"> 到期：{{good.expireDate}}</text>
+    </view>
+  </view>
+
+  <view wx:if="{{good && good.buyPrice!=null}}" class="card stats">
+    <view class="stat-row">
+      <view class="stat">
+        <view class="muted">累计次数</view>
+        <view class="big">{{good.totalUseCount||0}}</view>
+      </view>
+      <view class="stat">
+        <view class="muted">累计价值</view>
+        <view class="big">¥{{totalValueStr}}</view>
+      </view>
+      <view class="stat">
+        <view class="muted">差额</view>
+        <view class="big">¥{{roiGap}}</view>
+      </view>
+    </view>
+    <view class="bar">
+      <view class="bar-inner" style="width: {{roiPct}}"></view>
+    </view>
+    <view class="muted">回本进度：{{roiPct}}% <text wx:if="{{good.breakevenAt}}">· 回本日：{{good.breakevenAt}}</text></view>
+  </view>
+
+  <view class="card actions">
+    <view class="btn-pill btn-edit" bindtap="goEdit">
+      <text class="btn-ico">✏️</text>
+      <text>编辑</text>
+    </view>
+
+    <view class="btn-pill btn-archive" bindtap="toggleArchive">
+      <text class="btn-ico">{{good && good.status==='archived' ? '📂' : '🗂️'}}</text>
+      <text>{{good && good.status==='archived' ? '恢复使用' : '归档'}}</text>
+    </view>
+  </view>
+</view>

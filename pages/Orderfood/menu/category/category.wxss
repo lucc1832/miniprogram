@@ -1,0 +1,87 @@
+.container {
+  padding: 20rpx;
+  background-color: #f7f8fa;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 0;
+  margin-bottom: 20rpx;
+}
+
+.title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.add-btn {
+  background-color: #07c160;
+  color: #fff;
+  padding: 10rpx 30rpx;
+  border-radius: 30rpx;
+  font-size: 28rpx;
+}
+
+.list {
+  background-color: #fff;
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30rpx;
+  border-bottom: 1rpx solid #eee;
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.info {
+  flex: 1;
+}
+
+.name {
+  font-size: 30rpx;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.id {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+}
+
+.btn {
+  padding: 10rpx 20rpx;
+  font-size: 24rpx;
+  border-radius: 8rpx;
+  margin-left: 10rpx;
+}
+
+.up, .down {
+  background-color: #f0f0f0;
+  color: #666;
+}
+
+.edit {
+  background-color: #e6f7ff;
+  color: #1890ff;
+}
+
+.delete {
+  background-color: #fff1f0;
+  color: #ff4d4f;
+}

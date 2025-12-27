@@ -1,0 +1,4 @@
+
+page { background: #f6f7fb; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial; }
+.card { border-radius: 16rpx; background: #fff; box-shadow: 0 8rpx 24rpx rgba(20,20,20,.06); }
+.muted { color: #8a8f99; }

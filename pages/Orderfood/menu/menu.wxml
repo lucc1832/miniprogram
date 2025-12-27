@@ -1,0 +1,71 @@
+<view class="container">
+  <!-- 顶部导航栏 (模拟) -->
+  <!-- <view class="nav-bar">
+    <view class="nav-back"></view>
+    <view class="nav-title">菜单管理</view>
+    <view class="nav-opts"></view>
+  </view> -->
+
+  <view class="main-body">
+    <!-- 左侧分类侧边栏 -->
+    <scroll-view class="sidebar" scroll-y="true">
+    <view class="side-item manage-btn" bindtap="goToCategoryManage">
+      <view class="side-text">⚙️ 管理分类</view>
+    </view>
+    <block wx:for="{{categories}}" wx:key="id">
+        <view class="side-item {{activeCategoryId === item.id ? 'active' : ''}}" 
+              bindtap="switchCategory" 
+              data-id="{{item.id}}">
+          <view class="side-text">{{item.name}}</view>
+        </view>
+      </block>
+    </scroll-view>
+
+    <!-- 右侧菜品列表 -->
+    <scroll-view class="content" scroll-y="true">
+      <view class="cat-title">{{activeCategoryName}}</view>
+      
+      <block wx:for="{{currentDishes}}" wx:key="id">
+        <view class="dish-card">
+          <view class="dish-info-row">
+            <image class="dish-img" src="{{item.image}}" mode="aspectFill"></image>
+            <view class="dish-details">
+              <view class="dish-name">{{item.name}}</view>
+              <view class="dish-desc" wx:if="{{item.description}}">{{item.description}}</view>
+              <view class="dish-price">
+                <text class="currency">¥</text>
+                <text class="amount">{{item.price}}</text>
+              </view>
+            </view>
+          </view>
+          
+          <!-- 操作按钮行 -->
+          <view class="action-row">
+            <view class="btn btn-delete" bindtap="onDeleteDish" data-id="{{item.id}}">删除</view>
+            <view class="btn btn-move" bindtap="onMoveDown" data-id="{{item.id}}">下移</view>
+            <view class="btn btn-move" bindtap="onMoveUp" data-id="{{item.id}}">上移</view>
+            <view class="btn btn-edit" bindtap="onEditDish" data-id="{{item.id}}">编辑</view>
+          </view>
+        </view>
+      </block>
+      
+      <view class="list-bottom-spacer"></view>
+    </scroll-view>
+  </view>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-bar">
+    <view class="bar-item" bindtap="onManageGroups">
+      <image class="bar-icon" src="/assets/icons/folder.png" /> <!-- 需替换为实际图标 -->
+      <text>管理分组</text>
+    </view>
+    <view class="bar-item" bindtap="onImportDishes">
+      <image class="bar-icon" src="/assets/icons/import.png" /> <!-- 需替换为实际图标 -->
+      <text>导入菜品</text>
+    </view>
+    <view class="bar-item highlight" bindtap="onAddDish">
+      <image class="bar-icon" src="/assets/icons/add.png" /> <!-- 需替换为实际图标 -->
+      <text>添加菜品</text>
+    </view>
+  </view>
+</view>

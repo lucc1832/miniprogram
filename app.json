@@ -1,0 +1,52 @@
+{
+  "pages": [
+    "pages/portal/portal",
+    "pages/me/me"
+  ],
+  "subPackages": [
+    {
+      "root": "pages/Breakeven",
+      "pages": [
+        "ReturnHomepage/ReturnHomepage",
+        "add/add",
+        "detail/detail",
+        "categories/categories",
+        "import_export/import_export"
+      ]
+    },
+    {
+      "root": "pages/Orderfood",
+      "pages": [
+        "home/home",
+        "orders/orders",
+        "menu/menu",
+        "menu/category/category",
+        "menu/edit/edit",
+        "cart/cart",
+        "checkout/checkout"
+      ]
+    }
+  ],
+  "window": {
+    "navigationBarTitleText": "小小小工具箱",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black",
+    "backgroundTextStyle": "light"
+  },
+  "tabBar": {
+    "color": "#9aa0a6",
+    "selectedColor": "#6b5cff",
+    "list": [
+      {
+        "pagePath": "pages/portal/portal",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/me/me",
+        "text": "我的"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

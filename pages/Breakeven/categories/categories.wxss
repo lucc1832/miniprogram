@@ -1,0 +1,23 @@
+
+.wrap{ 
+  padding: 24rpx;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+.top{ padding:14rpx; display:flex; gap:12rpx; }
+.btn{ flex:1; border-radius:16rpx; background:#6b5cff; color:#fff; font-weight:900; }
+.ghost{ background:#eef2ff !important; color:#3730a3 !important; }
+
+.list{ margin-top:16rpx; padding:10rpx 16rpx; }
+.row{ display:flex; justify-content:space-between; align-items:center; padding:18rpx 0; }
+.name{ font-weight:900; color:#111; font-size:30rpx; }
+.ops{ display:flex; align-items:center; gap:18rpx; }
+.move text{ margin-right:10rpx; font-size:34rpx; }
+.del{ color:#ef4444; font-weight:900; }
+.divider{ height:2rpx; background:#eef0f4; }
+
+.mask{ position:fixed; left:0; top:0; right:0; bottom:0; background:rgba(0,0,0,.45); display:flex; align-items:center; justify-content:center; padding:30rpx; }
+.modal{ width:100%; background:#fff; border-radius:18rpx; padding:18rpx; }
+.modal-title{ font-weight:900; font-size:34rpx; margin-bottom:12rpx; }
+.minput{ border:2rpx solid #eef0f4; border-radius:14rpx; padding:18rpx; }
+.mbtns{ display:flex; gap:12rpx; margin-top:14rpx; }

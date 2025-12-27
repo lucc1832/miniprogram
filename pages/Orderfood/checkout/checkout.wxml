@@ -1,0 +1,20 @@
+<view class="wrap">
+  <view class="card">
+    <view class="h">收货信息</view>
+    <input class="ipt" placeholder="地址（例：某某路xx号）" value="{{address}}" bindinput="onAddress"/>
+    <input class="ipt" placeholder="备注（可选）" value="{{remark}}" bindinput="onRemark"/>
+  </view>
+
+  <view class="card">
+    <view class="h">订单明细</view>
+    <block wx:for="{{cartList}}" wx:key="__index">
+      <view class="line">
+        <view class="n">{{item.name}}</view>
+        <view class="p">¥{{item.price}}</view>
+      </view>
+    </block>
+    <view class="total">合计：¥{{cartTotal}}</view>
+  </view>
+
+  <view class="btn" bindtap="submit">提交订单</view>
+</view>

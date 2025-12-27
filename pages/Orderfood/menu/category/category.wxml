@@ -1,0 +1,23 @@
+<view class="container">
+  <view class="header">
+    <view class="title">分类列表</view>
+    <view class="add-btn" bindtap="onAddCategory">+ 新增分类</view>
+  </view>
+
+  <scroll-view scroll-y="true" class="list">
+    <block wx:for="{{categories}}" wx:key="id">
+      <view class="item">
+        <view class="info">
+          <view class="name">{{item.name}}</view>
+          <view class="id">ID: {{item.id}}</view>
+        </view>
+        <view class="actions">
+          <view class="btn up" bindtap="onMoveUp" data-index="{{index}}" wx:if="{{index > 0}}">↑</view>
+          <view class="btn down" bindtap="onMoveDown" data-index="{{index}}" wx:if="{{index < categories.length - 1}}">↓</view>
+          <view class="btn edit" bindtap="onEditCategory" data-id="{{item.id}}" data-name="{{item.name}}">编辑</view>
+          <view class="btn delete" bindtap="onDeleteCategory" data-id="{{item.id}}">删除</view>
+        </view>
+      </view>
+    </block>
+  </scroll-view>
+</view>

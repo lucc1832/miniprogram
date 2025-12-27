@@ -1,0 +1,52 @@
+<view class="wrap">
+  <view class="hero">
+    <view class="hero-title">工具箱</view>
+    <view class="hero-sub">选择一个小程序模块进入</view>
+  </view>
+
+  <view class="grid">
+    <!-- 入口1：到期&回本 -->
+    <view class="card" bindtap="go" data-url="/pages/Breakeven/ReturnHomepage/ReturnHomepage">
+      <view class="card-ico">📌</view>
+      <view class="card-title">到期 & 使用成本</view>
+      <view class="card-desc">管理物品、到期提醒、使用成本</view>
+    </view>
+
+    <!-- 入口2：分类管理 -->
+    <view class="card" bindtap="go" data-url="/pages/Breakeven/categories/categories">
+      <view class="card-ico">🗂️</view>
+      <view class="card-title">分类管理</view>
+      <view class="card-desc">新增/编辑分类、排序</view>
+    </view>
+
+    <!-- 入口3：导入导出（你已有） -->
+    <view class="card" bindtap="go" data-url="/pages/Breakeven/import_export/import_export">
+      <view class="card-ico">📤</view>
+      <view class="card-title">导入/导出</view>
+      <view class="card-desc">备份数据、迁移数据</view>
+    </view>
+    <!-- 点菜系统 -->
+    <view class="card " bindtap="go" data-url="/pages/Orderfood/home/home">
+      <view class="card-ico">🍜 </view>
+      <view class="card-title">Order Food</view>
+      <view class="card-desc">点餐 / 菜单 / 订单</view>
+    </view>
+    <!-- 菜单管理 -->
+    <view class="card " bindtap="go" data-url="/pages/Orderfood/menu/menu">
+      <view class="card-ico">📋 </view>
+      <view class="card-title">Menu Mgmt</view>
+      <view class="card-desc">菜品管理 / 分类管理</view>
+    </view>
+    <!-- 预留 -->
+    <view class="card disabled" bindtap="toast">
+      <view class="card-title">🧾 记账</view>
+      <view class="card-sub">即将上线</view>
+    </view>
+  </view>
+  <!-- 入口4：预留其他模块 -->
+  <view class="card ghost" bindtap="toast">
+    <view class="card-ico">✨</view>
+    <view class="card-title">更多模块</view>
+    <view class="card-desc">后续你想加什么都能放这</view>
+  </view>
+</view>

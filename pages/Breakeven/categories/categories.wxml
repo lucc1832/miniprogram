@@ -1,0 +1,34 @@
+
+<view class="wrap">
+  <view class="card top">
+    <button class="btn ghost" bindtap="toggleSort">{{sorting? '完成排序' : '排序'}}</button>
+    <button class="btn" bindtap="openAdd">新增分类</button>
+  </view>
+
+  <view class="card list">
+    <block wx:for="{{categories}}" wx:key="_id">
+      <view class="row">
+        <view class="name">{{item.name}}</view>
+        <view class="ops">
+          <view wx:if="{{sorting}}" class="move">
+            <text bindtap="moveUp" data-idx="{{index}}">↑</text>
+            <text bindtap="moveDown" data-idx="{{index}}">↓</text>
+          </view>
+          <text class="del" bindtap="delCat" data-id="{{item._id}}">删除</text>
+        </view>
+      </view>
+      <view class="divider"></view>
+    </block>
+  </view>
+
+  <view wx:if="{{showAdd}}" class="mask" bindtap="closeAdd">
+    <view class="modal" catchtap="noop">
+      <view class="modal-title">新增分类</view>
+      <input class="minput" placeholder="输入分类名称" value="{{newName}}" bindinput="setNewName"/>
+      <view class="mbtns">
+        <button class="btn ghost" bindtap="closeAdd">取消</button>
+        <button class="btn" bindtap="addCat">保存</button>
+      </view>
+    </view>
+  </view>
+</view>

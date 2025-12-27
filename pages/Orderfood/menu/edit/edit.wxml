@@ -1,0 +1,43 @@
+<view class="container">
+  <view class="form-group">
+    <view class="label">菜品名称</view>
+    <input class="input" placeholder="请输入菜品名称" value="{{name}}" bindinput="onNameInput" />
+  </view>
+
+  <view class="form-group">
+    <view class="label">价格 (¥)</view>
+    <input class="input" type="digit" placeholder="0.00" value="{{price}}" bindinput="onPriceInput" />
+  </view>
+
+  <view class="form-group">
+    <view class="label">所属分类</view>
+    <picker range="{{categories}}" range-key="name" value="{{categoryIndex}}" bindchange="onCategoryChange">
+      <view class="picker">
+        {{categories[categoryIndex].name}}
+        <text class="arrow">></text>
+      </view>
+    </picker>
+  </view>
+
+  <view class="form-group">
+    <view class="label">是否推荐</view>
+    <switch checked="{{isRecommend}}" bindchange="onRecommendChange" color="#1989fa" />
+  </view>
+
+  <view class="form-group">
+    <view class="label">描述</view>
+    <textarea class="textarea" placeholder="请输入菜品描述" value="{{description}}" bindinput="onDescInput" auto-height />
+  </view>
+
+  <view class="form-group">
+    <view class="label">菜品图片</view>
+    <view class="image-uploader" bindtap="onChooseImage">
+      <image wx:if="{{image}}" src="{{image}}" mode="aspectFill" class="preview-img"></image>
+      <view wx:else class="placeholder">+</view>
+    </view>
+  </view>
+
+  <view class="footer">
+    <button class="btn-save" bindtap="onSave">保存</button>
+  </view>
+</view>

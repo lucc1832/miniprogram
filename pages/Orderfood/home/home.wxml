@@ -1,0 +1,95 @@
+<!-- 页面容器：包含顶部次级标签、搜索、左侧分类+右侧菜单、底部结算栏、购物车抽屉 -->
+<view class="page">
+  <view class="sub-tabs">
+    <view class="sub-tab {{activeMenu==='menu'?'active':''}}" data-menu="menu" bindtap="switchMenu">点菜</view>
+  </view>
+  <!-- 搜索框：输入关键字实时筛选右侧菜单 -->
+  <view class="search">
+    <input class="search-input" placeholder="搜索菜品" value="{{keyword}}" bindinput="onKeywordInput" />
+  </view>
+  <!-- 主体：左侧分类列表 + 右侧菜单列表 -->
+  <view class="menu-body">
+    <!-- 左侧：竖向分类导航 -->
+    <scroll-view class="side-cats" scroll-y="true">
+      <block wx:for="{{catsData}}" wx:key="key">
+        <view class="side-cat {{activeCat===item.key?'on':''}}" data-cat="{{item.key}}" bindtap="pickCat">{{item.name}}</view>
+      </block>
+    </scroll-view>
+    <!-- 右侧：按分类与关键字筛选后的菜品列表 -->
+    <scroll-view class="menu-list" scroll-y="true">
+      <block wx:for="{{filteredFoods}}" wx:key="id">
+        <view class="food-row">
+          <image class="food-img" src="{{item.img}}" mode="aspectFill"></image>
+          <view class="food-mid">
+            <view class="food-name">{{item.name}}</view>
+            <view class="food-price">¥{{item.price}}</view>
+          </view>
+          <!-- 右侧：加减步进器（红色“+”、灰色“-”） -->
+          <view class="food-actions">
+            <view wx:if="{{item.count===0}}" class="btn-plus-red" bindtap="addOne" data-id="{{item.id}}">+</view>
+            <view wx:else class="stepper">
+              <view class="btn-minus-gray" bindtap="minusOne" data-id="{{item.id}}">-</view>
+              <view class="count">{{item.count}}</view>
+              <view class="btn-plus-red" bindtap="addOne" data-id="{{item.id}}">+</view>
+            </view>
+          </view>
+        </view>
+      </block>
+    </scroll-view>
+  </view>
+  <!-- 页面底部结算条：显示已选总数与合计，点击打开购物车抽屉 -->
+  <view class="bottom-bar" wx:if="{{totalCount > 0 && !cartVisible}}">
+    <view class="bb-left">
+      <view class="bb-item" bindtap="toggleCart" hover-class="bb-item-hover">
+        <view class="bb-icon"></view>
+        <view class="bb-badge" wx:if="{{totalCount>0}}">{{totalCount}}</view>
+        <text class="bb-label">选菜单</text>
+      </view>
+      <view class="bb-item" bindtap="openRemark" hover-class="bb-item-hover">
+        <view class="bb-icon chat"></view>
+        <text class="bb-label">订单备注</text>
+      </view>
+      <view class="bb-total" bindtap="toggleCart">
+        <text class="bb-total-label">合计：</text>
+        <text class="bb-price" style="font-size: {{amountFontSize}}rpx;">¥{{totalPrice}}</text>
+      </view>
+    </view>
+    <view class="bb-right" bindtap="checkout">选好啦</view>
+  </view>
+  <!-- 遮罩：抽屉打开时显示，点击关闭抽屉 -->
+  <view class="mask" wx:if="{{cartVisible}}" catchtap="toggleCart"></view>
+  <!-- 购物车抽屉：顶部标题 + 已选列表 + 内部结算条 -->
+  <view class="cart-drawer {{cartVisible ? 'show' : ''}}">
+    <!-- 抽屉标题：阻止冒泡，避免误关闭 -->
+    <view class="cart-head" catchtap="noop">
+      <text class="cart-title">已加购商品</text>
+      <text class="cart-close" bindtap="toggleCart">关闭</text>
+    </view>
+  <!-- 已选列表：最多显示 6 行，超出滚动；阻止冒泡 -->
+  <scroll-view scroll-y="true" class="cart-list" style="max-height: {{cartListMaxH}};" catchtap="noop">
+    <block wx:for="{{selectedList}}" wx:key="id">
+      <view class="cart-item">
+        <view class="ci-left">
+          <view class="ci-name">{{item.name}}</view>
+          <view class="ci-sub">¥{{item.price}} × {{item.count}}</view>
+          </view>
+          <view class="ci-right">
+            <view class="ci-btn" bindtap="dec" data-id="{{item.id}}">-</view>
+            <view class="ci-num">{{item.count}}</view>
+            <view class="ci-btn plus" bindtap="inc" data-id="{{item.id}}">+</view>
+            <view class="ci-del" bindtap="removeItem" data-id="{{item.id}}">删除</view>
+          </view>
+        </view>
+      </block>
+      <view wx:if="{{selectedList.length===0}}" class="cart-empty">还没有选择任何菜品</view>
+    </scroll-view>
+    <!-- 抽屉内部结算条：显示当前已选种类与合计，点击可关闭抽屉 -->
+    <view class="cart-bar" wx:if="{{totalCount > 0}}" bindtap="toggleCart">
+      <view class="bar-left">
+        <text class="bar-text">已选{{selectedCount}}种</text>
+        <text class="bar-total">合计：¥{{totalPrice}}</text>
+      </view>
+      <view class="cart-btn" catchtap="goCheckout">去结算</view>
+    </view>
+  </view>
+</view>

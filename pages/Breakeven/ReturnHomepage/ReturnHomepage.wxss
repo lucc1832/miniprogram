@@ -1,0 +1,606 @@
+.container {
+  padding: 24rpx 24rpx;
+  /* 确保底部内容不被悬浮按钮遮挡 */
+  padding-bottom: calc(180rpx + env(safe-area-inset-bottom));
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: 44rpx;
+  font-weight: 700;
+  text-align: center;
+  margin: 18rpx 0 12rpx;
+  color: #222;
+}
+
+.seg {
+  display: flex;
+  justify-content: center;
+  gap: 22rpx;
+  margin-bottom: 18rpx;
+}
+
+.seg-item {
+  padding: 14rpx 22rpx;
+  border-radius: 999rpx;
+  background: #fff;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.seg-item.active {
+  color: #6b5cff;
+  border: 2rpx solid rgba(107, 92, 255, .35);
+}
+
+.seg-item.active-green {
+  color: #1aa37a;
+  border: 2rpx solid rgba(26, 163, 122, .35);
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  padding: 18rpx 18rpx;
+  margin: 10rpx 0 18rpx;
+}
+
+.search-input {
+  flex: 1;
+  font-size: 28rpx;
+}
+
+.search-icon {
+  color: #8a8f99;
+}
+
+.summary {
+  padding: 22rpx;
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+
+.summary-purple {
+  background: linear-gradient(90deg, #8b7cff, #a78bfa);
+  color: #fff;
+}
+
+.summary-green {
+  background: linear-gradient(90deg, #1aa37a, #7fe3c8);
+  color: #fff;
+}
+
+.sum-label {
+  opacity: .9;
+  font-size: 26rpx;
+}
+
+.sum-value {
+  font-size: 54rpx;
+  font-weight: 800;
+  margin-top: 4rpx;
+}
+
+.sum-value-sm {
+  font-size: 36rpx;
+  font-weight: 800;
+  margin-top: 4rpx;
+}
+
+.sum-mini {
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  opacity: .95;
+}
+
+.sum-mini-right {
+  text-align: right;
+}
+
+.sum-strong {
+  font-weight: 800;
+}
+
+.sum-right {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10rpx;
+}
+
+.sum-right-top {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16rpx;
+  min-width: 0;
+}
+
+.sum-mini-right {
+  min-width: 0;
+  max-width: 65%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.date-pill {
+  padding: 8rpx 14rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, .18);
+  font-size: 24rpx;
+  flex-shrink: 0;
+  align-self: flex-end;
+  /* 靠右 */
+  position: static;
+}
+
+.cat-wrap {
+  margin-top: 18rpx;
+  padding: 18rpx;
+}
+
+.cat-purple {
+  background: #8b7cff;
+  color: #fff;
+}
+
+.cat-green {
+  background: #1aa37a;
+  color: #fff;
+}
+
+.cat-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.manage {
+  opacity: .9;
+}
+
+.cat-scroll {
+  white-space: nowrap;
+}
+
+.cat-item {
+  display: inline-block;
+  width: 160rpx;
+  margin-right: 14rpx;
+  background: rgba(255, 255, 255, .92);
+  color: #222;
+  border: 4rpx solid rgba(255, 255, 255, .55);
+  border-radius: 18rpx;
+  padding: 14rpx 12rpx;
+  box-sizing: border-box;
+}
+
+.cat-active {
+  /* ✅ 单层高亮，不会出现双线 */
+  box-shadow: 0 0 0 4rpx rgba(255, 255, 255, .55);
+}
+
+.cat-num {
+  font-size: 34rpx;
+  font-weight: 800;
+}
+
+.cat-name {
+  font-size: 24rpx;
+  color: #4b5563;
+  margin-top: 4rpx;
+}
+
+.pill-row {
+  display: flex;
+  gap: 14rpx;
+  margin-top: 16rpx;
+}
+
+.pill {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
+  border-radius: 18rpx;
+  background: rgba(255, 255, 255, .22);
+  color: #fff;
+  font-weight: 700;
+}
+
+.pill-active {
+  background: rgba(255, 255, 255, .88);
+  color: #111;
+}
+
+.list {
+  margin-top: 18rpx;
+  padding: 16rpx;
+}
+
+.list-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6rpx 4rpx 10rpx;
+}
+
+.sort {
+  color: #6b7280;
+  font-size: 26rpx;
+}
+
+.empty {
+  text-align: center;
+  padding: 60rpx 0;
+}
+
+.item {
+  padding: 16rpx 6rpx;
+  position: relative;
+}
+
+.item-title {
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #111;
+}
+
+.item-sub {
+  margin-top: 6rpx;
+  font-size: 26rpx;
+}
+
+.divider {
+  height: 2rpx;
+  background: #eef0f4;
+  margin: 0 6rpx;
+}
+
+.badge {
+  position: absolute;
+  right: 10rpx;
+  top: 18rpx;
+  padding: 8rpx 12rpx;
+  border-radius: 999rpx;
+  font-size: 24rpx;
+}
+
+.badge.expired {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.badge.soon {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.badge.ok {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.roi {
+  margin-top: 12rpx;
+}
+
+.roi-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 24rpx;
+}
+
+.bar {
+  height: 14rpx;
+  background: #e5e7eb;
+  border-radius: 999rpx;
+  overflow: hidden;
+  margin: 10rpx 0 6rpx;
+}
+
+.bar-inner {
+  height: 100%;
+  background: #6b5cff;
+  border-radius: 999rpx;
+}
+
+.fab {
+  position: fixed;
+  right: 34rpx;
+  /* 适配底部安全区 */
+  bottom: calc(130rpx + env(safe-area-inset-bottom));
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #6b5cff, #a78bfa);
+  color: #fff;
+  font-size: 60rpx;
+  font-weight: 700;
+  box-shadow: 0 18rpx 36rpx rgba(107, 92, 255, .28);
+  z-index: 100;
+}
+
+
+.cost-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.cost-name {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 8rpx;
+}
+
+.cost-price {
+  display: flex;
+  align-items: baseline;
+  gap: 10rpx;
+  margin-bottom: 6rpx;
+}
+
+.cost-price-num {
+  font-size: 38rpx;
+  font-weight: 800;
+  color: #11a57a;
+}
+
+.cost-daily {
+  font-size: 26rpx;
+}
+
+.cost-mid {
+  width: 210rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10rpx;
+  padding-top: 6rpx;
+}
+
+.tag {
+  padding: 6rpx 14rpx;
+  border-radius: 999rpx;
+  background: rgba(26, 163, 122, .10);
+  color: #1aa37a;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.tag-status {
+  background: rgba(255, 183, 77, .18);
+  color: #d28b1f;
+}
+
+.cost-date {
+  font-size: 24rpx;
+}
+
+.days-box {
+  width: 170rpx;
+  border-radius: 16rpx;
+  background: rgba(26, 163, 122, .08);
+  padding: 18rpx 10rpx;
+  text-align: center;
+}
+
+.days-num {
+  font-size: 54rpx;
+  font-weight: 900;
+  color: #1aa37a;
+  line-height: 1;
+}
+
+.days-text {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: #1aa37a;
+  opacity: .9;
+}
+
+.item.simple {
+  background: #fff;
+  border-radius: 18rpx;
+}
+
+/* ===== summary 三列布局（使用成本） ===== */
+.sum-3col {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18rpx;
+}
+
+.sum-col.left {
+  flex: 1;
+}
+
+.sum-col.mid {
+  width: 260rpx;
+  text-align: left;
+}
+
+.sum-col.right {
+  width: 170rpx;
+  display: flex;
+  justify-content: flex-start;
+  padding-top: 6rpx;
+}
+
+.date-pill {
+  font-size: 22rpx;
+  opacity: .85;
+}
+
+.sum-bottom {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  opacity: .95;
+}
+
+/* ===== 使用成本列表卡片（截图同款） ===== */
+.cost-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 22rpx 18rpx;
+  border-radius: 18rpx;
+  background: #fff;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, .06);
+  margin-top: 16rpx;
+}
+
+.cost-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.cost-name {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 8rpx;
+}
+
+.cost-price {
+  display: flex;
+  align-items: baseline;
+  gap: 10rpx;
+  margin-bottom: 6rpx;
+}
+
+.cost-price-num {
+  font-size: 38rpx;
+  font-weight: 800;
+  color: #11a57a;
+}
+
+.cost-daily {
+  font-size: 26rpx;
+}
+
+.cost-mid {
+  width: 210rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10rpx;
+  padding-top: 6rpx;
+}
+
+.tag {
+  padding: 6rpx 14rpx;
+  border-radius: 999rpx;
+  background: rgba(26, 163, 122, .10);
+  color: #1aa37a;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.tag-status {
+  background: rgba(255, 183, 77, .18);
+  color: #d28b1f;
+}
+
+.cost-date {
+  font-size: 24rpx;
+}
+
+.days-box {
+  width: 170rpx;
+  border-radius: 16rpx;
+  background: rgba(26, 163, 122, .08);
+  padding: 18rpx 10rpx;
+  text-align: center;
+}
+
+.days-num {
+  font-size: 54rpx;
+  font-weight: 900;
+  color: #1aa37a;
+  line-height: 1;
+}
+
+.days-text {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: #1aa37a;
+  opacity: .9;
+}
+
+.s-row1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.s-name {
+  font-size: 34rpx;
+  font-weight: 800;
+  color: #111827;
+  max-width: 480rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.s-price {
+  font-size: 34rpx;
+  font-weight: 900;
+  color: #16a34a;
+}
+
+.s-row2 {
+  margin-top: 8rpx;
+}
+
+.s-meta {
+  font-size: 24rpx;
+  color: #9ca3af;
+}
+
+.s-row3 {
+  margin-top: 10rpx;
+}
+
+.s-daily {
+  font-size: 24rpx;
+  color: #9ca3af;
+}
+
+.s-badge {
+  position: absolute;
+  right: 18rpx;
+  top: 18rpx;
+  font-size: 22rpx;
+  padding: 6rpx 12rpx;
+  border-radius: 999rpx;
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.s-badge.soon {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.s-badge.expired {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.s-badge.ok {
+  background: #ecfdf5;
+  color: #047857;
+}

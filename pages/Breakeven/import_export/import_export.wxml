@@ -1,0 +1,19 @@
+
+<view class="wrap">
+  <view class="card">
+    <view class="title">导出</view>
+    <button class="btn" bindtap="exportJson">生成JSON并复制</button>
+    <view wx:if="{{exportText}}" class="box">
+      <textarea value="{{exportText}}" auto-height="true"></textarea>
+    </view>
+  </view>
+
+  <view class="card mt">
+    <view class="title">导入</view>
+    <view class="muted">将导出的 JSON 粘贴到下面，点击导入</view>
+    <view class="box">
+      <textarea placeholder="粘贴JSON..." value="{{importText}}" bindinput="setImport" auto-height="true"></textarea>
+    </view>
+    <button class="btn danger" bindtap="importJson">导入（会新增数据）</button>
+  </view>
+</view>

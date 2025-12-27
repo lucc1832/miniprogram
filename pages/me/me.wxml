@@ -1,0 +1,10 @@
+
+<view class="wrap">
+  <view class="card banner">
+    <view class="avatar"></view>
+    <view class="btxt">
+      <view class="bt">点击头像完善资料</view>
+      <view class="muted">云开发：数据随微信号保存</view>
+    </view>
+  </view>
+</view>
