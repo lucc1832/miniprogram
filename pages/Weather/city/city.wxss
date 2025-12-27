@@ -115,6 +115,8 @@
   align-items: center;
   margin-bottom: 24rpx;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow: hidden; /* Important for swipe area */
+  border-radius: 24rpx;
 }
 
 .city-card-wrapper.editing-mode {
@@ -145,10 +147,41 @@
   border-color: #4A90E2;
 }
 
-.city-card {
-  flex: 1;
+/* Swipe Interaction */
+.swipe-area {
+  width: 100%;
   height: 180rpx;
-  border-radius: 24rpx;
+}
+
+.swipe-view {
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+}
+
+.swipe-content {
+  flex: 1; /* Takes up the 100% width part */
+  height: 100%;
+  padding-right: 0;
+}
+
+.slide-delete-btn {
+  width: 160rpx;
+  height: 100%;
+  background: #FF5A5A;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30rpx;
+  font-weight: 500;
+}
+
+/* City Card */
+.city-card {
+  width: 100%;
+  height: 100%;
+  border-radius: 24rpx; /* Matches wrapper */
   position: relative;
   overflow: hidden;
   box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
@@ -156,7 +189,7 @@
 }
 
 .city-card:active {
-  transform: scale(0.98);
+  transform: scale(0.99); /* Slight press effect */
 }
 
 .card-bg {

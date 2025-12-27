@@ -15,24 +15,6 @@
       <view class="nav-title" style="line-height: {{navBarHeight}}px;">
         {{isEditing ? '已选择 ' + selectedCities.length : '城市管理'}}
       </view>
-
-      <!-- Right Action (Edit / Select All) - Be careful with Capsule -->
-      <!-- We place this to the left of the capsule area if needed, or hide it if it conflicts.
-           Since capsule is on the right, we can put "Edit" on the right but need to make sure it doesn't overlap.
-           Actually, usually "Edit" is on the right in standard iOS apps. 
-           But in Mini Programs, the right side is the capsule.
-           So we should probably put "Edit" to the left of the capsule? 
-           Or maybe put "Edit" in the `nav-left` next to Back?
-           Or maybe put "Edit" as a floating button or somewhere else?
-           
-           Let's look at standard WeChat design. 
-           Usually, the title is centered. 
-           If we want an action button, it often goes to the left if the right is occupied.
-           OR we can put it in the content area (like a sub-header).
-           
-           Let's try putting "Edit" in the `nav-left` if not editing, or maybe in a sub-header below the nav bar.
-           Actually, let's put it in a "Toolbar" below the Nav Bar for better spacing.
-      -->
     </view>
   </view>
 
@@ -52,7 +34,7 @@
   </view>
 
   <!-- City List -->
-  <scroll-view scroll-y class="city-list" style="height: calc(100vh - {{statusBarHeight + navBarHeight + 60}}px);"> <!-- 60px is approx toolbar height -->
+  <scroll-view scroll-y class="city-list" style="height: calc(100vh - {{statusBarHeight + navBarHeight + 60}}px);">
     <block wx:for="{{cities}}" wx:key="name">
       <view class="city-card-wrapper {{isEditing ? 'editing-mode' : ''}} fade-in" style="animation-delay: {{index * 0.05}}s">
         
@@ -63,28 +45,52 @@
           </view>
         </view>
 
-        <!-- Main Card -->
-        <view class="city-card" bindtap="onSelectCity" data-index="{{index}}">
-          <image class="card-bg" src="{{item.bgImage || '/images/default-city-bg.png'}}" mode="aspectFill" wx:if="{{false}}"></image> <!-- Placeholder for BG image -->
-          <view class="card-gradient"></view>
-          
-          <view class="card-content">
-            <view class="card-left">
-              <view class="city-name-row">
-                <text class="city-name">{{item.name}}</text>
-                <text class="loc-badge" wx:if="{{index === 0}}">当前定位</text>
+        <!-- Slide Area -->
+        <movable-area class="swipe-area">
+          <movable-view 
+            class="swipe-view" 
+            direction="{{(index === 0 || isEditing) ? 'none' : 'horizontal'}}" 
+            x="{{item.x}}" 
+            data-index="{{index}}"
+            bindchange="onSwipeChange"
+            bindtouchend="onSwipeEnd"
+            damping="40"
+            out-of-bounds="true"
+            style="width: calc(100% + 160rpx);"
+          >
+            <!-- Main Content Container -->
+            <view class="swipe-content" bindtap="onSelectCity" data-index="{{index}}">
+              <!-- Main Card -->
+              <view class="city-card">
+                <image class="card-bg" src="{{item.bgImage || '/images/default-city-bg.png'}}" mode="aspectFill" wx:if="{{false}}"></image> 
+                <view class="card-gradient"></view>
+                
+                <view class="card-content">
+                  <view class="card-left">
+                    <view class="city-name-row">
+                      <text class="city-name">{{item.name}}</text>
+                      <text class="loc-badge" wx:if="{{index === 0}}">当前定位</text>
+                    </view>
+                    <text class="weather-desc">{{item.condition || '晴'}}</text>
+                  </view>
+                  
+                  <view class="card-right">
+                    <text class="temp-text">{{item.temp || '--'}}°</text>
+                    <view class="aqi-badge" wx:if="{{item.aqi}}">
+                      <text>空气优</text>
+                    </view>
+                  </view>
+                </view>
               </view>
-              <text class="weather-desc">{{item.condition || '晴'}}</text>
             </view>
-            
-            <view class="card-right">
-              <text class="temp-text">{{item.temp || '--'}}°</text>
-              <view class="aqi-badge" wx:if="{{item.aqi}}">
-                <text>空气优</text>
-              </view>
+
+            <!-- Delete Button -->
+            <view class="slide-delete-btn" catchtap="onSlideDelete" data-index="{{index}}">
+              <text>删除</text>
             </view>
-          </view>
-        </view>
+
+          </movable-view>
+        </movable-area>
 
       </view>
     </block>

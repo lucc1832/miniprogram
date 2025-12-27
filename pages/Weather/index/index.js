@@ -40,9 +40,58 @@ Page({
       this.setData({ cities: cachedCities });
       // 加载第一个城市
       this.loadWeatherData(cachedCities[0]);
+      // Silently update current location (index 0)
+      this.updateLocationSilent();
     } else {
       this.initLocation();
     }
+  },
+
+  updateLocationSilent() {
+    wx.getLocation({
+      type: 'wgs84',
+      success: (res) => {
+        this.reverseGeocode(res.latitude, res.longitude).then(city => {
+          if (city) {
+            const cities = this.data.cities;
+            // Only update if the first city is actually different in coords (approx) or name
+            // But usually we just update it.
+            // Ensure we don't overwrite if the user rearranged cities? 
+            // Assumption: Index 0 is ALWAYS current location in this app design.
+            
+            const oldCity = cities[0];
+            // Simple check to see if it changed significantly or if we just want to refresh name
+            if (oldCity.name !== city.name || 
+                Math.abs(oldCity.lat - city.lat) > 0.01 || 
+                Math.abs(oldCity.lon - city.lon) > 0.01) {
+                  
+               cities[0] = city;
+                
+                // Deduplicate cities to prevent the new location from duplicating an existing manual city
+                const seen = new Set();
+                const uniqueCities = [];
+                cities.forEach(c => {
+                  if (!seen.has(c.name)) {
+                    seen.add(c.name);
+                    uniqueCities.push(c);
+                  }
+                });
+
+                this.setData({ cities: uniqueCities });
+                this.saveCitiesToStorage(uniqueCities);
+                
+                // If currently showing index 0, reload weather
+                if (this.data.currentCityIndex === 0) {
+                  this.loadWeatherData(city);
+                }
+            }
+          }
+        });
+      },
+      fail: (err) => {
+        console.log('Silent location update failed', err);
+      }
+    });
   },
 
   onShow() {

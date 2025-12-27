@@ -127,17 +127,34 @@ Page({
     }
   },
 
+  switchToCity(index) {
+    const pages = getCurrentPages();
+    const indexPage = pages.find(p => p.route === 'pages/Weather/index/index');
+    
+    if (indexPage) {
+      indexPage.setData({ currentCityIndex: index });
+      const cities = wx.getStorageSync('weather_cities');
+      if (cities && cities[index]) {
+        indexPage.loadWeatherData(cities[index]);
+      }
+      const delta = pages.length - pages.indexOf(indexPage) - 1;
+      wx.navigateBack({ delta: delta });
+    } else {
+      wx.navigateBack();
+    }
+  },
+
   addCityDirectly(cityObj) {
     let cities = wx.getStorageSync('weather_cities') || [];
     
     // Check duplicates
-    const exists = cities.some(c => c.name === cityObj.name);
-    if (!exists) {
+    const index = cities.findIndex(c => c.name === cityObj.name);
+    if (index === -1) {
       cities.push(cityObj);
       wx.setStorageSync('weather_cities', cities);
       wx.navigateBack();
     } else {
-       wx.showToast({ title: '已存在', icon: 'none' });
+       this.switchToCity(index);
     }
   },
 
@@ -166,16 +183,14 @@ Page({
           let cities = wx.getStorageSync('weather_cities') || [];
           
           // Check duplicates
-          const exists = cities.some(c => c.name === name);
-          if (!exists) {
+          const index = cities.findIndex(c => c.name === name);
+          if (index === -1) {
             cities.push(newCity);
             wx.setStorageSync('weather_cities', cities);
             
-            // Navigate back to city list (or home?)
-            // Usually back to city list
-             wx.navigateBack();
+            this.switchToCity(cities.length - 1);
           } else {
-             wx.showToast({ title: '已存在', icon: 'none' });
+             this.switchToCity(index);
           }
         } else {
           wx.showToast({ title: '未找到该城市信息', icon: 'none' });

@@ -41,26 +41,38 @@ Page({
   },
 
   loadCities() {
-    const cities = wx.getStorageSync('weather_cities') || [];
-    // Ideally we should update weather for these cities here or cache it
-    // For now we just show them. 
-    // We might need to fetch current weather for each city to show on the card
-    // Let's assume we store basic info or fetch it.
-    // For the UI demo, we can just show names.
-    // But the image shows weather info.
-    // So we should probably fetch weather for them if not cached.
+    let cities = wx.getStorageSync('weather_cities') || [];
+    
+    // Deduplicate: Keep the first occurrence (index 0 is priority)
+    const seen = new Set();
+    const uniqueCities = [];
+    cities.forEach(c => {
+      if (!seen.has(c.name)) {
+        seen.add(c.name);
+        c.x = 0; // Reset slide
+        uniqueCities.push(c);
+      }
+    });
+
+    // If duplicates were found, update storage
+    if (uniqueCities.length !== cities.length) {
+      cities = uniqueCities;
+      wx.setStorageSync('weather_cities', cities);
+    } else {
+      // Just reset x for existing
+      cities.forEach(c => c.x = 0);
+    }
     
     this.setData({ cities });
     this.updateWeatherForCities(cities);
   },
 
   updateWeatherForCities(cities) {
-    // This could be expensive if many cities. Limit to a few.
     const API_KEY = '8968074cbf2aacf93ece6a19f282351a';
     const WEATHER_BASE = 'https://api.openweathermap.org/data/2.5/weather';
 
     cities.forEach((city, index) => {
-      if (!city.temp) { // Only fetch if no data
+      if (!city.temp) { 
         wx.request({
           url: WEATHER_BASE,
           data: {
@@ -74,20 +86,21 @@ Page({
             if (res.data && res.data.main) {
               const temp = Math.round(res.data.main.temp);
               const condition = res.data.weather[0].description;
-              const aqi = 50; // Mock AQI
+              const aqi = 50; 
               
               const key = `cities[${index}]`;
               this.setData({
                 [key + '.temp']: temp,
                 [key + '.condition']: condition,
                 [key + '.aqi']: aqi,
-                [key + '.isLocation']: index === 0 // Assume first is location
+                [key + '.isLocation']: index === 0 
               });
               
-              // Update storage
+              // Update storage (without x)
               const currentCities = this.data.cities;
               currentCities[index].temp = temp;
               currentCities[index].condition = condition;
+              // Clean x before storage if needed, but keeping it is fine or ignored
               wx.setStorageSync('weather_cities', currentCities);
             }
           }
@@ -97,12 +110,22 @@ Page({
   },
 
   onToggleEdit() {
-    this.setData({ isEditing: !this.data.isEditing, selectedCities: [] });
+    // Reset all slides when entering edit mode
+    const resetCities = this.data.cities.map(c => ({ ...c, x: 0 }));
+    this.setData({ 
+      isEditing: !this.data.isEditing, 
+      selectedCities: [],
+      cities: resetCities
+    });
   },
 
   onSelectCity(e) {
+    const index = e.currentTarget.dataset.index;
+    
+    // If dragging heavily, don't trigger select (simple heuristic usually handled by system, but good to know)
+    // Here we assume tap is intentional.
+
     if (this.data.isEditing) {
-      const index = e.currentTarget.dataset.index;
       const selected = this.data.selectedCities;
       const i = selected.indexOf(index);
       if (i > -1) {
@@ -113,7 +136,6 @@ Page({
       this.setData({ selectedCities: selected });
     } else {
       // Switch city
-      const index = e.currentTarget.dataset.index;
       const pages = getCurrentPages();
       const prevPage = pages[pages.length - 2];
       if (prevPage) {
@@ -128,20 +150,72 @@ Page({
     const selected = this.data.selectedCities.sort((a, b) => b - a);
     const cities = this.data.cities;
     
-    selected.forEach(idx => {
-      cities.splice(idx, 1);
-    });
+    // Check if index 0 is selected
+    if (selected.includes(0)) {
+        wx.showToast({ title: '当前定位无法删除', icon: 'none' });
+        // Remove 0 from selection or just stop
+        // Let's filter it out
+        const validSelected = selected.filter(i => i !== 0);
+        if (validSelected.length === 0) return;
+        
+        validSelected.forEach(idx => {
+            cities.splice(idx, 1);
+        });
+    } else {
+        selected.forEach(idx => {
+            cities.splice(idx, 1);
+        });
+    }
     
     this.setData({ cities, selectedCities: [], isEditing: false });
     wx.setStorageSync('weather_cities', cities);
   },
 
+  // Slide interactions
+  onSwipeChange(e) {
+    // We can track x here if needed
+  },
+
+  onSwipeEnd(e) {
+    const index = e.currentTarget.dataset.index;
+    // We can't get x directly from touchend event object in simple way without tracking change.
+    // But we can rely on user action. 
+    // If we want snapping:
+    // This is a bit complex in standard MP without wxs or query.
+    // Let's rely on damping and let user slide.
+    // If you want auto-open/close, we need to track x in bindchange.
+  },
+
+  onSlideDelete(e) {
+    const index = e.currentTarget.dataset.index;
+    if (index === 0) {
+      wx.showToast({ title: '当前定位无法删除', icon: 'none' });
+      // Reset slide
+      this.setData({ [`cities[${index}].x`]: 0 });
+      return;
+    }
+
+    wx.showModal({
+      title: '提示',
+      content: '确定要删除该城市吗？',
+      success: (res) => {
+        if (res.confirm) {
+          const cities = this.data.cities;
+          cities.splice(index, 1);
+          // Reset x for all (or just re-render)
+          cities.forEach(c => c.x = 0);
+          this.setData({ cities });
+          wx.setStorageSync('weather_cities', cities);
+          wx.showToast({ title: '已删除', icon: 'none' });
+        } else {
+          // Cancelled, reset slide
+          this.setData({ [`cities[${index}].x`]: 0 });
+        }
+      }
+    });
+  },
+
   onSearch() {
-    // Navigate to search page or show search input
-    // wx.showToast({ title: '搜索功能待实现', icon: 'none' });
-    // In a real app, we would have a search page.
-    // For this task, we can re-use the search logic from index.js but here.
-    // Let's use a simple modal for now or just the add logic from index.
     this.onAddCity();
   },
   
