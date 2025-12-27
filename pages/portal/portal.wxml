@@ -31,12 +31,6 @@
       <view class="card-title">Order Food</view>
       <view class="card-desc">点餐 / 菜单 / 订单</view>
     </view>
-    <!-- 菜单管理 -->
-    <view class="card " bindtap="go" data-url="/pages/Orderfood/menu/menu">
-      <view class="card-ico">📋 </view>
-      <view class="card-title">Menu Mgmt</view>
-      <view class="card-desc">菜品管理 / 分类管理</view>
-    </view>
     <!-- 预留 -->
     <view class="card disabled" bindtap="toast">
       <view class="card-title">🧾 记账</view>
