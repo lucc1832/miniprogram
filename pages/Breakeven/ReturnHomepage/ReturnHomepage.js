@@ -199,13 +199,13 @@ Page({
   },
 
   goAdd() {
-    wx.navigateTo({ url: '/pages/add/add' });
+    wx.navigateTo({ url: '/pages/Breakeven/add/add' });
   },
   goDetail(e) {
     const id = e.currentTarget.dataset.id;
-    wx.navigateTo({ url: `/pages/detail/detail?id=${id}` });
+    wx.navigateTo({ url: `/pages/Breakeven/detail/detail?id=${id}` });
   },
   goCategories() {
-    wx.navigateTo({ url: '/pages/categories/categories' });
+    wx.navigateTo({ url: '/pages/Breakeven/categories/categories' });
   }
 });

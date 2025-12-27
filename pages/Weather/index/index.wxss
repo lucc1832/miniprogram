@@ -23,8 +23,21 @@
   width: 100%;
   display: flex;
   align-items: flex-start; /* Important for alignment with custom top */
-  padding-left: 32rpx;
+  padding-left: 20rpx;
   box-sizing: border-box;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60rpx; /* Increased touch area */
+  margin-right: 10rpx;
+}
+
+.back-icon {
+  font-size: 36rpx;
+  font-weight: bold;
 }
 
 .location-area {
@@ -112,6 +125,8 @@
   font-size: 30rpx;
   opacity: 0.9;
   display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 12rpx;
 }
 
@@ -224,9 +239,33 @@
 }
 
 .d-day {
-  width: 80rpx;
-  font-size: 32rpx;
+  width: 220rpx;
+  font-size: 30rpx;
   font-weight: 500;
+  white-space: nowrap;
+}
+
+.expand-btn-container {
+  margin-top: 30rpx;
+  display: flex;
+  justify-content: center;
+}
+
+.expand-btn {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 16rpx 60rpx;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #fff;
+  backdrop-filter: blur(10px);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.expand-btn:active {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(0.98);
 }
 
 .d-icon-box {
@@ -294,6 +333,73 @@
 .d-value {
   font-size: 40rpx;
   font-weight: 500;
+}
+
+.d-value-sm {
+  font-size: 32rpx;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sun-box {
+  grid-column: span 2;
+}
+
+.sun-times {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10rpx;
+}
+
+.sun-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.sun-item.right {
+  align-items: flex-end;
+}
+
+.sun-label {
+  font-size: 24rpx;
+  opacity: 0.6;
+}
+
+.sun-time {
+  font-size: 32rpx;
+  font-weight: 600;
+  margin-top: 4rpx;
+}
+
+.sun-visual {
+  flex: 1;
+  margin: 0 30rpx;
+  height: 40rpx;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.sun-line {
+  width: 100%;
+  height: 4rpx;
+  background: rgba(255,255,255,0.2);
+  border-radius: 2rpx;
+}
+
+.sun-dot {
+  position: absolute;
+  width: 16rpx;
+  height: 16rpx;
+  background: #fff;
+  border-radius: 50%;
+  left: 50%; /* Center for static visual */
+  top: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 10rpx rgba(255,255,255,0.8);
 }
 
 .footer-safe-area {

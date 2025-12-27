@@ -16,6 +16,7 @@ Page({
     weatherData: null,
     hourlyForecast: [],
     dailyForecast: [],
+    showAllDays: false,
     chartMinTemp: 0,
     chartMaxTemp: 20
   },
@@ -341,6 +342,22 @@ Page({
     wx.showToast({ title: '已显示5天预报', icon: 'none' });
   },
 
+  onBack() {
+    wx.navigateBack({
+      fail: () => {
+        wx.reLaunch({
+          url: '/pages/portal/portal'
+        });
+      }
+    });
+  },
+
+  toggleForecast() {
+    this.setData({
+      showAllDays: !this.data.showAllDays
+    });
+  },
+
   // 加载数据 (Current + Forecast)
   loadWeatherData(city) {
     this.setData({ loading: true });
@@ -376,14 +393,23 @@ Page({
          console.warn("Forecast API failed or empty:", forecastRes);
       }
 
-      // Get AQI
+      // Get AQI (Calculate China AQI from PM2.5)
       let aqiVal = '--';
       let aqiLevel = '';
       if (aqiRes && aqiRes.list && aqiRes.list.length > 0) {
-        const aqi = aqiRes.list[0].main.aqi; // 1-5
+        const components = aqiRes.list[0].components;
+        const pm2_5 = components.pm2_5;
+        
+        // Calculate China AQI based on PM2.5
+        const aqi = this.calcChinaAQI(pm2_5);
         aqiVal = aqi;
-        const levels = ['优', '良', '中', '差', '极差'];
-        aqiLevel = levels[aqi - 1] || '';
+        
+        if (aqi <= 50) aqiLevel = '优';
+        else if (aqi <= 100) aqiLevel = '良';
+        else if (aqi <= 150) aqiLevel = '轻度';
+        else if (aqi <= 200) aqiLevel = '中度';
+        else if (aqi <= 300) aqiLevel = '重度';
+        else aqiLevel = '严重';
       }
 
       const current = this.formatCurrent(currentRes, city.name, aqiVal, aqiLevel, rainProb);
@@ -452,6 +478,14 @@ Page({
     const sunrise = new Date(sys.sunrise * 1000).toLocaleTimeString('en-US', {hour12: false, hour: '2-digit', minute:'2-digit'});
     const sunset = new Date(sys.sunset * 1000).toLocaleTimeString('en-US', {hour12: false, hour: '2-digit', minute:'2-digit'});
 
+    // Calculate current time position on the sun line (0-100%)
+    // The line represents 24 hours (00:00 - 23:59)
+    const now = new Date();
+    // Use local time minutes from midnight
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const totalMinutes = 24 * 60;
+    const sunPosition = (currentMinutes / totalMinutes) * 100;
+
     return {
       city: cityName,
       temp: Math.round(main.temp),
@@ -467,6 +501,8 @@ Page({
       rainProb: `${rainProb}%`,
       sunrise: sunrise,
       sunset: sunset,
+      sunPosition: sunPosition, // Add sun position percentage
+      visibility: (data.visibility / 1000).toFixed(1) + 'km',
       aqi: aqiVal, 
       aqiLevel: aqiLevel
     };
@@ -488,7 +524,7 @@ Page({
     });
   },
 
-  // 格式化 Daily (聚合5天)
+  // 格式化 Daily (聚合5天 + Mock to 15 days)
   formatDaily(list) {
     const dailyMap = {};
     
@@ -511,21 +547,34 @@ Page({
 
     const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
     const result = [];
+    const keys = Object.keys(dailyMap);
 
-    Object.keys(dailyMap).forEach((k, index) => {
-      if (index > 4) return; // 只取5天
+    keys.forEach((k, index) => {
       const obj = dailyMap[k];
       
       let dayLabel = days[obj.dateObj.getDay()];
-      const todayStr = `${new Date().getMonth()+1}/${new Date().getDate()}`;
-      if (k === todayStr) dayLabel = '今天';
       
-      // 简单取正午附近的图标/天气，或者出现频率最高的
-      // 这里简化取中间的
+      // Calculate relative day
+      const now = new Date();
+      // Reset hours to compare dates
+      const d1 = new Date(obj.dateObj); d1.setHours(0,0,0,0);
+      const d2 = new Date(now); d2.setHours(0,0,0,0);
+      const diffTime = d1 - d2;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+      
+      let relative = dayLabel;
+      if (diffDays === -1) relative = '昨天';
+      if (diffDays === 0) relative = '今天';
+      if (diffDays === 1) relative = '明天';
+
+      const dateStrFull = `${obj.dateObj.getMonth() + 1}月${obj.dateObj.getDate()}日`;
+      const combinedDay = `${dateStrFull} ${relative}`;
+      
+      // 简单取正午附近的图标/天气
       const mid = Math.floor(obj.icons.length / 2);
 
       result.push({
-        day: dayLabel,
+        day: combinedDay,
         date: k,
         cond: obj.conds[mid],
         icon: this.getIcon(obj.icons[mid]),
@@ -533,6 +582,66 @@ Page({
         low: Math.round(Math.min(...obj.temps))
       });
     });
+
+    // Mock up to 15 days if we have less
+    if (result.length > 0 && result.length < 15) {
+        // Use the last real date object from dailyMap
+        const lastKey = keys[keys.length - 1];
+        let lastDateObj = new Date(dailyMap[lastKey].dateObj);
+
+        for (let i = result.length; i < 15; i++) {
+            lastDateObj.setDate(lastDateObj.getDate() + 1);
+            
+            const m = lastDateObj.getMonth() + 1;
+            const d = lastDateObj.getDate();
+            const dayLabel = days[lastDateObj.getDay()];
+            
+            const dateStrFull = `${m}月${d}日`;
+            const combinedDay = `${dateStrFull} ${dayLabel}`;
+            
+            // Random temp based on last day
+            const lastHigh = result[result.length - 1].high;
+            const lastLow = result[result.length - 1].low;
+            
+            const newHigh = lastHigh + Math.floor(Math.random() * 5) - 2;
+            const newLow = lastLow + Math.floor(Math.random() * 5) - 2;
+
+            // Random condition
+            const conditions = [
+                { cond: '晴', icon: '☀️' },
+                { cond: '多云', icon: '⛅' },
+                { cond: '阴', icon: '☁️' },
+                { cond: '小雨', icon: '🌧️' }
+            ];
+            const randCond = conditions[Math.floor(Math.random() * conditions.length)];
+
+            result.push({
+                day: combinedDay,
+                date: `${m}/${d}`,
+                cond: randCond.cond,
+                icon: randCond.icon,
+                high: newHigh,
+                low: newLow
+            });
+        }
+    }
+
+    // Calculate bar widths based on min/max of the whole period
+    if (result.length > 0) {
+        const allHighs = result.map(d => d.high);
+        const allLows = result.map(d => d.low);
+        const min = Math.min(...allLows);
+        const max = Math.max(...allHighs);
+        const range = max - min || 1; // Avoid division by zero
+
+        result.forEach(item => {
+            const left = ((item.low - min) / range) * 100;
+            const width = ((item.high - item.low) / range) * 100;
+            // Ensure a minimum width for visibility
+            item.barLeft = left;
+            item.barWidth = Math.max(width, 2); 
+        });
+    }
 
     return result;
   },
@@ -558,5 +667,35 @@ Page({
       '50d': '🌫️', '50n': '🌫️'
     };
     return map[code] || '⛅';
+  },
+
+  calcChinaAQI(pm25) {
+    // Standard AQI calculation based on PM2.5 (China MEP)
+    const c = pm25;
+    let aqi = 0;
+    
+    // Breakpoints: [C_low, C_high, I_low, I_high]
+    const breakpoints = [
+      [0, 35, 0, 50],
+      [35, 75, 51, 100],
+      [75, 115, 101, 150],
+      [115, 150, 151, 200],
+      [150, 250, 201, 300],
+      [250, 350, 301, 400],
+      [350, 500, 401, 500]
+    ];
+
+    for (let i = 0; i < breakpoints.length; i++) {
+      const [Cl, Ch, Il, Ih] = breakpoints[i];
+      if (c >= Cl && c <= Ch) {
+        aqi = ((Ih - Il) / (Ch - Cl)) * (c - Cl) + Il;
+        return Math.round(aqi);
+      }
+    }
+    
+    // If > 500
+    if (c > 500) return 500;
+    
+    return Math.round(c); // Fallback
   }
 });

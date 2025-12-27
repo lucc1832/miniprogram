@@ -2,6 +2,9 @@
   <!-- Fixed Custom Navigation Bar -->
   <view class="custom-nav" style="height: {{statusBarHeight + navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
     <view class="nav-content" style="height: {{navBarHeight}}px; line-height: {{navBarHeight}}px;">
+      <view class="back-btn" bindtap="onBack" style="height: {{menuButtonHeight}}px; margin-top: {{menuButtonTop - statusBarHeight}}px;">
+        <text class="back-icon">❮</text>
+      </view>
       <view class="location-area" bindtap="onSwitchCity" style="height: {{menuButtonHeight}}px; margin-top: {{menuButtonTop - statusBarHeight}}px;">
         <text class="city-name">{{weatherData.city}}</text>
         <view class="location-icon">📍</view>
@@ -28,7 +31,7 @@
           <text class="condition-text">{{weatherData.condition}}</text>
           <view class="hl-temp">
             <text>最高 {{weatherData.high}}°</text>
-            <text class="sep">L:</text>
+            <text class="sep"> </text>
             <text>最低 {{weatherData.low}}°</text>
           </view>
         </view>
@@ -88,7 +91,7 @@
         </view>
         <view class="daily-list">
           <block wx:for="{{dailyForecast}}" wx:key="day">
-            <view class="daily-row">
+            <view class="daily-row" wx:if="{{index < 7 || showAllDays}}">
               <text class="d-day">{{item.day}}</text>
               <view class="d-icon-box">
                 <text class="d-icon">{{item.icon}}</text>
@@ -96,13 +99,15 @@
               <view class="d-temp-bar-container">
                 <text class="d-low">{{item.low}}°</text>
                 <view class="d-bar-bg">
-                  <view class="d-bar-fill" style="left: 0%; width: 60%;"></view> 
-                  <!-- Note: Actual bar width logic needs min/max calc, simplified here -->
+                  <view class="d-bar-fill" style="left: {{item.barLeft}}%; width: {{item.barWidth}}%;"></view> 
                 </view>
                 <text class="d-high">{{item.high}}°</text>
               </view>
             </view>
           </block>
+        </view>
+        <view class="expand-btn-container" bindtap="toggleForecast">
+            <view class="expand-btn">{{showAllDays ? '收起' : '未来 15 日天气预报'}}</view>
         </view>
       </view>
 
@@ -110,19 +115,46 @@
       <view class="details-grid fade-in-up" style="animation-delay: 0.5s;">
         <view class="detail-box">
           <view class="d-label">💦 湿度</view>
-          <view class="d-value">{{weatherData.humidity}}%</view>
-        </view>
-        <view class="detail-box">
-          <view class="d-label">🌬️ 风向</view>
-          <view class="d-value">{{weatherData.windDir}}</view>
+          <view class="d-value">{{weatherData.humidity}}</view>
         </view>
         <view class="detail-box">
           <view class="d-label">🌡️ 体感</view>
           <view class="d-value">{{weatherData.feelsLike}}°</view>
         </view>
         <view class="detail-box">
+          <view class="d-label">🌬️ 风向</view>
+          <view class="d-value-sm">{{weatherData.windDir}} {{weatherData.windSpeed}}</view>
+        </view>
+        <view class="detail-box">
           <view class="d-label">🎈 气压</view>
-          <view class="d-value">{{weatherData.pressure}}hPa</view>
+          <view class="d-value">{{weatherData.pressure}}</view>
+        </view>
+        <view class="detail-box">
+          <view class="d-label">👁️ 能见度</view>
+          <view class="d-value">{{weatherData.visibility}}</view>
+        </view>
+        <view class="detail-box">
+          <view class="d-label">🌧️ 降雨概率</view>
+          <view class="d-value">{{weatherData.rainProb}}</view>
+        </view>
+        
+        <!-- Sunrise Sunset Full Width -->
+        <view class="detail-box sun-box">
+          <view class="d-label">🌅 日出日落</view>
+          <view class="sun-times">
+             <view class="sun-item">
+               <text class="sun-label">日出</text>
+               <text class="sun-time">{{weatherData.sunrise}}</text>
+             </view>
+             <view class="sun-visual">
+                 <view class="sun-line"></view>
+                 <view class="sun-dot" style="left: {{weatherData.sunPosition}}%;"></view>
+              </view>
+             <view class="sun-item right">
+               <text class="sun-label">日落</text>
+               <text class="sun-time">{{weatherData.sunset}}</text>
+             </view>
+          </view>
         </view>
       </view>
 

@@ -63,6 +63,12 @@
       "desc": "您的位置信息将用于展示当地天气"
     }
   },
+  "preloadRule": {
+    "pages/portal/portal": {
+      "network": "all",
+      "packages": ["pages/Weather", "pages/Breakeven", "pages/Orderfood"]
+    }
+  },
   "requiredPrivateInfos": [
     "getLocation"
   ]

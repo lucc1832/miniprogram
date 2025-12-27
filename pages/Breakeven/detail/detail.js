@@ -55,7 +55,7 @@ Page({
 
   goEdit() {
     wx.navigateTo({
-      url: `/pages/add/add?id=${this.data.id}`
+      url: `/pages/Breakeven/add/add?id=${this.data.id}`
     });
   },
 
