@@ -18,6 +18,7 @@
       "root": "pages/Orderfood",
       "pages": [
         "home/home",
+        "ordering/ordering",
         "orders/orders",
         "menu/menu",
         "menu/category/category",

@@ -1,0 +1,591 @@
+.page{
+  padding: 24rpx 32rpx 140rpx;
+  background: #f6f7fb;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.top-tabs{
+  display: flex;
+  gap: 18rpx;
+  margin-bottom: 16rpx;
+}
+.top-tab{
+  padding: 14rpx 24rpx;
+  border-radius: 999rpx;
+  background: #eef0f4;
+  color: #4b5563;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+.top-tab.active{
+  background: rgba(250,204,21,.18);
+  color: #eab308;
+}
+
+.sub-tabs{
+  display: flex;
+  gap: 24rpx;
+  margin-bottom: 16rpx;
+}
+.sub-tab{
+  position: relative;
+  padding: 10rpx 8rpx;
+  color: #6b7280;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+.sub-tab.active{
+  color: #111827;
+}
+.sub-tab.active::after{
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -8rpx;
+  height: 6rpx;
+  background: #111827;
+  border-radius: 6rpx;
+}
+
+.hero{
+  border-radius: 18rpx;
+  padding: 22rpx 22rpx;
+  color: #fff;
+  background: linear-gradient(90deg,#6b5cff,#7fe3c8);
+  margin-bottom: 18rpx;
+}
+.hero-title{
+  font-size: 40rpx;
+  font-weight: 800;
+}
+.hero-sub{
+  margin-top: 8rpx;
+  font-size: 26rpx;
+  opacity: .9;
+}
+
+.search{
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 16rpx 18rpx;
+  margin-bottom: 16rpx;
+}
+.search-input{
+  font-size: 28rpx;
+}
+
+/* 主体布局：左侧分类 + 右侧菜单列表 */
+.menu-body{
+  display: flex;
+  gap: 22rpx;
+  height: calc(100vh - 340rpx);
+}
+/* 左侧分类导航区域 */
+.side-cats{
+  width: 160rpx;
+  background: #fff;
+  border-radius: 18rpx;
+  padding: 12rpx 0;
+}
+/* 左侧分类项 */
+.side-cat{
+  padding: 18rpx 16rpx;
+  font-size: 26rpx;
+  color: #6b7280;
+}
+/* 左侧分类项（选中态） */
+.side-cat.on{
+  color: #111827;
+  border-left: 8rpx solid #ef4444;
+  background: #f9fafb;
+}
+/* 右侧菜品列表容器 */
+.menu-list{
+  flex: 1;
+  background: #fff;
+  border-radius: 18rpx;
+  padding: 12rpx;
+}
+
+/* 菜品行：图片 + 文案 + 操作按钮 */
+.food-row{
+  display: flex;
+  align-items: center;
+  padding: 14rpx 10rpx;
+  border-bottom: 1rpx solid #f1f5f9;
+}
+/* 菜品图片缩略图 */
+.food-img{
+  width: 150rpx;
+  height: 110rpx;
+  border-radius: 14rpx;
+  background: #eee;
+  margin-right: 6rpx;
+}
+/* 菜品中部信息（名称、价格） */
+.food-mid{
+  flex: 1;
+  min-width: 0;
+}
+
+.food-card{
+  background: #fff;
+  border-radius: 18rpx;
+  padding: 18rpx 18rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.food-name{
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #111827;
+}
+.food-price{
+  margin-top: 6rpx;
+  font-size: 28rpx;
+  color: #16a34a;
+  font-weight: 800;
+}
+
+.food-actions{
+  display: flex;
+  align-items: center;
+}
+
+
+/* 右侧红色“+”按钮 */
+.btn-plus-red{
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 999rpx;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background: #ef4444;
+  color: #fff;
+  font-size: 36rpx;
+  font-weight: 900;
+}
+/* 右侧灰色“-”按钮 */
+.btn-minus-gray{
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 999rpx;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background: #f3f4f6;
+  color: #111827;
+  font-size: 36rpx;
+  font-weight: 900;
+}
+
+.stepper{
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+}
+.count{
+  width: 42rpx;
+  text-align: center;
+  font-size: 28rpx;
+  font-weight: 800;
+  color: #111;
+}
+
+.checkout-bar{
+  position: fixed;
+  left: 24rpx;
+  right: 24rpx;
+  bottom: 24rpx;
+  background: #fff;
+  border-radius: 18rpx;
+  padding: 18rpx 18rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 18rpx 36rpx rgba(0,0,0,.10);
+}
+
+.checkout-left{
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+.checkout-left .count{
+  width: auto;
+  text-align: left;
+  font-size: 24rpx;
+  color: #6b7280;
+  font-weight: 700;
+}
+.checkout-left .price{
+  font-size: 32rpx;
+  font-weight: 900;
+  color: #111827;
+}
+
+.checkout-btn{
+  padding: 16rpx 22rpx;
+  border-radius: 14rpx;
+  background: #16a34a;
+  color: #fff;
+  font-weight: 900;
+  font-size: 28rpx;
+}
+/* ====== 底部栏 ====== */
+.bottom-bar{
+  position: fixed;
+  left: 20rpx;
+  right: 20rpx;
+  bottom: 12rpx;
+  background: #ffffff;
+  border-radius: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 26rpx 32rpx;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 26rpx);
+  box-shadow: 0 16rpx 40rpx rgba(16, 24, 40, 0.12);
+  border: 1rpx solid #eef0f4;
+  z-index: 98;
+  animation: fadeUp 220ms ease;
+}
+
+.bb-left{
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  flex: 1;
+  min-width: 0;
+}
+.bb-item{
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 6rpx 10rpx;
+  border-radius: 12rpx;
+  flex-direction: column;
+  min-width: 96rpx;
+}
+.bb-item-hover{
+  background: #f3f4f6;
+}
+.bb-icon{
+  width: 36rpx;
+  height: 28rpx;
+  border: 4rpx solid #111827;
+  border-radius: 8rpx;
+  position: relative;
+}
+.bb-icon::before{
+  content: '';
+  position: absolute;
+  left: -6rpx;
+  top: -6rpx;
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 999rpx;
+  border: 4rpx solid #111827;
+}
+.bb-icon.chat{
+  width: 32rpx;
+  height: 28rpx;
+  border: 4rpx solid #111827;
+  border-radius: 8rpx;
+  position: relative;
+}
+.bb-icon.chat::after{
+  content: '';
+  position: absolute;
+  left: 6rpx;
+  bottom: -8rpx;
+  width: 14rpx;
+  height: 14rpx;
+  background: #fff;
+  border-left: 4rpx solid #111827;
+  border-bottom: 4rpx solid #111827;
+  transform: rotate(45deg);
+}
+.bb-badge{
+  position: absolute;
+  top: -10rpx;
+  right: -6rpx;
+  min-width: 30rpx;
+  height: 30rpx;
+  padding: 0 8rpx;
+  border-radius: 999rpx;
+  background: #ef4444;
+  color: #fff;
+  font-size: 22rpx;
+  font-weight: 900;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.bb-label{
+  font-size: 22rpx;
+  color: #4b5563;
+}
+.bb-total{
+  display: flex;
+  align-items: baseline;
+  gap: 8rpx;
+  margin-left: 8rpx;
+  flex: 1;
+  min-width: 0;
+  justify-content: flex-end;
+  margin-right: 24rpx;
+}
+.bb-total-label{
+  font-size: 24rpx;
+  color: #6b7280;
+  white-space: nowrap;
+}
+.bb-price{
+  font-size: 36rpx;
+  font-weight: 900;
+  color: #ef4444;
+  white-space: nowrap;
+}
+.bb-right{
+  background: #ef4444;
+  color: #ffffff;
+  padding: 20rpx 34rpx;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+  font-weight: 900;
+  box-shadow: 0 10rpx 22rpx rgba(239,68,68,0.28);
+  flex-shrink: 0;
+}
+
+@keyframes fadeUp{
+  from{ opacity: 0; transform: translateY(10rpx); }
+  to{ opacity: 1; transform: translateY(0); }
+}
+
+/* ====== 遮罩 ====== */
+.mask{
+  position: fixed;
+  left: 0; right: 0; top: 0; bottom: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 900;
+}
+
+/* ====== 抽屉（默认隐藏在底部） ====== */
+.cart-drawer{
+  position: fixed;
+  left: 0; right: 0;
+  bottom: 0;
+  max-height: 70vh;
+  background: #fff;
+  border-top-left-radius: 28rpx;
+  border-top-right-radius: 28rpx;
+  transform: translateY(100%);
+  transition: transform 220ms ease;
+  z-index: 901;
+  display: flex;
+  flex-direction: column;
+}
+
+.cart-drawer.show{
+  transform: translateY(0);
+}
+
+.cart-head{
+  padding: 24rpx 40rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1rpx solid #eef0f4;
+}
+
+.cart-title{
+  font-size: 30rpx;
+  font-weight: 900;
+  color: #111827;
+}
+
+.cart-close{
+  color: #6b7280;
+  font-size: 26rpx;
+}
+
+.cart-list{
+  flex: 1;
+  padding: 24rpx 32rpx;
+  box-sizing: border-box;
+}
+
+/* 对应 home.wxss 约 50-51 行 */
+.cart-item {
+  display: flex;
+  align-items: center; /* 垂直居中 */
+  width: 100%;         /* 确保占满行宽 */
+  padding: 24rpx 0;    /* 增加一点垂直点击范围 */
+  border-bottom: 1rpx solid #f1f5f9;
+}
+
+/* 对应 home.wxss 约 51 行 */
+.ci-left {
+  flex: 1;          /* 占据所有剩余空间 */
+  width: 0;         /* 【关键】强制宽度归零，由 flex-grow 撑开，解决挤压问题 */
+  margin-right: 20rpx; /* 给右侧留出间距 */
+  display: flex;    /* 保持内部布局整齐 */
+  flex-direction: column;
+}
+/* 3. 右侧操作区域：禁止被压缩 */
+.ci-right {
+  flex-shrink: 0;   /* 【关键】绝对禁止缩小 */
+  display: flex;
+  align-items: center;
+  gap: 12rpx;       /* 按钮之间的间距 */
+  margin-left: auto; /* 确保靠右对齐 */
+}
+
+/* 对应 home.wxss 约 52 行 */
+.ci-name {
+  font-size: 30rpx;
+  font-weight: 800;
+  color: #111827;
+  /* 删除 max-width: 320rpx; */
+  width: 100%;      /* 占满左侧容器 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* 超长自动省略号 */
+}
+
+.ci-sub{
+  margin-top: 6rpx;
+  font-size: 24rpx;
+  color: #6b7280;
+}
+
+
+
+.ci-btn{
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 999rpx;
+  background: #f3f4f6;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight: 900;
+  color: #111827;
+}
+
+.ci-btn.plus{
+  background: #6b5cff;
+  color: #fff;
+}
+
+.ci-num{
+  width: 40rpx;
+  text-align: center;
+  font-weight: 800;
+  font-size: 28rpx;
+  color: #111827;
+}
+
+.ci-del{
+  padding: 10rpx 20rpx;
+  border-radius: 999rpx;
+  background: rgba(254,226,226,.6);
+  color: #ef4444;
+  font-size: 24rpx;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.cart-empty{
+  padding: 50rpx 0;
+  text-align: center;
+  color: #9ca3af;
+}
+
+/* 底部合计 */
+.cart-foot{
+  padding: 18rpx 24rpx 24rpx;
+  border-top: 1rpx solid #eef0f4;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cf-left{
+  display: flex;
+  flex-direction: column;
+}
+
+.cf-count{
+  font-size: 24rpx;
+  color: #6b7280;
+}
+
+.cf-price{
+  font-size: 34rpx;
+  font-weight: 900;
+  color: #111827;
+}
+
+.cf-btn{
+  background: linear-gradient(135deg,#22c55e,#16a34a);
+  color: #fff;
+  padding: 18rpx 34rpx;
+  border-radius: 999rpx;
+  font-size: 30rpx;
+  font-weight: 800;
+}
+/* 底部购物车栏 */
+.cart-bar {
+  position: relative;
+  /* 自适应宽度 */
+  margin: 12rpx 32rpx 20rpx;
+  background: #ffffff;
+  border: 1rpx solid #eef0f4;
+  border-radius: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 26rpx 32rpx;
+  box-shadow: 0 16rpx 40rpx rgba(16, 24, 40, 0.12);
+}
+
+.cart-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1; /* 占据剩余空间 */
+  min-width: 0; /* 防止子元素撑开 */
+}
+
+.bar-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.bar-text {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.bar-total {
+  font-size: 32rpx;
+  font-weight: 900;
+  color: #111;
+}
+
+.cart-btn {
+  background: linear-gradient(135deg,#22c55e,#16a34a);
+  color: #fff;
+  padding: 22rpx 40rpx;
+  border-radius: 999rpx;
+  font-size: 30rpx;
+  font-weight: 900;
+  box-shadow: 0 8rpx 18rpx rgba(34,197,94,0.28);
+}
