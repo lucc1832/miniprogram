@@ -1,0 +1,132 @@
+<view class="container">
+  <!-- Fixed Custom Navigation Bar -->
+  <view class="custom-nav" style="height: {{statusBarHeight + navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
+    <view class="nav-content" style="height: {{navBarHeight}}px; line-height: {{navBarHeight}}px;">
+      <view class="location-area" bindtap="onSwitchCity" style="height: {{menuButtonHeight}}px; margin-top: {{menuButtonTop - statusBarHeight}}px;">
+        <text class="city-name">{{weatherData.city}}</text>
+        <view class="location-icon">📍</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Loading State -->
+  <view class="loading" wx:if="{{loading}}">
+    <view class="spinner"></view>
+    <text>正在获取天气...</text>
+  </view>
+
+  <block wx:else>
+    <!-- Main Content Scroll -->
+    <scroll-view scroll-y class="content-scroll" style="padding-top: {{statusBarHeight + navBarHeight}}px;" enable-back-to-top>
+      
+      <!-- Main Weather Section -->
+      <view class="main-section fade-in-up">
+        <view class="temp-box">
+          <text class="temp-val">{{weatherData.temp}}°</text>
+        </view>
+        <view class="condition-box">
+          <text class="condition-text">{{weatherData.condition}}</text>
+          <view class="hl-temp">
+            <text>最高 {{weatherData.high}}°</text>
+            <text class="sep">L:</text>
+            <text>最低 {{weatherData.low}}°</text>
+          </view>
+        </view>
+        
+        <!-- Air Quality Tag -->
+        <view class="aqi-tag">
+          <text class="aqi-label">空气{{weatherData.aqiLevel}}</text>
+          <text class="aqi-val">{{weatherData.aqi}}</text>
+        </view>
+      </view>
+
+      <!-- Action Buttons Row -->
+      <view class="action-row fade-in-up" style="animation-delay: 0.1s;">
+        <view class="action-btn" bindtap="onManageCities">
+          <text class="action-icon">🏙️</text>
+          <text class="action-text">城市</text>
+        </view>
+         <view class="action-btn" bindtap="onShowMenu">
+          <text class="action-icon">⚙️</text>
+          <text class="action-text">管理</text>
+        </view>
+      </view>
+
+      <!-- Clothing Advice Card -->
+      <view class="card clothing-card fade-in-up" style="animation-delay: 0.2s;">
+        <view class="card-header">
+          <text class="card-icon">👕</text>
+          <text class="card-title">穿衣建议</text>
+        </view>
+        <view class="clothing-content">
+          <text class="clothing-text">今天天气不错，适合穿一件舒适的卫衣搭配牛仔裤，既保暖又时尚。</text>
+        </view>
+      </view>
+
+      <!-- Hourly Forecast -->
+      <view class="card hourly-card fade-in-up" style="animation-delay: 0.3s;">
+        <view class="card-header">
+          <text class="card-icon">🕒</text>
+          <text class="card-title">24小时预报</text>
+        </view>
+        <scroll-view scroll-x class="hourly-scroll" enable-flex>
+          <block wx:for="{{hourlyForecast}}" wx:key="time">
+            <view class="hourly-item">
+              <text class="h-time">{{item.time}}</text>
+              <view class="h-icon">{{item.icon}}</view>
+              <text class="h-temp">{{item.temp}}°</text>
+            </view>
+          </block>
+        </scroll-view>
+      </view>
+
+      <!-- Daily Forecast -->
+      <view class="card daily-card fade-in-up" style="animation-delay: 0.4s;">
+        <view class="card-header">
+          <text class="card-icon">📅</text>
+          <text class="card-title">未来预报</text>
+        </view>
+        <view class="daily-list">
+          <block wx:for="{{dailyForecast}}" wx:key="day">
+            <view class="daily-row">
+              <text class="d-day">{{item.day}}</text>
+              <view class="d-icon-box">
+                <text class="d-icon">{{item.icon}}</text>
+              </view>
+              <view class="d-temp-bar-container">
+                <text class="d-low">{{item.low}}°</text>
+                <view class="d-bar-bg">
+                  <view class="d-bar-fill" style="left: 0%; width: 60%;"></view> 
+                  <!-- Note: Actual bar width logic needs min/max calc, simplified here -->
+                </view>
+                <text class="d-high">{{item.high}}°</text>
+              </view>
+            </view>
+          </block>
+        </view>
+      </view>
+
+      <!-- Details Grid -->
+      <view class="details-grid fade-in-up" style="animation-delay: 0.5s;">
+        <view class="detail-box">
+          <view class="d-label">💦 湿度</view>
+          <view class="d-value">{{weatherData.humidity}}%</view>
+        </view>
+        <view class="detail-box">
+          <view class="d-label">🌬️ 风向</view>
+          <view class="d-value">{{weatherData.windDir}}</view>
+        </view>
+        <view class="detail-box">
+          <view class="d-label">🌡️ 体感</view>
+          <view class="d-value">{{weatherData.feelsLike}}°</view>
+        </view>
+        <view class="detail-box">
+          <view class="d-label">🎈 气压</view>
+          <view class="d-value">{{weatherData.pressure}}hPa</view>
+        </view>
+      </view>
+
+      <view class="footer-safe-area"></view>
+    </scroll-view>
+  </block>
+</view>

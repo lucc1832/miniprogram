@@ -1,0 +1,106 @@
+<view class="container">
+  <!-- Custom Nav Bar -->
+  <view class="custom-nav" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
+    <view class="nav-content" style="height: {{navBarHeight}}px;">
+      <!-- Search Container - Aligned with capsule -->
+      <!-- menuButtonTop is the top of the capsule relative to screen. 
+           In nav-content (which starts at statusBarHeight), the top offset is menuButtonTop - statusBarHeight. 
+      -->
+      <view class="search-container" style="height: {{menuButtonHeight}}px; margin-top: {{menuButtonTop - statusBarHeight}}px; width: {{menuButtonLeft - 12}}px;">
+        <view class="search-box">
+          <icon type="search" size="14" color="#999" class="search-icon"/>
+          <input 
+            class="search-input" 
+            placeholder="搜索全球城市" 
+            placeholder-class="placeholder-style"
+            bindinput="onInput" 
+            value="{{searchText}}"
+            focus
+            confirm-type="search"
+          />
+          <view class="clear-btn" bindtap="onInput" data-value="" wx:if="{{searchText.length > 0}}">
+             <icon type="clear" size="14" color="#ccc"/>
+          </view>
+        </view>
+        <view class="cancel-btn" bindtap="onCancel">取消</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Main Content Area -->
+  <view class="main-content" style="padding-top: {{statusBarHeight + navBarHeight}}px;">
+    
+    <!-- Search Results -->
+    <view class="search-results-list" wx:if="{{searchText.length > 0}}">
+      <block wx:for="{{searchResults}}" wx:key="index">
+        <view class="result-card fade-in" style="animation-delay: {{index * 0.05}}s" bindtap="onSelectCity" data-name="{{item.name}}" data-lat="{{item.lat}}" data-lon="{{item.lon}}">
+          <view class="card-left">
+            <text class="city-name">{{item.name}}</text>
+            <view class="city-meta">
+              <text class="province-tag" wx:if="{{item.province}}">{{item.province}}</text>
+              <text class="country-tag">{{item.country}}</text>
+            </view>
+          </view>
+          <view class="card-right">
+             <view class="add-btn">
+               <text>+</text>
+             </view>
+          </view>
+        </view>
+      </block>
+
+      <!-- No Results -->
+      <view wx:if="{{searchResults.length === 0}}" class="empty-state">
+        <text>未找到相关城市</text>
+      </view>
+    </view>
+
+    <!-- Default Suggestions (History / Hot) -->
+    <view class="default-view" wx:else>
+      
+      <!-- Current Location -->
+      <view class="section fade-in">
+        <view class="section-header">
+          <text class="section-title">当前定位</text>
+        </view>
+        <view class="location-card" bindtap="onSelectCity" data-name="{{currentLocation}}">
+           <image src="/images/location-icon.png" class="loc-icon" wx:if="{{false}}"></image> <!-- Placeholder -->
+           <text class="loc-emoji">📍</text>
+           <text class="loc-text">{{currentLocation}}</text>
+        </view>
+      </view>
+
+      <!-- Hot Cities -->
+      <view class="section fade-in" style="animation-delay: 0.1s;">
+        <view class="section-header">
+          <text class="section-title">热门城市</text>
+        </view>
+        <view class="grid-layout">
+          <block wx:for="{{hotCities}}" wx:key="*this">
+            <view class="grid-chip" bindtap="onSelectCity" data-name="{{item}}">
+              <text>{{item}}</text>
+            </view>
+          </block>
+        </view>
+      </view>
+
+      <!-- International -->
+      <view class="section fade-in" style="animation-delay: 0.2s;">
+        <view class="section-header">
+          <text class="section-title">国际热门</text>
+        </view>
+        <view class="grid-layout">
+          <block wx:for="{{intlCities}}" wx:key="*this">
+            <view class="grid-chip" bindtap="onSelectCity" data-name="{{item}}">
+              <text>{{item}}</text>
+            </view>
+          </block>
+        </view>
+      </view>
+      
+      <view class="footer-safe-area"></view>
+
+    </view>
+
+  </view>
+</view>

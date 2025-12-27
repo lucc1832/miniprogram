@@ -1,0 +1,118 @@
+<view class="container">
+  <!-- Custom Nav Bar -->
+  <view class="custom-nav" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
+    <view class="nav-content" style="height: {{navBarHeight}}px;">
+      <!-- Left Action (Back / Cancel) -->
+      <view class="nav-left" style="height: {{menuButtonHeight}}px; margin-top: {{menuButtonTop - statusBarHeight}}px;">
+        <view class="back-btn" bindtap="back" wx:if="{{!isEditing}}">
+          <icon type="waiting" size="20" color="transparent" class="back-arrow"/> <!-- Placeholder icon for alignment or custom SVG -->
+          <text class="back-text">返回</text>
+        </view>
+        <view class="cancel-btn" bindtap="onCancel" wx:if="{{isEditing}}">取消</view>
+      </view>
+
+      <!-- Center Title -->
+      <view class="nav-title" style="line-height: {{navBarHeight}}px;">
+        {{isEditing ? '已选择 ' + selectedCities.length : '城市管理'}}
+      </view>
+
+      <!-- Right Action (Edit / Select All) - Be careful with Capsule -->
+      <!-- We place this to the left of the capsule area if needed, or hide it if it conflicts.
+           Since capsule is on the right, we can put "Edit" on the right but need to make sure it doesn't overlap.
+           Actually, usually "Edit" is on the right in standard iOS apps. 
+           But in Mini Programs, the right side is the capsule.
+           So we should probably put "Edit" to the left of the capsule? 
+           Or maybe put "Edit" in the `nav-left` next to Back?
+           Or maybe put "Edit" as a floating button or somewhere else?
+           
+           Let's look at standard WeChat design. 
+           Usually, the title is centered. 
+           If we want an action button, it often goes to the left if the right is occupied.
+           OR we can put it in the content area (like a sub-header).
+           
+           Let's try putting "Edit" in the `nav-left` if not editing, or maybe in a sub-header below the nav bar.
+           Actually, let's put it in a "Toolbar" below the Nav Bar for better spacing.
+      -->
+    </view>
+  </view>
+
+  <!-- Sub-Header / Toolbar (Search & Edit) -->
+  <view class="toolbar" style="margin-top: {{statusBarHeight + navBarHeight}}px;">
+    <view class="search-bar" bindtap="onSearch" wx:if="{{!isEditing}}">
+      <icon type="search" size="14" color="#999"/>
+      <text class="search-text">搜索全球城市</text>
+    </view>
+    
+    <view class="edit-action" bindtap="onToggleEdit" wx:if="{{!isEditing && cities.length > 0}}">
+      <text>编辑</text>
+    </view>
+    <view class="edit-action" bindtap="onSelectAll" wx:if="{{isEditing}}">
+      <text>全选</text>
+    </view>
+  </view>
+
+  <!-- City List -->
+  <scroll-view scroll-y class="city-list" style="height: calc(100vh - {{statusBarHeight + navBarHeight + 60}}px);"> <!-- 60px is approx toolbar height -->
+    <block wx:for="{{cities}}" wx:key="name">
+      <view class="city-card-wrapper {{isEditing ? 'editing-mode' : ''}} fade-in" style="animation-delay: {{index * 0.05}}s">
+        
+        <!-- Checkbox (Left side in edit mode) -->
+        <view class="checkbox-area" bindtap="onSelectCity" data-index="{{index}}" wx:if="{{isEditing}}">
+          <view class="checkbox {{utils.includes(selectedCities, index) ? 'checked' : ''}}">
+            <icon type="success_no_circle" size="16" color="#fff" wx:if="{{utils.includes(selectedCities, index)}}"/>
+          </view>
+        </view>
+
+        <!-- Main Card -->
+        <view class="city-card" bindtap="onSelectCity" data-index="{{index}}">
+          <image class="card-bg" src="{{item.bgImage || '/images/default-city-bg.png'}}" mode="aspectFill" wx:if="{{false}}"></image> <!-- Placeholder for BG image -->
+          <view class="card-gradient"></view>
+          
+          <view class="card-content">
+            <view class="card-left">
+              <view class="city-name-row">
+                <text class="city-name">{{item.name}}</text>
+                <text class="loc-badge" wx:if="{{index === 0}}">当前定位</text>
+              </view>
+              <text class="weather-desc">{{item.condition || '晴'}}</text>
+            </view>
+            
+            <view class="card-right">
+              <text class="temp-text">{{item.temp || '--'}}°</text>
+              <view class="aqi-badge" wx:if="{{item.aqi}}">
+                <text>空气优</text>
+              </view>
+            </view>
+          </view>
+        </view>
+
+      </view>
+    </block>
+    
+    <!-- Empty State -->
+    <view class="empty-state" wx:if="{{cities.length === 0}}">
+      <text>暂无城市，请添加</text>
+    </view>
+    
+    <view class="list-footer"></view>
+  </scroll-view>
+
+  <!-- Footer Actions (Delete) -->
+  <view class="bottom-panel" wx:if="{{isEditing}}">
+    <view class="delete-btn {{selectedCities.length > 0 ? 'active' : ''}}" bindtap="onDelete">
+      <text>删除 ({{selectedCities.length}})</text>
+    </view>
+  </view>
+
+  <!-- Floating Add Button -->
+  <view class="fab-btn" bindtap="onAddCity" wx:if="{{!isEditing}}">
+    <text class="fab-icon">+</text>
+  </view>
+
+</view>
+
+<wxs module="utils">
+  module.exports.includes = function(arr, item) {
+    return arr.indexOf(item) > -1;
+  }
+</wxs>

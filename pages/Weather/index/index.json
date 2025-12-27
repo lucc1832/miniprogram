@@ -1,0 +1,5 @@
+{
+  "navigationBarTitleText": "天气预报",
+  "navigationStyle": "custom",
+  "enablePullDownRefresh": true
+}

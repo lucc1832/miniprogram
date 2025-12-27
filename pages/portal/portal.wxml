@@ -31,6 +31,12 @@
       <view class="card-title">Order Food</view>
       <view class="card-desc">点餐 / 菜单 / 订单</view>
     </view>
+    <!-- 天气预报 -->
+    <view class="card" bindtap="go" data-url="/pages/Weather/index/index">
+      <view class="card-ico">🌤️</view>
+      <view class="card-title">天气预报</view>
+      <view class="card-desc">查看实时天气与未来预报</view>
+    </view>
     <!-- 预留 -->
     <view class="card disabled" bindtap="toast">
       <view class="card-title">🧾 记账</view>
