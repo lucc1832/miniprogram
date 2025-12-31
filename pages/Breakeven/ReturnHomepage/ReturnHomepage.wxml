@@ -112,35 +112,65 @@
       <view class="empty muted">暂无数据，点击右下角 + 添加物品</view>
     </block>
 
-    <block wx:for="{{filtered}}" wx:key="_id">
-      <view class="cost-card" bindtap="goDetail" data-id="{{item._id}}">
+    <!-- 列表容器 -->
+    <block wx:if="{{mode==='expire'}}">
+      <block wx:for="{{filtered}}" wx:key="_id">
+        <view class="cost-card expire-card {{item._expireState}}" bindtap="goDetail" data-id="{{item._id}}">
+          <view class="cost-left">
+            <view class="cost-name">{{item.name}}</view>
+            <view class="expire-row">
+              <view class="tag tag-cat">{{item.categoryName}}</view>
+              <text class="expire-date" wx:if="{{item.expireDate}}">有效期至 {{item.expireDate}}</text>
+              <text class="expire-date" wx:else>长期有效</text>
+            </view>
+            <view class="expire-row">
+              <text class="expire-date">购买日 {{item.buyDate}}</text>
+            </view>
+          </view>
+          <view class="days-box {{item._expireState}}">
+            <block wx:if="{{item._expireState==='none'}}">
+              <view class="days-num" style="font-size: 40rpx;">∞</view>
+              <view class="days-text">长期</view>
+            </block>
+            <block wx:else>
+              <view class="days-num">{{item._daysDiffAbs}}</view>
+              <view class="days-text">{{item._daysDiff < 0 ? '已超期' : '剩余天数'}}</view>
+            </block>
+          </view>
+        </view>
+        <view class="divider"></view>
+      </block>
+    </block>
 
-<view class="cost-left">
-  <view class="cost-name">{{item.name}}</view>
-
-  <view class="cost-price">
-    <text class="cost-price-num">¥{{item.buyPrice}}</text>
-    <text class="muted">(价格)</text>
-  </view>
-
-  <text>¥{{item._dailyCostStr}}/天</text>
-</view>
-
-<view class="cost-mid">
-  <view class="tag">{{item.categoryName || '未分类'}}</view>
-  <view class="tag tag-status">{{item.statusText}}</view>
-  <view class="cost-date">📅 {{item.buyDate}}</view>
-</view>
-
-<view class="days-box">
-  <view class="days-num">{{item._useDays}}</view>
-  <view class="days-text">使用天数</view>
-</view>
-
-</view>
-
-
-      <view class="divider"></view>
+    <block wx:if="{{mode==='roi'}}">
+      <block wx:for="{{filtered}}" wx:key="_id">
+        <view class="cost-card" bindtap="goDetail" data-id="{{item._id}}">
+          <view class="cost-left">
+            <view class="cost-name">{{item.name}}</view>
+            <view class="cost-price">
+              <text class="cost-price-num">¥{{item.buyPrice}}</text>
+              <text class="muted">(价格)</text>
+            </view>
+            <text>¥{{item._dailyCostStr}}/天</text>
+            <view class="bar">
+              <view class="bar-inner" style="width: {{item._roiPct}}%"></view>
+            </view>
+            <text class="expire-date">回本进度：{{item._roiPct}}%</text>
+          </view>
+          <view class="cost-mid">
+            <view class="tag">{{item.categoryName || '未分类'}}</view>
+            <view class="tag tag-status">{{item.statusText}}</view>
+            <view class="cost-date">📅 {{item.buyDate}}</view>
+            <view class="cost-date">⏳ 推算到期 {{item._roiDeadline}}</view>
+            <view class="cost-date" wx:if="{{item._roiBreakevenAt}}">💡 预计回本 {{item._roiBreakevenAt}}</view>
+          </view>
+          <view class="days-box">
+            <view class="days-num">{{item._useDays}}</view>
+            <view class="days-text">使用天数</view>
+          </view>
+        </view>
+        <view class="divider"></view>
+      </block>
     </block>
 
   </view>

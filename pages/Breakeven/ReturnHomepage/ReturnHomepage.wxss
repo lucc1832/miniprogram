@@ -123,10 +123,76 @@
 
 .sum-mini-right {
   min-width: 0;
-  max-width: 65%;
+  /* max-width: 65%; Removed limitation */
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* overflow: hidden; Removed truncation */
+  /* text-overflow: ellipsis; */
+}
+
+/* Expire Mode Styles */
+.expire-card {
+  align-items: center;
+  padding-left: 24rpx; /* Compensation for border */
+}
+
+.expire-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 12rpx;
+}
+
+.tag-cat {
+  background: rgba(107, 92, 255, .1);
+  color: #6b5cff;
+}
+
+.expire-date {
+  font-size: 26rpx;
+  color: #6b7280;
+}
+
+/* State Colors */
+.expire-card.expired {
+  border-left: 8rpx solid #ef4444;
+}
+.expire-card.soon {
+  border-left: 8rpx solid #f97316;
+}
+.expire-card.ok {
+  border-left: 8rpx solid #10b981;
+}
+.expire-card.none {
+  border-left: 8rpx solid #9ca3af;
+}
+
+/* Days Box Variants */
+.days-box.expired {
+  background: rgba(239, 68, 68, .1);
+}
+.days-box.expired .days-num, .days-box.expired .days-text {
+  color: #ef4444;
+}
+
+.days-box.soon {
+  background: rgba(249, 115, 22, .1);
+}
+.days-box.soon .days-num, .days-box.soon .days-text {
+  color: #f97316;
+}
+
+.days-box.ok {
+  background: rgba(16, 185, 129, .1);
+}
+.days-box.ok .days-num, .days-box.ok .days-text {
+  color: #10b981;
+}
+
+.days-box.none {
+  background: #f3f4f6;
+}
+.days-box.none .days-num, .days-box.none .days-text {
+  color: #6b7280;
 }
 
 .date-pill {

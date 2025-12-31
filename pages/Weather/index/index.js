@@ -4,6 +4,8 @@ const API_KEY = '8968074cbf2aacf93ece6a19f282351a';
 const WEATHER_BASE = 'https://api.openweathermap.org/data/2.5';
 const GEO_BASE = 'https://api.openweathermap.org/geo/1.0';
 
+const CACHE_DURATION = 2 * 60 * 60 * 1000; // 2 hours
+
 Page({
   data: {
     statusBarHeight: 20,
@@ -36,8 +38,25 @@ Page({
     });
     
     // 尝试从缓存读取城市列表
-    const cachedCities = wx.getStorageSync('weather_cities');
+    let cachedCities = wx.getStorageSync('weather_cities');
     if (cachedCities && cachedCities.length > 0) {
+      // Clean up duplicates on load
+      const seen = new Set();
+      const uniqueCities = [];
+      cachedCities.forEach(c => {
+        // Use coordinates for uniqueness (approx)
+        const key = `${c.name}_${Math.round(c.lat*100)}_${Math.round(c.lon*100)}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          uniqueCities.push(c);
+        }
+      });
+      
+      if (uniqueCities.length !== cachedCities.length) {
+        cachedCities = uniqueCities;
+        this.saveCitiesToStorage(cachedCities);
+      }
+
       this.setData({ cities: cachedCities });
       // 加载第一个城市
       this.loadWeatherData(cachedCities[0]);
@@ -175,7 +194,8 @@ Page({
   onPullDownRefresh() {
     const city = this.data.cities[this.data.currentCityIndex];
     if (city) {
-      this.loadWeatherData(city).then(() => {
+      // Force refresh
+      this.loadWeatherData(city, true).then(() => {
         wx.stopPullDownRefresh();
       });
     } else {
@@ -359,9 +379,28 @@ Page({
   },
 
   // 加载数据 (Current + Forecast)
-  loadWeatherData(city) {
-    this.setData({ loading: true });
+  loadWeatherData(city, force = false) {
     wx.setNavigationBarTitle({ title: city.name });
+
+    // Cache Check
+    const cacheKey = `weather_cache_${city.name}_${Math.round(city.lat*100)}_${Math.round(city.lon*100)}`;
+    const cachedData = wx.getStorageSync(cacheKey);
+    const now = Date.now();
+
+    if (!force && cachedData && (now - cachedData.timestamp < CACHE_DURATION)) {
+      console.log('Using cached weather data for', city.name);
+      this.setData({
+        weatherData: cachedData.weatherData,
+        hourlyForecast: cachedData.hourlyForecast,
+        dailyForecast: cachedData.dailyForecast,
+        chartMinTemp: cachedData.chartMinTemp,
+        chartMaxTemp: cachedData.chartMaxTemp,
+        loading: false
+      });
+      return Promise.resolve();
+    }
+
+    this.setData({ loading: true });
 
     const commonParams = {
       lat: city.lat,
@@ -401,15 +440,17 @@ Page({
         const pm2_5 = components.pm2_5;
         
         // Calculate China AQI based on PM2.5
-        const aqi = this.calcChinaAQI(pm2_5);
-        aqiVal = aqi;
-        
-        if (aqi <= 50) aqiLevel = '优';
-        else if (aqi <= 100) aqiLevel = '良';
-        else if (aqi <= 150) aqiLevel = '轻度';
-        else if (aqi <= 200) aqiLevel = '中度';
-        else if (aqi <= 300) aqiLevel = '重度';
-        else aqiLevel = '严重';
+        if (typeof pm2_5 === 'number') {
+            const aqi = this.calcChinaAQI(pm2_5);
+            aqiVal = aqi;
+            
+            if (aqi <= 50) aqiLevel = '优';
+            else if (aqi <= 100) aqiLevel = '良';
+            else if (aqi <= 150) aqiLevel = '轻度';
+            else if (aqi <= 200) aqiLevel = '中度';
+            else if (aqi <= 300) aqiLevel = '重度';
+            else aqiLevel = '严重';
+        }
       }
 
       const current = this.formatCurrent(currentRes, city.name, aqiVal, aqiLevel, rainProb);

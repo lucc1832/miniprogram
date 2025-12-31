@@ -1,6 +1,18 @@
 <view class="wrap">
   <view class="card form">
     <view class="row">
+      <text class="label">记录类型</text>
+      <radio-group bindchange="onTypeChange">
+        <label class="radio">
+          <radio value="expire" checked="{{type==='expire'}}" /> 到期便签
+        </label>
+        <label class="radio">
+          <radio value="roi" checked="{{type==='roi'}}" /> 使用成本
+        </label>
+      </radio-group>
+    </view>
+
+    <view class="row">
       <text class="label">物品名称</text>
       <input class="input" placeholder="请输入物品名称" value="{{form.name}}" bindinput="setName" />
     </view>
@@ -17,7 +29,7 @@
       <switch checked="{{form.expireEnabled}}" bindchange="toggleExpire" />
     </view>
     <view wx:if="{{form.expireEnabled}}" class="row">
-      <text class="label muted">选择日期</text>
+      <text class="label muted">到期日期</text>
       <picker mode="date" value="{{form.expireDate}}" bindchange="pickExpire">
         <view class="picker">{{form.expireDate || '请选择日期 >'}}</view>
       </picker>
@@ -31,23 +43,8 @@
       <text class="label muted">金额</text>
       <input class="input" type="digit" placeholder="请输入金额" value="{{form.buyPrice}}" bindinput="setPrice" />
     </view>
-
-    <view wx:if="{{priceEnabled}}" class="row">
-      <text class="label">回本方式</text>
-      <picker mode="selector" range="{{modeNames}}" value="{{modeIndex}}" bindchange="onModePick">
-        <view class="picker">{{modeNames[modeIndex]}}</view>
-      </picker>
-    </view>
-
-    <view wx:if="{{priceEnabled && form.breakevenMode==='per_use_value'}}" class="row">
-      <text class="label muted">单次价值(元/次)</text>
-      <input class="input" type="digit" placeholder="如：10" value="{{form.perUseValue}}" bindinput="setPerUse" />
-    </view>
-
-    <view wx:if="{{priceEnabled && form.breakevenMode==='compare_cost'}}" class="row">
-      <text class="label muted">替代成本(元/次)</text>
-      <input class="input" type="digit" placeholder="如：25" value="{{form.compareCost}}" bindinput="setCompare" />
-    </view>
+    
+    
 
     <view class="row">
       <text class="label">购买日期</text>

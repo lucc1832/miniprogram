@@ -44,11 +44,13 @@ Page({
     let cities = wx.getStorageSync('weather_cities') || [];
     
     // Deduplicate: Keep the first occurrence (index 0 is priority)
+    // Use Name + Lat + Lon to match index.js logic
     const seen = new Set();
     const uniqueCities = [];
     cities.forEach(c => {
-      if (!seen.has(c.name)) {
-        seen.add(c.name);
+      const key = `${c.name}_${Math.round(c.lat*100)}_${Math.round(c.lon*100)}`;
+      if (!seen.has(key)) {
+        seen.add(key);
         c.x = 0; // Reset slide
         uniqueCities.push(c);
       }
@@ -70,9 +72,14 @@ Page({
   updateWeatherForCities(cities) {
     const API_KEY = '8968074cbf2aacf93ece6a19f282351a';
     const WEATHER_BASE = 'https://api.openweathermap.org/data/2.5/weather';
+    const CACHE_DURATION = 2 * 60 * 60 * 1000;
+    const now = Date.now();
 
     cities.forEach((city, index) => {
-      if (!city.temp) { 
+      // Check if update is needed: No temp, or lastUpdate is missing, or expired (>2h)
+      const shouldUpdate = !city.temp || !city.lastUpdate || (now - city.lastUpdate > CACHE_DURATION);
+
+      if (shouldUpdate) { 
         wx.request({
           url: WEATHER_BASE,
           data: {
@@ -86,24 +93,32 @@ Page({
             if (res.data && res.data.main) {
               const temp = Math.round(res.data.main.temp);
               const condition = res.data.weather[0].description;
-              const aqi = 50; 
               
               const key = `cities[${index}]`;
               this.setData({
                 [key + '.temp']: temp,
                 [key + '.condition']: condition,
-                [key + '.aqi']: aqi,
                 [key + '.isLocation']: index === 0 
               });
               
-              // Update storage (without x)
-              const currentCities = this.data.cities;
-              currentCities[index].temp = temp;
-              currentCities[index].condition = condition;
-              // Clean x before storage if needed, but keeping it is fine or ignored
-              wx.setStorageSync('weather_cities', currentCities);
+              // Update storage
+              // Reload from storage to ensure we don't overwrite other parallel updates
+              const currentCities = wx.getStorageSync('weather_cities') || [];
+              // Find index in storage (safe check)
+              if (currentCities[index] && currentCities[index].name === city.name) {
+                  currentCities[index].temp = temp;
+                  currentCities[index].condition = condition;
+                  currentCities[index].lastUpdate = now;
+                  wx.setStorageSync('weather_cities', currentCities);
+              }
             }
           }
+        });
+      } else {
+        // Just update UI isLocation if needed
+        const key = `cities[${index}]`;
+        this.setData({
+             [key + '.isLocation']: index === 0
         });
       }
     });

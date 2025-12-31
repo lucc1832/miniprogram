@@ -12,19 +12,6 @@
       <view class="card-desc">管理物品、到期提醒、使用成本</view>
     </view>
 
-    <!-- 入口2：分类管理 -->
-    <view class="card" bindtap="go" data-url="/pages/Breakeven/categories/categories">
-      <view class="card-ico">🗂️</view>
-      <view class="card-title">分类管理</view>
-      <view class="card-desc">新增/编辑分类、排序</view>
-    </view>
-
-    <!-- 入口3：导入导出（你已有） -->
-    <view class="card" bindtap="go" data-url="/pages/Breakeven/import_export/import_export">
-      <view class="card-ico">📤</view>
-      <view class="card-title">导入/导出</view>
-      <view class="card-desc">备份数据、迁移数据</view>
-    </view>
     <!-- 点菜系统 -->
     <view class="card " bindtap="go" data-url="/pages/Orderfood/home/home">
       <view class="card-ico">🍜 </view>

@@ -147,11 +147,24 @@ Page({
   addCityDirectly(cityObj) {
     let cities = wx.getStorageSync('weather_cities') || [];
     
-    // Check duplicates
-    const index = cities.findIndex(c => c.name === cityObj.name);
+    // Check duplicates (Name or Coordinates)
+    const index = cities.findIndex(c => {
+      const sameName = c.name === cityObj.name;
+      const sameLoc = Math.abs(c.lat - cityObj.lat) < 0.01 && Math.abs(c.lon - cityObj.lon) < 0.01;
+      return sameName || sameLoc;
+    });
+
     if (index === -1) {
       cities.push(cityObj);
       wx.setStorageSync('weather_cities', cities);
+      // Navigate back with success
+      const pages = getCurrentPages();
+      const indexPage = pages.find(p => p.route === 'pages/Weather/index/index');
+      if (indexPage) {
+        // Reload cities in index page
+        indexPage.setData({ cities: cities });
+        indexPage.switchToCity(cities.length - 1); // Switch to new city
+      }
       wx.navigateBack();
     } else {
        this.switchToCity(index);
@@ -160,11 +173,6 @@ Page({
 
   addCityToStorage(cityName) {
     // We need coordinates for the weather app to work best.
-    // If we only have name, we might need to geocode it again OR 
-    // if the search result has coords, use them.
-    // The hot cities list only has names.
-    // So we should geocode them to get lat/lon before adding.
-    
     wx.showLoading({ title: '添加中...' });
     
     const API_KEY = '8968074cbf2aacf93ece6a19f282351a';
@@ -180,18 +188,7 @@ Page({
           const name = (top.local_names && top.local_names.zh) ? top.local_names.zh : top.name;
           const newCity = { name: name, lat: top.lat, lon: top.lon };
           
-          let cities = wx.getStorageSync('weather_cities') || [];
-          
-          // Check duplicates
-          const index = cities.findIndex(c => c.name === name);
-          if (index === -1) {
-            cities.push(newCity);
-            wx.setStorageSync('weather_cities', cities);
-            
-            this.switchToCity(cities.length - 1);
-          } else {
-             this.switchToCity(index);
-          }
+          this.addCityDirectly(newCity); // Reuse addCityDirectly
         } else {
           wx.showToast({ title: '未找到该城市信息', icon: 'none' });
         }

@@ -57,6 +57,20 @@
   height: 100%;
   background: #6b5cff;
   border-radius: 999rpx;
+  position: relative;
+}
+
+.bar-dot {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translate(50%, -50%);
+  width: 24rpx;
+  height: 24rpx;
+  background: #fff;
+  border: 4rpx solid #6b5cff;
+  border-radius: 50%;
+  box-shadow: 0 0 8rpx rgba(107, 92, 255, 0.4);
 }
 
 .actions {

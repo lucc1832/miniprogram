@@ -7,12 +7,13 @@ Page({
     isEdit: false,
     goodsId: '',
 
+    // 物品类型：expire=到期便签, roi=使用成本
+    // 默认是 expire，或者根据入口传入
+    type: 'expire',
+
     categories: [],
     catNames: [],
     catIndex: 0,
-
-    modeNames: ['不计算回本', '按单次价值回本', '按替代成本回本'],
-    modeIndex: 0,
 
     priceEnabled: false,
 
@@ -20,16 +21,11 @@ Page({
       name: '',
       categoryId: '',
 
-      expireEnabled: true,
+      expireEnabled: false,
       expireDate: '',
 
       buyPrice: '',
       buyDate: todayStr(),
-
-      // 回本模式
-      breakevenMode: 'none', // none / per_use_value / compare_cost
-      perUseValue: '',
-      compareCost: '',
 
       status: 'using', // using / archived
       channel: '',
@@ -41,6 +37,11 @@ Page({
     // 1) 先加载分类
     await this.loadCategories();
 
+    // 0) 处理 type 参数 (如果有)
+    if (options && options.type) {
+      this.setData({ type: options.type });
+    }
+
     // 2) 判断是否编辑
     if (options && options.id) {
       this.setData({ isEdit: true, goodsId: options.id });
@@ -50,6 +51,13 @@ Page({
       wx.setNavigationBarTitle({ title: '添加物品' });
       // 新增时默认购买日期=今天（你也可改）
       this.setData({ 'form.buyDate': todayStr() });
+      
+      // 如果是新增，根据 type 初始化一些默认开关
+      if (this.data.type === 'expire') {
+        this.setData({ 'form.expireEnabled': true, priceEnabled: false });
+      } else if (this.data.type === 'roi') {
+        this.setData({ 'form.expireEnabled': false, priceEnabled: true });
+      }
     }
   },
 
@@ -67,9 +75,17 @@ Page({
     // priceEnabled：是否填写购买价（你现在用开关控制，这里做回填）
     const priceEnabled = g.buyPrice != null;
 
-    // modeIndex 回填
-    const modeMap = { none: 0, per_use_value: 1, compare_cost: 2 };
-    const modeIndex = modeMap[g.breakevenMode || 'none'] ?? 0;
+    // 兼容旧数据：如果没有 type，根据是否有价格来推测，或者默认为 expire
+    // 但既然用户要区分，这里最好显示出来。
+    let type = g.type || 'expire';
+    // 如果没有 type 字段，可以根据业务逻辑补充：比如有价格就是 roi，否则是 expire?
+    // 暂时先信赖 g.type，如果是旧数据可能为空，默认 expire
+    
+    // 如果是从列表页传了 type 进来（新增），保持 onLoad 里的设置
+    // 如果是编辑，使用数据库里的 type
+    if (this.data.isEdit && g.type) {
+      this.setData({ type: g.type });
+    }
 
     // catIndex 回填
     let catIndex = 0;
@@ -80,7 +96,6 @@ Page({
 
     this.setData({
       priceEnabled,
-      modeIndex,
       catIndex,
       form: {
         name: g.name || '',
@@ -88,10 +103,8 @@ Page({
         expireEnabled: !!g.expireEnabled,
         expireDate: g.expireDate || '',
         buyPrice: g.buyPrice != null ? String(g.buyPrice) : '',
+        roiCycleDays: g.roiCycleDays != null ? String(g.roiCycleDays) : '365',
         buyDate: g.buyDate || todayStr(),
-        breakevenMode: g.breakevenMode || 'none',
-        perUseValue: g.perUseValue != null ? String(g.perUseValue) : '',
-        compareCost: g.compareCost != null ? String(g.compareCost) : '',
         status: g.status || 'using',
         channel: g.channel || '',
         note: g.note || ''
@@ -99,11 +112,36 @@ Page({
     });
   },
 
+  onTypeChange(e) {
+    const type = e.detail.value;
+    this.setData({ type });
+    // 切换类型时，可以自动调整一些默认开关，提升体验
+    if (type === 'expire') {
+      this.setData({ 'form.expireEnabled': true });
+      // 这里的 priceEnabled 是否要自动关？看需求。暂时不强制关，用户可能想记账但不算ROI
+    } else {
+      this.setData({ priceEnabled: true });
+    }
+  },
+
   // ---- 表单绑定 ----
   setName(e) { this.setData({ 'form.name': e.detail.value }); },
   setPrice(e) { this.setData({ 'form.buyPrice': e.detail.value }); },
-  setPerUse(e) { this.setData({ 'form.perUseValue': e.detail.value }); },
-  setCompare(e) { this.setData({ 'form.compareCost': e.detail.value }); },
+  setCycle(e) { this.setData({ 'form.roiCycleDays': e.detail.value }); },
+
+  calcCycle() {
+    const p = Number(this.data.form.buyPrice);
+    if (!p || p <= 0) {
+      wx.showToast({ title: '请先填写有效价格', icon: 'none' });
+      return;
+    }
+    // 价格 / 365
+    let days = Math.round(p / 365);
+    if (days < 1) days = 1;
+    this.setData({ 'form.roiCycleDays': String(days) });
+    wx.showToast({ title: `已设为${days}天`, icon: 'none' });
+  },
+
   setChannel(e) { this.setData({ 'form.channel': e.detail.value }); },
   setNote(e) { this.setData({ 'form.note': e.detail.value }); },
 
@@ -124,19 +162,9 @@ Page({
     // 关掉购买价：清空回本相关
     if (!enabled) {
       this.setData({
-        modeIndex: 0,
-        'form.breakevenMode': 'none',
         'form.buyPrice': '',
-        'form.perUseValue': '',
-        'form.compareCost': ''
       });
     }
-  },
-
-  onModePick(e) {
-    const idx = Number(e.detail.value);
-    const mode = idx === 1 ? 'per_use_value' : idx === 2 ? 'compare_cost' : 'none';
-    this.setData({ modeIndex: idx, 'form.breakevenMode': mode });
   },
 
   pickBuyDate(e) { this.setData({ 'form.buyDate': e.detail.value }); },
@@ -156,6 +184,7 @@ Page({
     // 统一拼 doc
     const doc = {
       name: f.name.trim(),
+      type: this.data.type, // 保存类型
       categoryId: f.categoryId || '',
       expireEnabled: !!f.expireEnabled,
       expireDate: f.expireEnabled ? (f.expireDate || '') : '',
@@ -174,14 +203,8 @@ Page({
       }
 
       doc.buyPrice = priceNum;
-      doc.breakevenMode = f.breakevenMode || 'none';
-      doc.perUseValue = f.perUseValue !== '' ? Number(f.perUseValue) : null;
-      doc.compareCost = f.compareCost !== '' ? Number(f.compareCost) : null;
     } else {
       doc.buyPrice = null;
-      doc.breakevenMode = 'none';
-      doc.perUseValue = null;
-      doc.compareCost = null;
     }
 
     try {
