@@ -1,0 +1,80 @@
+<view class="container">
+  <!-- 1. 标题 -->
+  <view class="section">
+    <input 
+      class="title-input" 
+      placeholder="输入事件名称..." 
+      placeholder-class="placeholder" 
+      value="{{title}}" 
+      bindinput="onInput" 
+      data-key="title"
+      auto-focus
+    />
+  </view>
+
+  <!-- 2. 类型 -->
+  <view class="section row">
+    <view class="label">类型</view>
+    <view class="capsule-group">
+      <view 
+        wx:for="{{types}}" 
+        wx:key="value" 
+        class="capsule {{type === item.value ? 'active' : ''}}"
+        bindtap="onTypeChange" 
+        data-value="{{item.value}}"
+      >
+        {{item.label}}
+      </view>
+    </view>
+  </view>
+
+  <!-- 3. 日期 -->
+  <view class="section row">
+    <view class="label">日期</view>
+    <picker mode="date" value="{{date}}" bindchange="onInput" data-key="date">
+      <view class="picker">{{date}}</view>
+    </picker>
+  </view>
+  <view class="section row" style="margin-top: -20rpx; border-bottom: none;">
+    <view class="label sub">农历</view>
+    <switch checked="{{isLunar}}" color="#333" bindchange="onLunarChange" style="transform: scale(0.8);"/>
+  </view>
+
+  <!-- 4. 标签 -->
+  <view class="section">
+    <view class="label" style="margin-bottom: 20rpx;">标签</view>
+    <view class="tags">
+      <view 
+        wx:for="{{tags}}" 
+        wx:key="value" 
+        class="tag-item {{tag === item.value ? 'active' : ''}}"
+        bindtap="onTagChange"
+        data-value="{{item.value}}"
+      >
+        {{item.label}}
+      </view>
+    </view>
+  </view>
+
+  <!-- 5. 备注 -->
+  <view class="section">
+    <view class="label">备注</view>
+    <input 
+      class="note-input" 
+      placeholder="一句话描述（选填）" 
+      value="{{note}}" 
+      bindinput="onInput" 
+      data-key="note"
+    />
+  </view>
+
+  <!-- 6. 提醒 -->
+  <view class="section row">
+    <view class="label">提醒</view>
+    <switch checked="{{remind.enable}}" color="#333" bindchange="onRemindChange" />
+  </view>
+
+  <view class="footer">
+    <button class="btn-save" bindtap="save">完成</button>
+  </view>
+</view>

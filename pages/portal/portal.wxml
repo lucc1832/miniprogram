@@ -24,6 +24,12 @@
       <view class="card-title">天气预报</view>
       <view class="card-desc">查看实时天气与未来预报</view>
     </view>
+    <!-- 纪念日 -->
+    <view class="card" bindtap="go" data-url="/pages/Anniversary/home/home">
+      <view class="card-ico">💛</view>
+      <view class="card-title">纪念日</view>
+      <view class="card-desc">情绪时间线与陪伴</view>
+    </view>
     <!-- 预留 -->
     <view class="card disabled" bindtap="toast">
       <view class="card-title">🧾 记账</view>

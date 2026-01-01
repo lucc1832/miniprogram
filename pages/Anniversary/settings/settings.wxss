@@ -1,0 +1,25 @@
+.container {
+  padding: 30rpx;
+  background: #f8f8f8;
+  min-height: 100vh;
+}
+.section {
+  background: #fff;
+  border-radius: 20rpx;
+}
+.item {
+  padding: 30rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  font-size: 30rpx;
+}
+.item:last-child {
+  border-bottom: none;
+}
+.sub {
+  color: #999;
+}
+.danger {
+  color: #ff4d4f;
+}

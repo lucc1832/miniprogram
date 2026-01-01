@@ -1,6 +1,5 @@
 {
   "setting": {
-    
     "es6": true,
     "postcss": true,
     "minified": true,
@@ -16,7 +15,13 @@
     "minifyWXML": true,
     "condition": true,
     "swc": false,
-    "disableSWC": true
+    "disableSWC": true,
+    "compileWorklet": false,
+    "uploadWithSourceMap": true,
+    "packNpmManually": false,
+    "minifyWXSS": true,
+    "localPlugins": false,
+    "disableUseStrict": false
   },
   "compileType": "miniprogram",
   "simulatorPluginLibVersion": {
@@ -28,5 +33,6 @@
   },
   "appid": "wx73b5d1d72297d0da",
   "editorSetting": {},
-  "projectArchitecture": "multiPlatform"
+  "projectArchitecture": "multiPlatform",
+  "libVersion": "3.12.1"
 }

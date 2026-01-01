@@ -1,0 +1,32 @@
+<view class="container">
+  <view class="header">
+    <view class="label">{{label}}</view>
+    <view class="days">{{days}}</view>
+    <view class="unit">天</view>
+    <view class="title">{{event.title}}</view>
+    <view class="emotion">{{emotion}}</view>
+  </view>
+
+  <view class="card-content">
+    <view class="info-row">
+      <view class="info-label">目标日</view>
+      <view class="info-val">{{event.date}}</view>
+    </view>
+    <view class="info-row" wx:if="{{event.note}}">
+      <view class="info-label">备注</view>
+      <view class="info-val">{{event.note}}</view>
+    </view>
+    
+    <view class="divider"></view>
+
+    <view class="info-row">
+      <view class="info-label">提醒</view>
+      <switch checked="{{event.remind.enable}}" color="#333" bindchange="toggleRemind" />
+    </view>
+  </view>
+
+  <view class="actions">
+    <button class="btn-primary" bindtap="generateCard">生成纪念卡片</button>
+    <view class="btn-text" bindtap="deleteEvent">删除</view>
+  </view>
+</view>

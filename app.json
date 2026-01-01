@@ -28,6 +28,16 @@
       ]
     },
     {
+      "root": "pages/Anniversary",
+      "pages": [
+        "home/home",
+        "create/create",
+        "detail/detail",
+        "card/card",
+        "settings/settings"
+      ]
+    },
+    {
       "root": "pages/Weather",
       "pages": [
         "index/index",

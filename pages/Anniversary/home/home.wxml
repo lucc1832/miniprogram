@@ -1,0 +1,52 @@
+<view class="container">
+  <!-- 1. 今日情绪句 -->
+  <view class="emotion-quote">
+    <text>{{dailyEmotion}}</text>
+  </view>
+
+  <!-- 2. 最近 1 个重要事件（大卡片） -->
+  <view class="main-card-wrapper" wx:if="{{mainEvent}}" bindtap="goDetail" data-id="{{mainEvent.id}}">
+    <view class="main-card">
+      <view class="card-header">
+        <view class="card-label">{{mainEvent.label}}</view>
+        <view class="card-title">{{mainEvent.title}}</view>
+      </view>
+      <view class="card-body">
+        <view class="big-days">{{mainEvent.days}}</view>
+        <view class="unit">天</view>
+      </view>
+      <view class="card-footer">
+        <text>{{mainEvent.emotion}}</text>
+      </view>
+      <view class="bg-decoration"></view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{!mainEvent && !loading}}">
+    <view class="empty-text">添加第一个纪念日，开启时间线</view>
+  </view>
+
+  <!-- 3. 接下来 2–3 个事件（小卡片） -->
+  <view class="sub-list" wx:if="{{subEvents.length > 0}}">
+    <view class="list-title">接下来</view>
+    <block wx:for="{{subEvents}}" wx:key="id">
+      <view class="sub-card" bindtap="goDetail" data-id="{{item.id}}">
+        <view class="sub-info">
+          <view class="sub-title">{{item.title}}</view>
+          <view class="sub-date">{{item.date}}</view>
+        </view>
+        <view class="sub-days">
+          <text class="label-sm">{{item.label}}</text>
+          <text class="num">{{item.days}}</text>
+          <text class="unit-sm">天</text>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 4. 悬浮「＋」按钮 -->
+  <view class="fab" bindtap="goCreate">
+    <view class="plus">+</view>
+  </view>
+</view>

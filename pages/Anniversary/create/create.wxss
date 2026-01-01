@@ -1,0 +1,119 @@
+.container {
+  padding: 40rpx 50rpx;
+  background-color: #ffffff;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.section {
+  margin-bottom: 50rpx;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1rpx solid #f5f5f5;
+  padding-bottom: 20rpx;
+}
+
+.title-input {
+  font-size: 48rpx;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2rpx solid #333;
+  padding: 20rpx 0;
+  width: 100%;
+}
+
+.placeholder {
+  color: #ccc;
+}
+
+.label {
+  font-size: 30rpx;
+  color: #666;
+  font-weight: 500;
+}
+
+.label.sub {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.capsule-group {
+  display: flex;
+  background: #f5f5f5;
+  border-radius: 40rpx;
+  padding: 4rpx;
+}
+
+.capsule {
+  padding: 12rpx 36rpx;
+  font-size: 28rpx;
+  color: #999;
+  border-radius: 36rpx;
+  transition: all 0.2s;
+}
+
+.capsule.active {
+  background: #333;
+  color: #fff;
+  font-weight: 600;
+}
+
+.picker {
+  font-size: 36rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx;
+}
+
+.tag-item {
+  padding: 12rpx 30rpx;
+  background: #f9f9f9;
+  border-radius: 30rpx;
+  font-size: 26rpx;
+  color: #666;
+  border: 1rpx solid transparent;
+}
+
+.tag-item.active {
+  background: #fff;
+  border-color: #333;
+  color: #333;
+  font-weight: 600;
+}
+
+.note-input {
+  font-size: 30rpx;
+  color: #333;
+  width: 100%;
+  padding: 10rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.footer {
+  margin-top: 80rpx;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-save {
+  background: #333;
+  color: #fff;
+  border-radius: 50rpx;
+  padding: 0 60rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  margin: 0;
+}
+
+.btn-save::after {
+  border: none;
+}

@@ -1,0 +1,116 @@
+const app = getApp();
+
+Page({
+  data: {
+    title: '',
+    type: 'anniversary', // anniversary | countdown
+    date: '',
+    isLunar: false,
+    tag: 'me',
+    note: '',
+    remind: {
+      enable: true,
+      times: ['0'] // 默认当天提醒
+    },
+    
+    // UI Helpers
+    types: [
+      { label: '纪念日', value: 'anniversary', desc: '已发生' },
+      { label: '倒数日', value: 'countdown', desc: '未发生' }
+    ],
+    tags: [
+      { label: '自己', value: 'me' },
+      { label: '我们', value: 'us' },
+      { label: '家人', value: 'family' },
+      { label: '未来', value: 'future' },
+      { label: '其他', value: 'custom' }
+    ]
+  },
+
+  onLoad() {
+    const today = new Date();
+    const dateStr = this.formatDate(today);
+    this.setData({ date: dateStr });
+  },
+
+  formatDate(date) {
+    const y = date.getFullYear();
+    const m = date.getMonth() + 1;
+    const d = date.getDate();
+    return `${y}-${m < 10 ? '0' + m : m}-${d < 10 ? '0' + d : d}`;
+  },
+
+  onInput(e) {
+    const key = e.currentTarget.dataset.key;
+    this.setData({ [key]: e.detail.value });
+  },
+
+  onTypeChange(e) {
+    this.setData({ type: e.currentTarget.dataset.value });
+  },
+
+  onLunarChange(e) {
+    this.setData({ isLunar: e.detail.value });
+  },
+
+  onTagChange(e) {
+    this.setData({ tag: e.currentTarget.dataset.value });
+  },
+
+  onRemindChange(e) {
+    const enable = e.detail.value;
+    this.setData({
+      'remind.enable': enable
+    });
+  },
+
+  save() {
+    const { title, type, date, isLunar, tag, note, remind } = this.data;
+    
+    if (!title) {
+      wx.showToast({ title: '请输入标题', icon: 'none' });
+      return;
+    }
+    if (!date) {
+      wx.showToast({ title: '请选择日期', icon: 'none' });
+      return;
+    }
+
+    const event = {
+      id: Date.now().toString(),
+      title,
+      type,
+      date,
+      isLunar,
+      tag,
+      note,
+      isImportant: false, // 默认不重要，详情页或首页可设
+      remind,
+      createdAt: Date.now()
+    };
+
+    const events = wx.getStorageSync('anniversary_events_v2') || [];
+    events.push(event);
+    wx.setStorageSync('anniversary_events_v2', events);
+
+    // 如果开启提醒，且支持日历，尝试加入日历（简化实现，不阻塞）
+    if (remind.enable) {
+        this.addToCalendar(event);
+    }
+
+    wx.navigateBack();
+  },
+
+  addToCalendar(event) {
+    const startTime = new Date(event.date.replace(/-/g, '/')).getTime() / 1000;
+    wx.addPhoneCalendar({
+        title: event.title,
+        startTime: startTime,
+        allDay: true,
+        description: event.note || '纪念日提醒',
+        alarm: true,
+        success: () => {},
+        fail: () => {} // 静默失败
+    });
+  }
+});

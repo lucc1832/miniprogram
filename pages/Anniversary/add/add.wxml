@@ -1,0 +1,57 @@
+<view class="container">
+  <view class="form-group">
+    <view class="input-item">
+      <view class="label">名称</view>
+      <input placeholder="例如：在一起、妈妈生日" value="{{title}}" bindinput="onTitleInput" />
+    </view>
+    
+    <view class="input-item">
+      <view class="label">日期</view>
+      <picker mode="date" value="{{date}}" bindchange="onDateChange">
+        <view class="picker-value">{{date}}</view>
+      </picker>
+    </view>
+  </view>
+
+  <view class="section-title">类型</view>
+  <view class="type-selector">
+    <view 
+      wx:for="{{types}}" 
+      wx:key="value" 
+      class="type-card {{type === item.value ? 'active' : ''}}"
+      bindtap="onTypeChange"
+      data-value="{{item.value}}"
+    >
+      <view class="type-name">{{item.name}}</view>
+      <view class="type-desc">{{item.desc}}</view>
+    </view>
+  </view>
+
+  <view class="form-group mt">
+    <view class="input-item">
+      <view class="label">重复</view>
+      <picker range="{{repeats}}" range-key="name" bindchange="onRepeatChange">
+        <view class="picker-value">
+          {{repeat === 'none' ? '不重复' : (repeat === 'year' ? '每年' : '每月')}}
+        </view>
+      </picker>
+    </view>
+    <view class="input-item">
+      <view class="label">置顶</view>
+      <switch checked="{{isTop}}" color="#ff6b6b" bindchange="onTopChange" />
+    </view>
+    <view class="input-item">
+      <view class="label">备注</view>
+      <input placeholder="一句话描述意义" value="{{note}}" bindinput="onNoteInput" />
+    </view>
+    <view class="input-item" bindtap="addToCalendar">
+      <view class="label" style="width: 200rpx;">添加到日历</view>
+      <view class="picker-value" style="flex:1; text-align:right; color:#6b5cff;">点击添加</view>
+    </view>
+  </view>
+
+  <view class="footer">
+    <button class="btn-save" bindtap="save">保存</button>
+    <view wx:if="{{id}}" class="btn-del" bindtap="deleteEvent">删除</view>
+  </view>
+</view>
