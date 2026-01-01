@@ -65,7 +65,7 @@ Page({
   },
 
   save() {
-    const { title, type, date, isLunar, tag, note, remind } = this.data;
+    const { title, type, date, isLunar, tag, note, remind, isEdit, editId } = this.data;
     
     if (!title) {
       wx.showToast({ title: '请输入标题', icon: 'none' });
@@ -76,27 +76,76 @@ Page({
       return;
     }
 
-    const event = {
-      id: Date.now().toString(),
-      title,
-      type,
-      date,
-      isLunar,
-      tag,
-      note,
-      isImportant: false, // 默认不重要，详情页或首页可设
-      remind,
-      createdAt: Date.now()
-    };
+    wx.getStorage({
+      key: 'anniversary_events_v2',
+      success: (res) => {
+        const events = res.data || [];
+        
+        if (isEdit) {
+          const idx = events.findIndex(e => e.id === editId);
+          if (idx > -1) {
+            events[idx] = {
+              ...events[idx],
+              title, type, date, isLunar, tag, note, remind
+            };
+            this.saveEvents(events, '已更新');
+          }
+        } else {
+          const event = {
+            id: Date.now().toString(),
+            title,
+            type,
+            date,
+            isLunar,
+            tag,
+            note,
+            isImportant: false, // 默认不重要，详情页或首页可设
+            remind,
+            createdAt: Date.now()
+          };
+          events.push(event);
+          this.saveEvents(events, '已创建');
+        }
+      },
+      fail: () => {
+         // Handle init case
+         if (!isEdit) {
+            const event = {
+              id: Date.now().toString(),
+              title,
+              type,
+              date,
+              isLunar,
+              tag,
+              note,
+              isImportant: false, 
+              remind,
+              createdAt: Date.now()
+            };
+            this.saveEvents([event], '已创建');
+         }
+      }
+    });
+  },
 
-    const events = wx.getStorageSync('anniversary_events_v2') || [];
-    events.push(event);
-    wx.setStorageSync('anniversary_events_v2', events);
+  saveEvents(events, msg) {
+    wx.setStorage({
+      key: 'anniversary_events_v2',
+      data: events,
+      success: () => {
+        wx.showToast({ title: msg, icon: 'success' });
+        // 如果开启提醒，且支持日历，尝试加入日历（简化实现，不阻塞）
+        if (this.data.remind.enable) {
+            // this.addToCalendar(event); // 暂时先不实现复杂日历更新逻辑
+        }
+        setTimeout(() => {
+          wx.navigateBack();
+        }, 1500);
+      }
+    });
+  },
 
-    // 如果开启提醒，且支持日历，尝试加入日历（简化实现，不阻塞）
-    if (remind.enable) {
-        this.addToCalendar(event);
-    }
+  addToCalendar(event) {
 
     wx.navigateBack();
   },

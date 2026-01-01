@@ -7,7 +7,9 @@ Page({
     days: 0,
     label: '',
     emotion: '',
-    id: ''
+    id: '',
+    isEditingTitle: false,
+    isEditingNote: false
   },
 
   onLoad(options) {
@@ -17,62 +19,107 @@ Page({
     }
   },
 
+  onShow() {
+    // onShow refresh is good, but we handle updates locally too.
+    // We only reload if we suspect external changes, but detail page is the editor now.
+    // So we can keep it simple or just reload to be safe.
+    if (this.data.id) {
+      this.loadEvent(this.data.id);
+    }
+  },
+
   loadEvent(id) {
     const events = wx.getStorageSync('anniversary_events_v2') || [];
     const event = events.find(e => e.id === id);
     if (!event) return;
 
-    // 复用 Home 的计算逻辑
-    // 实际项目中应抽取到 Service 层
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    this.renderEvent(event);
+  },
+
+  renderEvent(event) {
+    const { calcEventDays } = require('../../../utils/date.js');
+    const calc = calcEventDays(event);
     
-    let targetDate = new Date(event.date.replace(/-/g, '/'));
-    targetDate.setHours(0,0,0,0);
-    
-    if (event.type === 'countdown' && targetDate < today) {
-        const nextYear = new Date(targetDate);
-        nextYear.setFullYear(today.getFullYear());
-        if (nextYear < today) {
-            nextYear.setFullYear(today.getFullYear() + 1);
-        }
-        targetDate = nextYear;
+    // 优化 label 逻辑
+    let label = calc.label;
+    if (event.type === 'anniversary') {
+        if (event.tag === 'us') label = '已相爱';
+        else if (event.tag === 'me') label = '已坚持';
+        else if (event.tag === 'family') label = '已陪伴';
+        else if (event.tag === 'future') label = '已过去';
+        else label = '已过去';
+    } else {
+        label = calc.days === 0 ? '就是' : '还有';
     }
 
-    const diff = targetDate - today;
-    const days = Math.floor(Math.abs(diff) / (1000 * 60 * 60 * 24));
+    this.setData({ 
+      days: calc.days, 
+      label: label, 
+      event, 
+      emotion: getEventEmotion(event, calc.days) 
+    });
+  },
+
+  updateEvent(updates) {
+    const { event } = this.data;
+    const newEvent = { ...event, ...updates };
     
-    let label = '';
-    if (event.type === 'anniversary') {
-        const pastDiff = today - new Date(event.date.replace(/-/g, '/'));
-        const pastDays = Math.floor(pastDiff / (1000 * 60 * 60 * 24));
-        label = '已经';
-        this.setData({ days: Math.abs(pastDays), label, event, emotion: getEventEmotion(event, Math.abs(pastDays)) });
-    } else {
-        label = diff >= 0 ? '还有' : '已过';
-        this.setData({ days, label, event, emotion: getEventEmotion(event, days) });
+    // 1. Update local render immediately
+    this.renderEvent(newEvent);
+
+    // 2. Async update storage
+    wx.getStorage({
+        key: 'anniversary_events_v2',
+        success: (res) => {
+            const events = res.data || [];
+            const idx = events.findIndex(e => e.id === event.id);
+            if (idx > -1) {
+                events[idx] = newEvent;
+                wx.setStorage({
+                    key: 'anniversary_events_v2',
+                    data: events
+                });
+            }
+        }
+    });
+  },
+
+  // Title Edit Logic
+  startEditTitle() {
+    this.setData({ isEditingTitle: true });
+  },
+  
+  saveTitle(e) {
+    const title = e.detail.value.trim();
+    if (title) {
+        this.updateEvent({ title });
     }
+    this.setData({ isEditingTitle: false });
+  },
+
+  // Note Edit Logic
+  startEditNote() {
+    this.setData({ isEditingNote: true });
+  },
+
+  saveNote(e) {
+    const note = e.detail.value.trim();
+    this.updateEvent({ note });
+    this.setData({ isEditingNote: false });
+  },
+
+  // Date Edit Logic
+  bindDateChange(e) {
+    const date = e.detail.value;
+    this.updateEvent({ date });
   },
 
   toggleRemind(e) {
     const val = e.detail.value;
-    const { event } = this.data;
-    if (!event) return;
-
-    event.remind.enable = val;
-    this.setData({ 'event.remind.enable': val });
-
-    // Update storage
-    const events = wx.getStorageSync('anniversary_events_v2') || [];
-    const idx = events.findIndex(e => e.id === event.id);
-    if (idx > -1) {
-      events[idx] = event;
-      wx.setStorageSync('anniversary_events_v2', events);
-    }
-
+    this.updateEvent({ remind: { ...this.data.event.remind, enable: val } });
+    
     if (val) {
       wx.showToast({ title: '已开启提醒', icon: 'none' });
-      // 这里可以再次调用添加到日历逻辑
     }
   },
 
@@ -90,10 +137,20 @@ Page({
       content: '确定要忘记这个日子吗？',
       success: (res) => {
         if (res.confirm) {
-          const events = wx.getStorageSync('anniversary_events_v2') || [];
-          const newEvents = events.filter(e => e.id !== this.data.id);
-          wx.setStorageSync('anniversary_events_v2', newEvents);
-          wx.navigateBack();
+          wx.getStorage({
+            key: 'anniversary_events_v2',
+            success: (res) => {
+              const events = res.data || [];
+              const newEvents = events.filter(e => e.id !== this.data.id);
+              wx.setStorage({
+                key: 'anniversary_events_v2',
+                data: newEvents,
+                success: () => {
+                   wx.navigateBack();
+                }
+              });
+            }
+          });
         }
       }
     });

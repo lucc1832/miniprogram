@@ -1,24 +1,54 @@
 <view class="container">
   <view class="header">
-    <view class="label">{{label}}</view>
-    <view class="days">{{days}}</view>
-    <view class="unit">天</view>
-    <view class="title">{{event.title}}</view>
+    <block wx:if="{{!isEditingTitle}}">
+      <view class="title" bindtap="startEditTitle">{{event.title}}</view>
+    </block>
+    <input wx:else 
+           class="title-input" 
+           value="{{event.title}}" 
+           focus="{{true}}" 
+           bindblur="saveTitle" 
+           bindconfirm="saveTitle" 
+           maxlength="20" />
     <view class="emotion">{{emotion}}</view>
   </view>
 
-  <view class="card-content">
-    <view class="info-row">
-      <view class="info-label">目标日</view>
-      <view class="info-val">{{event.date}}</view>
+  <view class="main-card">
+    <view class="days-container">
+      <view class="label">{{label}}</view>
+      <picker mode="date" value="{{event.date}}" bindchange="bindDateChange">
+        <view class="days-wrapper">
+          <text class="days">{{days}}</text>
+          <text class="unit">天</text>
+        </view>
+      </picker>
     </view>
-    <view class="info-row" wx:if="{{event.note}}">
-      <view class="info-label">备注</view>
-      <view class="info-val">{{event.note}}</view>
-    </view>
-    
+
     <view class="divider"></view>
 
+    <view class="info-row">
+      <view class="info-label">目标日</view>
+      <picker mode="date" value="{{event.date}}" bindchange="bindDateChange">
+        <view class="info-val clickable-val">{{event.date}}</view>
+      </picker>
+    </view>
+    
+    <view class="info-row">
+      <view class="info-label">备注</view>
+      <block wx:if="{{!isEditingNote}}">
+        <view class="info-val clickable-val {{!event.note ? 'placeholder' : ''}}" bindtap="startEditNote">
+          {{event.note || '点击添加备注'}}
+        </view>
+      </block>
+      <input wx:else 
+             class="note-input" 
+             value="{{event.note}}" 
+             focus="{{true}}" 
+             bindblur="saveNote" 
+             bindconfirm="saveNote"
+             cursor-spacing="20" />
+    </view>
+    
     <view class="info-row">
       <view class="info-label">提醒</view>
       <switch checked="{{event.remind.enable}}" color="#333" bindchange="toggleRemind" />
@@ -26,6 +56,7 @@
   </view>
 
   <view class="actions">
+    <view class="card-hint">把这一刻留住，成为永恒的记忆</view>
     <button class="btn-primary" bindtap="generateCard">生成纪念卡片</button>
     <view class="btn-text" bindtap="deleteEvent">删除</view>
   </view>

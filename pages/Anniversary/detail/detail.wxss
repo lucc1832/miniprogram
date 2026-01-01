@@ -1,6 +1,6 @@
 .container {
   min-height: 100vh;
-  background: #f8f8f8;
+  background: #fff; /* 整体背景改为白色，与下方内容区融为一体 */
   display: flex;
   flex-direction: column;
 }
@@ -8,82 +8,144 @@
 .header {
   background: #333;
   color: #fff;
-  padding: 80rpx 40rpx 100rpx;
-  text-align: center;
-  border-bottom-left-radius: 60rpx;
-  border-bottom-right-radius: 60rpx;
-  box-shadow: 0 20rpx 40rpx rgba(0,0,0,0.1);
+  padding: 120rpx 50rpx 180rpx; /* 增加左右 padding */
+  position: relative;
+  z-index: 1; /* 确保在下层 */
 }
 
-.label {
-  font-size: 28rpx;
-  opacity: 0.7;
-  margin-bottom: 20rpx;
-}
-
-.days {
-  font-size: 160rpx;
-  font-weight: bold;
-  font-family: 'DIN', sans-serif;
-  line-height: 1;
-}
-
-.unit {
-  font-size: 32rpx;
-  opacity: 0.8;
-  margin-bottom: 40rpx;
-}
+/* 移除 edit-btn */
 
 .title {
-  font-size: 40rpx;
+  font-size: 48rpx; /* 略微加大标题 */
   font-weight: 600;
-  margin-bottom: 20rpx;
+  margin-bottom: 24rpx;
   letter-spacing: 2rpx;
+  opacity: 0.95;
+  min-height: 60rpx;
+}
+
+.title-input {
+  font-size: 48rpx;
+  font-weight: 600;
+  margin-bottom: 24rpx;
+  letter-spacing: 2rpx;
+  color: #fff;
+  border-bottom: 1px solid rgba(255,255,255,0.3);
+  min-height: 60rpx;
 }
 
 .emotion {
-  font-size: 26rpx;
-  opacity: 0.7;
+  font-size: 30rpx;
+  opacity: 0.85;
   font-weight: 300;
   font-style: italic;
   font-family: serif;
+  max-width: 90%;
+  line-height: 1.6;
 }
 
-.card-content {
-  margin: -60rpx 40rpx 0;
+.main-card {
+  margin: -80rpx 0 0; /* 负边距上浮，取消左右边距使其通栏 */
   background: #fff;
-  border-radius: 30rpx;
-  padding: 40rpx;
-  box-shadow: 0 10rpx 30rpx rgba(0,0,0,0.05);
+  border-top-left-radius: 60rpx; /* 仅顶部圆角，形成弧线 */
+  border-top-right-radius: 60rpx;
+  padding: 80rpx 50rpx 40rpx; /* 增加内边距 */
+  position: relative;
+  z-index: 10;
+  flex: 1; /* 撑满剩余空间 */
+  /* 移除阴影，使用纯粹的形状对比 */
+}
+
+.days-container {
+  text-align: center;
+  margin-bottom: 60rpx;
+}
+
+.label {
+  font-size: 30rpx;
+  color: #999;
+  margin-bottom: 16rpx;
+  display: block;
+}
+
+.days-wrapper {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+}
+
+.days {
+  font-size: 160rpx; /* 加大数字，因为空间更大了 */
+  font-weight: bold;
+  font-family: 'DIN', sans-serif;
+  line-height: 1;
+  color: #333;
+}
+
+.unit {
+  font-size: 36rpx;
+  color: #666;
+  margin-left: 12rpx;
+  font-weight: 500;
 }
 
 .info-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24rpx 0;
+  padding: 32rpx 0; /* 增加行间距 */
+  min-height: 90rpx;
 }
 
 .info-label {
-  font-size: 30rpx;
+  font-size: 32rpx;
   color: #999;
+  flex-shrink: 0;
 }
 
 .info-val {
+  font-size: 32rpx;
+  color: #333;
+  text-align: right;
+  flex: 1;
+  margin-left: 30rpx;
+}
+
+.clickable-val:active {
+  opacity: 0.6;
+}
+
+.note-input {
   font-size: 30rpx;
   color: #333;
+  text-align: right;
+  flex: 1;
+  margin-left: 20rpx;
+  border-bottom: 1px solid #eee;
+}
+
+.placeholder {
+  color: #ccc;
+  font-style: italic;
 }
 
 .divider {
   height: 1rpx;
   background: #f5f5f5;
-  margin: 20rpx 0;
+  margin: 30rpx 0;
 }
 
 .actions {
-  margin-top: 80rpx;
-  padding: 0 60rpx;
+  margin-top: 60rpx;
+  padding: 0 60rpx 60rpx;
   text-align: center;
+}
+
+.card-hint {
+  font-size: 26rpx;
+  color: #999;
+  margin-bottom: 20rpx;
+  font-style: italic;
 }
 
 .btn-primary {
@@ -91,13 +153,20 @@
   color: #fff;
   border-radius: 50rpx;
   font-size: 32rpx;
-  font-weight: 600;
   padding: 24rpx 0;
   width: 100%;
-  margin-bottom: 40rpx;
+  margin-bottom: 30rpx;
+  font-weight: 500;
+  box-shadow: 0 10rpx 20rpx rgba(51,51,51,0.2);
+}
+
+.btn-primary::after {
+  border: none;
 }
 
 .btn-text {
-  color: #999;
   font-size: 28rpx;
+  color: #999;
+  padding: 20rpx;
+  display: inline-block;
 }
