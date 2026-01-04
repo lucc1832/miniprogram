@@ -23,6 +23,25 @@ page {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+.global-back-btn {
+  position: fixed;
+  left: 20rpx;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60rpx; /* Match standard touch target */
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.1);
+}
+
+.back-arrow {
+  font-size: 32rpx;
+  color: #333;
+  font-weight: bold;
+}
+
 .tab-item {
   display: flex;
   flex-direction: column;

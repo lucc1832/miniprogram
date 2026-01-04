@@ -1,66 +1,49 @@
 <view class="home-container" style="padding-top: {{statusBarHeight + navBarHeight}}px;">
-  <!-- Custom Header Area -->
+  <!-- Header -->
   <view class="custom-header" style="top: {{statusBarHeight}}px; height: {{navBarHeight}}px;">
-    <view class="today-btn">今</view>
-    <!-- Calendar Strip Placeholder -->
+    <text class="header-title">今天吃什么？</text>
   </view>
 
-  <!-- Calendar Strip -->
-  <view class="calendar-strip">
-    <view class="day-item" wx:for="{{weekDays}}" wx:key="date">
-      <text class="week-text">{{item.week}}</text>
-      <view class="date-circle {{item.active ? 'active' : ''}}">
-        <text class="date-text">{{item.date}}</text>
+  <!-- State 1: Empty -->
+  <view class="state-container empty" wx:if="{{todayStatus === 'empty'}}">
+    <view class="illustration">
+      <text class="emoji">🤔</text>
+    </view>
+    <text class="state-title">今天还没想好吃什么...</text>
+    <text class="state-sub">去挑几个喜欢的菜吧</text>
+    <button class="action-btn primary" bindtap="goToMenu">去点菜</button>
+  </view>
+
+  <!-- State 2: Planned -->
+  <view class="state-container planned" wx:if="{{todayStatus === 'planned'}}">
+    <text class="state-title">今日菜单</text>
+    <view class="menu-list-card">
+      <view class="menu-item" wx:for="{{todayMenu.items}}" wx:key="name">
+        <image class="menu-img" src="{{item.img}}" mode="aspectFill"></image>
+        <text class="menu-name">{{item.name}}</text>
       </view>
     </view>
+    <button class="action-btn success" bindtap="completeCooking">开始做饭 & 完成</button>
   </view>
 
-  <!-- Character Section -->
-  <view class="character-section">
-    <image class="character-img" src="https://img.yzcdn.cn/vant/cat.jpeg" mode="aspectFit"></image>
-    <view class="bubble">Cooking 🧑‍🍳</view>
-  </view>
-
-  <!-- Toggle Buttons -->
-  <view class="toggle-section">
-    <view class="toggle-btn {{activeView === 'heat' ? 'active' : ''}}" bindtap="switchView" data-view="heat">热力图</view>
-    <view class="toggle-btn {{activeView === 'cart' ? 'active' : ''}}" bindtap="switchView" data-view="cart">菜篮子</view>
-  </view>
-
-  <!-- Heatmap Card -->
-  <view class="card heatmap-card" wx:if="{{activeView === 'heat'}}">
-    <view class="card-header">
-      <text class="card-title">年度做饭热力图</text>
-      <view class="year-selector">
-        <text class="arrow">❮</text>
-        <text class="year">2025</text>
-        <text class="arrow">❯</text>
-      </view>
+  <!-- State 3: Completed -->
+  <view class="state-container completed" wx:if="{{todayStatus === 'completed'}}">
+    <view class="illustration">
+      <text class="emoji">🎉</text>
     </view>
+    <text class="state-title">今日打卡成功！</text>
+    <text class="state-sub">唯有爱与美食不可辜负</text>
     
-    <view class="heatmap-grid">
-      <!-- Mock Grid: 12 rows x 20 cols approx -->
-      <view class="heatmap-row" wx:for="{{[1,2,3,4,5,6,7,8,9,10,11,12]}}" wx:key="*this">
-        <text class="month-label">{{item}}</text>
-        <view class="squares">
-          <view class="square" wx:for="{{[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]}}" wx:key="*this" style="background-color: {{index % 7 === 0 ? '#E0E0E0' : '#E0E0E0'}}"></view>
+    <!-- Mini Heatmap -->
+    <view class="mini-heatmap">
+      <view class="heat-day" wx:for="{{heatData}}" wx:key="date">
+        <view class="heat-circle {{item.active ? 'active' : ''}}">
+          <text wx:if="{{item.active}}">✔</text>
         </view>
+        <text class="heat-date">{{item.isToday ? '今' : item.date}}</text>
       </view>
     </view>
 
-    <view class="legend">
-      <view class="legend-item" style="background:#4CAF50"><text>美味</text></view>
-      <view class="legend-item" style="background:#F44336"><text>偏辣</text></view>
-      <view class="legend-item" style="background:#2196F3"><text>偏咸</text></view>
-      <view class="legend-item" style="background:#FFC107"><text>油腻</text></view>
-      <view class="legend-item" style="background:#9C27B0"><text>清淡</text></view>
-      <view class="legend-item" style="background:#F8BBD0"><text>一般</text></view>
-    </view>
-  </view>
-
-  <view class="card cart-card" wx:if="{{activeView === 'cart'}}">
-    <view class="empty-cart">
-      <text>菜篮子空空如也</text>
-    </view>
+    <button class="action-btn secondary" bindtap="goToDiary">查看食记</button>
   </view>
 </view>

@@ -11,7 +11,11 @@ Page({
     ]
   },
 
-  onLoad() {
+  onLoad(options) {
+    if (options && options.from === 'orderFood') {
+      this.setData({ currentTab: 1 }); // Switch to Menu tab
+    }
+
     const sysInfo = wx.getSystemInfoSync();
     const menuButtonInfo = wx.getMenuButtonBoundingClientRect();
     const navBarHeight = (menuButtonInfo.top - sysInfo.statusBarHeight) * 2 + menuButtonInfo.height;
@@ -25,5 +29,24 @@ Page({
   switchTab(e) {
     const index = e.currentTarget.dataset.index;
     this.setData({ currentTab: index });
+  },
+
+  // Event handler for children components
+  handleSwitchTab(e) {
+    const tabIndex = e.detail.tabIndex;
+    if (tabIndex !== undefined && tabIndex >= 0 && tabIndex < this.data.tabs.length) {
+      this.setData({ currentTab: tabIndex });
+    }
+  },
+
+  goBack() {
+    const pages = getCurrentPages();
+    if (pages.length > 1) {
+      wx.navigateBack();
+    } else {
+      wx.reLaunch({
+        url: '/pages/portal/portal'
+      });
+    }
   }
 })

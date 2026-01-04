@@ -4,9 +4,52 @@
     <text>日子不紧不慢 每天好好吃饭</text>
   </view>
 
+  <!-- Pending Plan Notice -->
+  <view class="pending-notice" wx:if="{{todayStatus === 'planned'}}" bindtap="goToHome">
+    <text class="notice-icon">🍳</text>
+    <text class="notice-text">今日菜单待完成，去打卡</text>
+    <text class="notice-arrow">></text>
+  </view>
+
   <!-- Empty State -->
-  <view class="empty-state">
+  <view class="empty-state" wx:if="{{orders.length === 0}}">
     <image class="empty-img" src="https://img.yzcdn.cn/vant/empty-image-default.png" mode="aspectFit"></image>
-    <text class="empty-text">暂无用餐记录</text>
+    <text class="empty-text">暂无用餐记录，快去点餐吧</text>
+  </view>
+
+  <!-- Order List -->
+  <scroll-view scroll-y class="order-list" wx:else>
+    <view class="order-item" wx:for="{{orders}}" wx:key="id" bindtap="showOrderDetail" data-order="{{item}}">
+      <view class="order-header">
+        <text class="order-date">{{item.date}}</text>
+        <text class="order-status {{item.status === '已完成' ? 'done' : ''}}">{{item.status}}</text>
+      </view>
+      <view class="order-preview">
+        <text>共 {{item.items.length}} 道菜</text>
+        <text class="arrow">></text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- Order Detail Modal -->
+  <view class="modal-mask" wx:if="{{showDetail}}" bindtap="closeDetail">
+    <view class="modal-content" catchtap="true">
+      <view class="modal-header">
+        <text class="modal-title">订单详情</text>
+        <text class="close-btn" bindtap="closeDetail">×</text>
+      </view>
+      <scroll-view scroll-y class="detail-list">
+        <view class="detail-item" wx:for="{{selectedOrder.items}}" wx:key="name">
+          <text>{{item.name}}</text>
+          <text>x1</text>
+        </view>
+      </scroll-view>
+      <button class="complete-btn" 
+              wx:if="{{selectedOrder.status !== '已完成'}}" 
+              bindtap="completeOrder" 
+              data-index="{{orders.indexOf(selectedOrder)}}">
+        完成订单
+      </button>
+    </view>
   </view>
 </view>

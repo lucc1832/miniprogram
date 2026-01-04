@@ -1,12 +1,37 @@
 <view class="kitchen-container" style="padding-bottom: 110rpx;">
-  <!-- Custom Navigation Bar Placeholder if needed, or handle in components -->
+  <!-- Global Back Button -->
+  <view class="global-back-btn" 
+        style="top: {{statusBarHeight}}px; height: {{navBarHeight}}px;" 
+        bindtap="goBack">
+    <text class="back-arrow">❮</text>
+  </view>
   
   <!-- Content Area -->
   <view class="content-area">
-    <kitchen-home wx:if="{{currentTab === 0}}" statusBarHeight="{{statusBarHeight}}" navBarHeight="{{navBarHeight}}"></kitchen-home>
-    <kitchen-menu wx:if="{{currentTab === 1}}" statusBarHeight="{{statusBarHeight}}" navBarHeight="{{navBarHeight}}"></kitchen-menu>
-    <kitchen-diary wx:if="{{currentTab === 2}}" statusBarHeight="{{statusBarHeight}}" navBarHeight="{{navBarHeight}}"></kitchen-diary>
-    <kitchen-profile wx:if="{{currentTab === 3}}" statusBarHeight="{{statusBarHeight}}" navBarHeight="{{navBarHeight}}"></kitchen-profile>
+    <kitchen-home 
+      wx:if="{{currentTab === 0}}" 
+      statusBarHeight="{{statusBarHeight}}" 
+      navBarHeight="{{navBarHeight}}"
+      bind:switchTab="handleSwitchTab"
+    ></kitchen-home>
+    <kitchen-menu 
+      wx:if="{{currentTab === 1}}" 
+      statusBarHeight="{{statusBarHeight}}" 
+      navBarHeight="{{navBarHeight}}"
+      bind:switchTab="handleSwitchTab"
+    ></kitchen-menu>
+    <kitchen-diary 
+      wx:if="{{currentTab === 2}}" 
+      statusBarHeight="{{statusBarHeight}}" 
+      navBarHeight="{{navBarHeight}}"
+      bind:switchTab="handleSwitchTab"
+    ></kitchen-diary>
+    <kitchen-profile 
+      wx:if="{{currentTab === 3}}" 
+      statusBarHeight="{{statusBarHeight}}" 
+      navBarHeight="{{navBarHeight}}"
+      bind:switchTab="handleSwitchTab"
+    ></kitchen-profile>
   </view>
 
   <!-- Custom TabBar -->

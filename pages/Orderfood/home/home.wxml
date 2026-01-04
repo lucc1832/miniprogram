@@ -1,48 +1,5 @@
 <view class="container">
-  <!-- Top Header Area -->
-  <view class="header">
-    <image class="header-bg" src="https://picsum.photos/750/600" mode="aspectFill"></image>
-    <view class="header-overlay">
-      <view class="app-title">私房大厨</view>
-    </view>
-    <view class="user-avatar-wrapper">
-      <image class="user-avatar" src="https://picsum.photos/200/200" mode="aspectFill"></image>
-    </view>
-  </view>
-
-  <!-- Grid Menu -->
-  <view class="grid-menu">
-    <view class="grid-item" bindtap="onInvite">
-      <view class="icon-box icon-invite">✉️</view>
-      <text class="grid-text">邀请加入</text>
-    </view>
-    <view class="grid-item" bindtap="onManageMenu">
-      <view class="icon-box icon-manage">📝</view>
-      <text class="grid-text">管理菜品</text>
-    </view>
-    <view class="grid-item" bindtap="onGoOrder">
-      <view class="icon-box icon-order">📋</view>
-      <text class="grid-text">去点菜</text>
-    </view>
-    <view class="grid-item" bindtap="onRandomFood">
-      <view class="icon-box icon-cupcake">🧁</view>
-      <text class="grid-text">吃啥呢</text>
-    </view>
-    <view class="grid-item" bindtap="onKitchen">
-      <view class="icon-box icon-kitchen">🏪</view>
-      <text class="grid-text">我的厨房</text>
-    </view>
-    <view class="grid-item" bindtap="onChangeBg">
-      <view class="icon-box icon-bg">🖼️</view>
-      <text class="grid-text">换背景</text>
-    </view>
-    <view class="grid-item" bindtap="onIngredients">
-      <view class="icon-box icon-ingredients">🥗</view>
-      <text class="grid-text">食材用料</text>
-    </view>
-    <view class="grid-item" bindtap="onBasket">
-      <view class="icon-box icon-basket">🧺</view>
-      <text class="grid-text">购菜篮</text>
-    </view>
+  <view class="loading">
+    <text>正在跳转到厨房...</text>
   </view>
 </view>

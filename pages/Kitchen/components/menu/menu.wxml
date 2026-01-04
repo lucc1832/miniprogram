@@ -31,16 +31,54 @@
   <scroll-view scroll-y class="food-scroll">
     <view class="food-grid">
       <view class="food-item" wx:for="{{foods}}" wx:key="name">
-        <view class="food-img-wrapper">
+        <view class="food-img-wrapper" bindtap="onShowDetail" data-food="{{item}}">
           <image class="food-img" src="{{item.img}}" mode="aspectFill"></image>
         </view>
         <view class="food-info">
           <view class="chef-icon">👨‍🍳</view>
           <text class="food-name">{{item.name}}</text>
-          <view class="add-btn">+</view>
+          <view class="add-btn" catchtap="addToCart" data-food="{{item}}">+</view>
         </view>
       </view>
     </view>
     <view class="padding-bottom-placeholder"></view>
   </scroll-view>
+
+  <!-- Floating Cart Button -->
+  <view class="cart-float-btn" wx:if="{{cart.length > 0}}" bindtap="showCart">
+    <text>🛒 {{cart.length}}</text>
+  </view>
+
+  <!-- Recipe Detail Modal -->
+  <view class="modal-mask" wx:if="{{showDetail}}" bindtap="closeDetail">
+    <view class="modal-content" catchtap="true">
+      <view class="modal-header">
+        <text class="modal-title">{{selectedFood.name}}</text>
+        <text class="close-btn" bindtap="closeDetail">×</text>
+      </view>
+      <image class="detail-img" src="{{selectedFood.img}}" mode="aspectFill"></image>
+      <view class="detail-desc">{{selectedFood.desc}}</view>
+      <view class="detail-actions">
+        <button class="action-btn fav" bindtap="toggleFav">收藏</button>
+        <button class="action-btn add" bindtap="addToCart" data-food="{{selectedFood}}">加入清单</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- Cart Modal -->
+  <view class="modal-mask" wx:if="{{showCartModal}}" bindtap="closeCart">
+    <view class="modal-content bottom-sheet" catchtap="true">
+      <view class="modal-header">
+        <text class="modal-title">点餐清单</text>
+        <text class="clear-btn" bindtap="clearCart">清空</text>
+      </view>
+      <scroll-view scroll-y class="cart-list">
+        <view class="cart-item" wx:for="{{cart}}" wx:key="index">
+          <text>{{item.name}}</text>
+          <text>x1</text>
+        </view>
+      </scroll-view>
+      <button class="submit-btn" bindtap="submitOrder">加入今日菜单</button>
+    </view>
+  </view>
 </view>
