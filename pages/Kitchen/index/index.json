@@ -1,0 +1,9 @@
+{
+  "usingComponents": {
+    "kitchen-home": "../components/home/home",
+    "kitchen-menu": "../components/menu/menu",
+    "kitchen-diary": "../components/diary/diary",
+    "kitchen-profile": "../components/profile/profile"
+  },
+  "navigationStyle": "custom"
+}

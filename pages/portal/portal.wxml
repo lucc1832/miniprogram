@@ -30,6 +30,14 @@
       <view class="card-title">纪念日</view>
       <view class="card-desc">情绪时间线与陪伴</view>
     </view>
+
+    <!-- 厨房 -->
+    <view class="card" bindtap="go" data-url="/pages/Kitchen/index/index">
+      <view class="card-ico">🍳</view>
+      <view class="card-title">我的厨房</view>
+      <view class="card-desc">唯有爱与美食不可辜负</view>
+    </view>
+
     <!-- 预留 -->
     <view class="card disabled" bindtap="toast">
       <view class="card-title">🧾 记账</view>

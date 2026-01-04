@@ -44,6 +44,12 @@
         "city/city",
         "search/search"
       ]
+    },
+    {
+      "root": "pages/Kitchen",
+      "pages": [
+        "index/index"
+      ]
     }
   ],
   "window": {

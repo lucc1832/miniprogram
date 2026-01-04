@@ -1,0 +1,66 @@
+<view class="home-container" style="padding-top: {{statusBarHeight + navBarHeight}}px;">
+  <!-- Custom Header Area -->
+  <view class="custom-header" style="top: {{statusBarHeight}}px; height: {{navBarHeight}}px;">
+    <view class="today-btn">今</view>
+    <!-- Calendar Strip Placeholder -->
+  </view>
+
+  <!-- Calendar Strip -->
+  <view class="calendar-strip">
+    <view class="day-item" wx:for="{{weekDays}}" wx:key="date">
+      <text class="week-text">{{item.week}}</text>
+      <view class="date-circle {{item.active ? 'active' : ''}}">
+        <text class="date-text">{{item.date}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Character Section -->
+  <view class="character-section">
+    <image class="character-img" src="https://img.yzcdn.cn/vant/cat.jpeg" mode="aspectFit"></image>
+    <view class="bubble">Cooking 🧑‍🍳</view>
+  </view>
+
+  <!-- Toggle Buttons -->
+  <view class="toggle-section">
+    <view class="toggle-btn {{activeView === 'heat' ? 'active' : ''}}" bindtap="switchView" data-view="heat">热力图</view>
+    <view class="toggle-btn {{activeView === 'cart' ? 'active' : ''}}" bindtap="switchView" data-view="cart">菜篮子</view>
+  </view>
+
+  <!-- Heatmap Card -->
+  <view class="card heatmap-card" wx:if="{{activeView === 'heat'}}">
+    <view class="card-header">
+      <text class="card-title">年度做饭热力图</text>
+      <view class="year-selector">
+        <text class="arrow">❮</text>
+        <text class="year">2025</text>
+        <text class="arrow">❯</text>
+      </view>
+    </view>
+    
+    <view class="heatmap-grid">
+      <!-- Mock Grid: 12 rows x 20 cols approx -->
+      <view class="heatmap-row" wx:for="{{[1,2,3,4,5,6,7,8,9,10,11,12]}}" wx:key="*this">
+        <text class="month-label">{{item}}</text>
+        <view class="squares">
+          <view class="square" wx:for="{{[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]}}" wx:key="*this" style="background-color: {{index % 7 === 0 ? '#E0E0E0' : '#E0E0E0'}}"></view>
+        </view>
+      </view>
+    </view>
+
+    <view class="legend">
+      <view class="legend-item" style="background:#4CAF50"><text>美味</text></view>
+      <view class="legend-item" style="background:#F44336"><text>偏辣</text></view>
+      <view class="legend-item" style="background:#2196F3"><text>偏咸</text></view>
+      <view class="legend-item" style="background:#FFC107"><text>油腻</text></view>
+      <view class="legend-item" style="background:#9C27B0"><text>清淡</text></view>
+      <view class="legend-item" style="background:#F8BBD0"><text>一般</text></view>
+    </view>
+  </view>
+
+  <view class="card cart-card" wx:if="{{activeView === 'cart'}}">
+    <view class="empty-cart">
+      <text>菜篮子空空如也</text>
+    </view>
+  </view>
+</view>

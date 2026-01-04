@@ -1,0 +1,23 @@
+<view class="kitchen-container" style="padding-bottom: 110rpx;">
+  <!-- Custom Navigation Bar Placeholder if needed, or handle in components -->
+  
+  <!-- Content Area -->
+  <view class="content-area">
+    <kitchen-home wx:if="{{currentTab === 0}}" statusBarHeight="{{statusBarHeight}}" navBarHeight="{{navBarHeight}}"></kitchen-home>
+    <kitchen-menu wx:if="{{currentTab === 1}}" statusBarHeight="{{statusBarHeight}}" navBarHeight="{{navBarHeight}}"></kitchen-menu>
+    <kitchen-diary wx:if="{{currentTab === 2}}" statusBarHeight="{{statusBarHeight}}" navBarHeight="{{navBarHeight}}"></kitchen-diary>
+    <kitchen-profile wx:if="{{currentTab === 3}}" statusBarHeight="{{statusBarHeight}}" navBarHeight="{{navBarHeight}}"></kitchen-profile>
+  </view>
+
+  <!-- Custom TabBar -->
+  <view class="custom-tabbar">
+    <view class="tab-item {{currentTab === index ? 'active' : ''}}" 
+          wx:for="{{tabs}}" 
+          wx:key="id" 
+          bindtap="switchTab" 
+          data-index="{{index}}">
+      <view class="tab-icon">{{item.icon}}</view>
+      <text class="tab-text">{{item.name}}</text>
+    </view>
+  </view>
+</view>

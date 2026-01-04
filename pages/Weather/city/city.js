@@ -141,6 +141,11 @@ Page({
     // Here we assume tap is intentional.
 
     if (this.data.isEditing) {
+      if (index === 0) {
+        wx.showToast({ title: '当前定位无法选择', icon: 'none' });
+        return;
+      }
+      
       const selected = this.data.selectedCities;
       const i = selected.indexOf(index);
       if (i > -1) {

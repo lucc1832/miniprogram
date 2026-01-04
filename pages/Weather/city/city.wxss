@@ -147,6 +147,11 @@
   border-color: #4A90E2;
 }
 
+.checkbox.disabled {
+  background: #f0f0f0;
+  border-color: #e0e0e0;
+}
+
 /* Swipe Interaction */
 .swipe-area {
   width: 100%;

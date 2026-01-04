@@ -1,0 +1,184 @@
+.home-container {
+  padding: 20rpx;
+  background-color: #FFF8F0;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.custom-header {
+  position: fixed;
+  left: 20rpx;
+  display: flex;
+  align-items: center;
+  z-index: 100;
+}
+
+.today-btn {
+  background: #6D4C41;
+  color: #fff;
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 60rpx;
+  font-size: 24rpx;
+}
+
+.calendar-strip {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20rpx;
+  padding: 0 10rpx;
+}
+
+.day-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.week-text {
+  font-size: 24rpx;
+  color: #666;
+  margin-bottom: 8rpx;
+}
+
+.date-circle {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.date-circle.active {
+  background: #4E342E;
+  color: #fff;
+  box-shadow: 0 4rpx 8rpx rgba(0,0,0,0.2);
+}
+
+.date-text {
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+.character-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400rpx;
+  position: relative;
+}
+
+.character-img {
+  width: 300rpx;
+  height: 300rpx;
+}
+
+.bubble {
+  position: absolute;
+  right: 100rpx;
+  top: 80rpx;
+  background: #fff;
+  padding: 16rpx 24rpx;
+  border-radius: 30rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.1);
+  color: #D35400;
+  font-weight: bold;
+}
+
+.toggle-section {
+  display: flex;
+  justify-content: center;
+  background: #000;
+  border-radius: 40rpx;
+  width: 60%;
+  margin: 0 auto 40rpx;
+  padding: 8rpx;
+}
+
+.toggle-btn {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
+  color: #fff;
+  border-radius: 32rpx;
+  font-size: 28rpx;
+}
+
+.toggle-btn.active {
+  background: #FFD700;
+  color: #333;
+  font-weight: bold;
+}
+
+.card {
+  background: #fff;
+  border-radius: 30rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.card-title {
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+.year-selector {
+  color: #999;
+  font-size: 28rpx;
+}
+
+.year {
+  margin: 0 10rpx;
+}
+
+.heatmap-grid {
+  margin: 20rpx 0;
+}
+
+.heatmap-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6rpx;
+}
+
+.month-label {
+  width: 30rpx;
+  font-size: 18rpx;
+  color: #ccc;
+}
+
+.squares {
+  display: flex;
+  flex: 1;
+  gap: 6rpx;
+}
+
+.square {
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 4rpx;
+}
+
+.legend {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20rpx;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  padding: 6rpx 16rpx;
+  border-radius: 8rpx;
+  font-size: 20rpx;
+  color: #fff;
+}

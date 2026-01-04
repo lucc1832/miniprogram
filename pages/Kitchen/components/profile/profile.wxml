@@ -1,0 +1,24 @@
+<view class="profile-container" style="padding-top: {{statusBarHeight + navBarHeight}}px;">
+  <!-- Banner -->
+  <view class="banner">
+    <view class="banner-text">
+      <text class="banner-title">Food, Family, Love</text>
+      <text class="banner-subtitle">唯有爱与美食不可辜负</text>
+    </view>
+    <view class="banner-img">
+      <!-- Placeholder for food illustration -->
+      <text style="font-size: 80rpx;">🍱</text>
+    </view>
+    <view class="video-tutorial">
+      <text>📹 视频教程</text>
+    </view>
+  </view>
+
+  <!-- Function Grid -->
+  <view class="func-grid">
+    <view class="func-item" wx:for="{{funcs}}" wx:key="name">
+      <view class="func-icon" style="background: {{item.color}}">{{item.icon}}</view>
+      <text class="func-name">{{item.name}}</text>
+    </view>
+  </view>
+</view>

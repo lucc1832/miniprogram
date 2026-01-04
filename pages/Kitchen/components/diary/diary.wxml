@@ -1,0 +1,12 @@
+<view class="diary-container" style="padding-top: {{statusBarHeight + navBarHeight}}px;">
+  <!-- Header Text -->
+  <view class="diary-header">
+    <text>日子不紧不慢 每天好好吃饭</text>
+  </view>
+
+  <!-- Empty State -->
+  <view class="empty-state">
+    <image class="empty-img" src="https://img.yzcdn.cn/vant/empty-image-default.png" mode="aspectFit"></image>
+    <text class="empty-text">暂无用餐记录</text>
+  </view>
+</view>

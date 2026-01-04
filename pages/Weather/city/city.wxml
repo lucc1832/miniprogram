@@ -40,8 +40,11 @@
         
         <!-- Checkbox (Left side in edit mode) -->
         <view class="checkbox-area" bindtap="onSelectCity" data-index="{{index}}" wx:if="{{isEditing}}">
-          <view class="checkbox {{utils.includes(selectedCities, index) ? 'checked' : ''}}">
+          <view class="checkbox {{utils.includes(selectedCities, index) ? 'checked' : ''}}" wx:if="{{index !== 0}}">
             <icon type="success_no_circle" size="16" color="#fff" wx:if="{{utils.includes(selectedCities, index)}}"/>
+          </view>
+          <view class="checkbox disabled" wx:else>
+             <icon type="info" size="16" color="#ccc" />
           </view>
         </view>
 

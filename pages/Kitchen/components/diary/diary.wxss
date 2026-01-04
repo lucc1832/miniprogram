@@ -1,0 +1,33 @@
+.diary-container {
+  min-height: 100vh;
+  background-color: #FFF8F0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.diary-header {
+  margin-top: 40rpx;
+  font-size: 28rpx;
+  color: #6D4C41;
+  letter-spacing: 2rpx;
+}
+
+.empty-state {
+  margin-top: 200rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.empty-img {
+  width: 200rpx;
+  height: 200rpx;
+  opacity: 0.5;
+  margin-bottom: 20rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #999;
+}

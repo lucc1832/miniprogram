@@ -20,7 +20,9 @@ Page({
     dailyForecast: [],
     showAllDays: false,
     chartMinTemp: 0,
-    chartMaxTemp: 20
+    chartMaxTemp: 20,
+    showIndicators: false,
+    isRefreshing: false
   },
 
   onLoad() {
@@ -138,6 +140,12 @@ Page({
     });
   },
 
+  onGoKitchen() {
+    wx.navigateTo({
+      url: '/pages/Kitchen/index/index'
+    });
+  },
+
   // 显示菜单（删除城市等）
   onShowMenu() {
     const itemList = ['删除当前城市'];
@@ -155,6 +163,12 @@ Page({
   deleteCurrentCity() {
     const { cities, currentCityIndex } = this.data;
     
+    // 定位城市（索引0）不可删除
+    if (currentCityIndex === 0) {
+      wx.showToast({ title: '当前定位无法删除', icon: 'none' });
+      return;
+    }
+
     if (cities.length <= 1) {
       wx.showToast({ title: '至少保留一个城市', icon: 'none' });
       return;
@@ -192,15 +206,53 @@ Page({
   },
 
   onPullDownRefresh() {
+    this.setData({ isRefreshing: true });
     const city = this.data.cities[this.data.currentCityIndex];
+    
+    const finish = () => {
+      this.setData({ isRefreshing: false });
+      // In case page-level refresh is triggered
+      wx.stopPullDownRefresh();
+    };
+
     if (city) {
       // Force refresh
-      this.loadWeatherData(city, true).then(() => {
-        wx.stopPullDownRefresh();
-      });
+      this.loadWeatherData(city, true).then(finish).catch(finish);
     } else {
-      this.initLocation().then(() => wx.stopPullDownRefresh());
+      this.initLocation().then(finish).catch(finish);
     }
+  },
+
+  // Swiper Event Handlers
+  onSwiperChange(e) {
+    // Only handle user touch swipes
+    if (e.detail.source === 'touch') {
+      const index = e.detail.current;
+      this.setData({ currentCityIndex: index });
+      
+      const city = this.data.cities[index];
+      if (city) {
+        this.loadWeatherData(city);
+      }
+    }
+  },
+
+  onSwiperTransition(e) {
+    if (!this.data.showIndicators) {
+      this.setData({ showIndicators: true });
+    }
+    // Clear timer if user is still interacting
+    if (this.indicatorTimer) {
+      clearTimeout(this.indicatorTimer);
+      this.indicatorTimer = null;
+    }
+  },
+
+  onSwiperAnimationFinish(e) {
+    // Hide indicators after 2 seconds
+    this.indicatorTimer = setTimeout(() => {
+      this.setData({ showIndicators: false });
+    }, 2000);
   },
 
   // 初始化定位
@@ -306,6 +358,14 @@ Page({
         fail: reject
       });
     });
+  },
+
+  // 供外部调用切换城市
+  switchToCity(index) {
+    if (index >= 0 && index < this.data.cities.length) {
+      this.setData({ currentCityIndex: index });
+      this.loadWeatherData(this.data.cities[index]);
+    }
   },
 
   // 切换城市
@@ -479,6 +539,17 @@ Page({
         chartMaxTemp: max,
         loading: false
       });
+
+      // Save to cache
+      const cacheData = {
+        timestamp: Date.now(),
+        weatherData: current,
+        hourlyForecast: hourly,
+        dailyForecast: daily,
+        chartMinTemp: min,
+        chartMaxTemp: max
+      };
+      wx.setStorageSync(cacheKey, cacheData);
 
     }).catch(err => {
       console.error(err);

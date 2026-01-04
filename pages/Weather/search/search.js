@@ -164,8 +164,12 @@ Page({
         // Reload cities in index page
         indexPage.setData({ cities: cities });
         indexPage.switchToCity(cities.length - 1); // Switch to new city
+        
+        const delta = pages.length - pages.indexOf(indexPage) - 1;
+        wx.navigateBack({ delta: delta });
+      } else {
+        wx.navigateBack();
       }
-      wx.navigateBack();
     } else {
        this.switchToCity(index);
     }

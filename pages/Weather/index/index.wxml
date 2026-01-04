@@ -19,146 +19,182 @@
   </view>
 
   <block wx:else>
-    <!-- Main Content Scroll -->
-    <scroll-view scroll-y class="content-scroll" style="padding-top: {{statusBarHeight + navBarHeight}}px;" enable-back-to-top>
-      
-      <!-- Main Weather Section -->
-      <view class="main-section fade-in-up">
-        <view class="temp-box">
-          <text class="temp-val">{{weatherData.temp}}°</text>
-        </view>
-        <view class="condition-box">
-          <text class="condition-text">{{weatherData.condition}}</text>
-          <view class="hl-temp">
-            <text>最高 {{weatherData.high}}°</text>
-            <text class="sep"> </text>
-            <text>最低 {{weatherData.low}}°</text>
-          </view>
-        </view>
-        
-        <!-- Air Quality Tag -->
-        <view class="aqi-tag">
-          <text class="aqi-label">空气{{weatherData.aqiLevel}}</text>
-          <text class="aqi-val">{{weatherData.aqi}}</text>
-        </view>
-      </view>
-
-      <!-- Action Buttons Row -->
-      <view class="action-row fade-in-up" style="animation-delay: 0.1s;">
-        <view class="action-btn" bindtap="onManageCities">
-          <text class="action-icon">🏙️</text>
-          <text class="action-text">城市</text>
-        </view>
-         <view class="action-btn" bindtap="onShowMenu">
-          <text class="action-icon">⚙️</text>
-          <text class="action-text">管理</text>
-        </view>
-      </view>
-
-      <!-- Clothing Advice Card -->
-      <view class="card clothing-card fade-in-up" style="animation-delay: 0.2s;">
-        <view class="card-header">
-          <text class="card-icon">👕</text>
-          <text class="card-title">穿衣建议</text>
-        </view>
-        <view class="clothing-content">
-          <text class="clothing-text">今天天气不错，适合穿一件舒适的卫衣搭配牛仔裤，既保暖又时尚。</text>
-        </view>
-      </view>
-
-      <!-- Hourly Forecast -->
-      <view class="card hourly-card fade-in-up" style="animation-delay: 0.3s;">
-        <view class="card-header">
-          <text class="card-icon">🕒</text>
-          <text class="card-title">24小时预报</text>
-        </view>
-        <scroll-view scroll-x class="hourly-scroll" enable-flex>
-          <block wx:for="{{hourlyForecast}}" wx:key="time">
-            <view class="hourly-item">
-              <text class="h-time">{{item.time}}</text>
-              <view class="h-icon">{{item.icon}}</view>
-              <text class="h-temp">{{item.temp}}°</text>
-            </view>
-          </block>
-        </scroll-view>
-      </view>
-
-      <!-- Daily Forecast -->
-      <view class="card daily-card fade-in-up" style="animation-delay: 0.4s;">
-        <view class="card-header">
-          <text class="card-icon">📅</text>
-          <text class="card-title">未来预报</text>
-        </view>
-        <view class="daily-list">
-          <block wx:for="{{dailyForecast}}" wx:key="day">
-            <view class="daily-row" wx:if="{{index < 7 || showAllDays}}">
-              <text class="d-day">{{item.day}}</text>
-              <view class="d-icon-box">
-                <text class="d-icon">{{item.icon}}</text>
-              </view>
-              <view class="d-temp-bar-container">
-                <text class="d-low">{{item.low}}°</text>
-                <view class="d-bar-bg">
-                  <view class="d-bar-fill" style="left: {{item.barLeft}}%; width: {{item.barWidth}}%;"></view> 
+    <!-- Main Content Scroll (Swiper) -->
+    <swiper 
+      class="content-swiper" 
+      current="{{currentCityIndex}}" 
+      bindchange="onSwiperChange"
+      bindtransition="onSwiperTransition"
+      bindanimationfinish="onSwiperAnimationFinish"
+      duration="300"
+      style="height: 100vh;"
+    >
+      <block wx:for="{{cities}}" wx:key="name">
+        <swiper-item>
+          <scroll-view 
+            scroll-y 
+            class="content-scroll" 
+            style="padding-top: {{statusBarHeight + navBarHeight}}px; height: 100%; box-sizing: border-box;" 
+            enable-back-to-top
+            refresher-enabled="{{true}}"
+            bindrefresherrefresh="onPullDownRefresh"
+            refresher-triggered="{{isRefreshing}}"
+          >
+            <!-- Content Wrapper to hold everything -->
+            <view class="weather-content-wrapper">
+              
+              <!-- Main Weather Section -->
+              <view class="main-section fade-in-up">
+                <view class="temp-box">
+                  <text class="temp-val">{{weatherData.temp}}°</text>
                 </view>
-                <text class="d-high">{{item.high}}°</text>
+                <view class="condition-box">
+                  <text class="condition-text">{{weatherData.condition}}</text>
+                  <view class="hl-temp">
+                    <text>最高 {{weatherData.high}}°</text>
+                    <text class="sep"> </text>
+                    <text>最低 {{weatherData.low}}°</text>
+                  </view>
+                </view>
+                
+                <!-- Air Quality Tag -->
+                <view class="aqi-tag">
+                  <text class="aqi-label">空气{{weatherData.aqiLevel}}</text>
+                  <text class="aqi-val">{{weatherData.aqi}}</text>
+                </view>
               </view>
+
+              <!-- Action Buttons Row -->
+              <view class="action-row fade-in-up" style="animation-delay: 0.1s;">
+                <view class="action-btn" bindtap="onManageCities">
+                  <text class="action-icon">🏙️</text>
+                  <text class="action-text">城市</text>
+                </view>
+                <view class="action-btn" bindtap="onGoKitchen">
+                  <text class="action-icon">🍳</text>
+                  <text class="action-text">厨房</text>
+                </view>
+                <view class="action-btn" bindtap="onShowMenu">
+                  <text class="action-icon">⚙️</text>
+                  <text class="action-text">管理</text>
+                </view>
+              </view>
+
+              <!-- Clothing Advice Card -->
+              <view class="card clothing-card fade-in-up" style="animation-delay: 0.2s;">
+                <view class="card-header">
+                  <text class="card-icon">👕</text>
+                  <text class="card-title">穿衣建议</text>
+                </view>
+                <view class="clothing-content">
+                  <text class="clothing-text">今天天气不错，适合穿一件舒适的卫衣搭配牛仔裤，既保暖又时尚。</text>
+                </view>
+              </view>
+
+              <!-- Hourly Forecast -->
+              <view class="card hourly-card fade-in-up" style="animation-delay: 0.3s;">
+                <view class="card-header">
+                  <text class="card-icon">🕒</text>
+                  <text class="card-title">24小时预报</text>
+                </view>
+                <scroll-view scroll-x class="hourly-scroll" enable-flex>
+                  <block wx:for="{{hourlyForecast}}" wx:key="time">
+                    <view class="hourly-item">
+                      <text class="h-time">{{item.time}}</text>
+                      <view class="h-icon">{{item.icon}}</view>
+                      <text class="h-temp">{{item.temp}}°</text>
+                    </view>
+                  </block>
+                </scroll-view>
+              </view>
+
+              <!-- Daily Forecast -->
+              <view class="card daily-card fade-in-up" style="animation-delay: 0.4s;">
+                <view class="card-header">
+                  <text class="card-icon">📅</text>
+                  <text class="card-title">未来预报</text>
+                </view>
+                <view class="daily-list">
+                  <block wx:for="{{dailyForecast}}" wx:key="day">
+                    <view class="daily-row" wx:if="{{index < 7 || showAllDays}}">
+                      <text class="d-day">{{item.day}}</text>
+                      <view class="d-icon-box">
+                        <text class="d-icon">{{item.icon}}</text>
+                      </view>
+                      <view class="d-temp-bar-container">
+                        <text class="d-low">{{item.low}}°</text>
+                        <view class="d-bar-bg">
+                          <view class="d-bar-fill" style="left: {{item.barLeft}}%; width: {{item.barWidth}}%;"></view> 
+                        </view>
+                        <text class="d-high">{{item.high}}°</text>
+                      </view>
+                    </view>
+                  </block>
+                </view>
+                <view class="expand-btn-container" bindtap="toggleForecast">
+                    <view class="expand-btn">{{showAllDays ? '收起' : '未来 15 日天气预报'}}</view>
+                </view>
+              </view>
+
+              <!-- Details Grid -->
+              <view class="details-grid fade-in-up" style="animation-delay: 0.5s;">
+                <view class="detail-box">
+                  <view class="d-label">💦 湿度</view>
+                  <view class="d-value">{{weatherData.humidity}}</view>
+                </view>
+                <view class="detail-box">
+                  <view class="d-label">🌡️ 体感</view>
+                  <view class="d-value">{{weatherData.feelsLike}}°</view>
+                </view>
+                <view class="detail-box">
+                  <view class="d-label">🌬️ 风向</view>
+                  <view class="d-value-sm">{{weatherData.windDir}} {{weatherData.windSpeed}}</view>
+                </view>
+                <view class="detail-box">
+                  <view class="d-label">🎈 气压</view>
+                  <view class="d-value">{{weatherData.pressure}}</view>
+                </view>
+                <view class="detail-box">
+                  <view class="d-label">👁️ 能见度</view>
+                  <view class="d-value">{{weatherData.visibility}}</view>
+                </view>
+                <view class="detail-box">
+                  <view class="d-label">🌧️ 降雨概率</view>
+                  <view class="d-value">{{weatherData.rainProb}}</view>
+                </view>
+                
+                <!-- Sunrise Sunset Full Width -->
+                <view class="detail-box sun-box">
+                  <view class="d-label">🌅 日出日落</view>
+                  <view class="sun-times">
+                     <view class="sun-item">
+                       <text class="sun-label">日出</text>
+                       <text class="sun-time">{{weatherData.sunrise}}</text>
+                     </view>
+                     <view class="sun-visual">
+                         <view class="sun-line"></view>
+                         <view class="sun-dot" style="left: {{weatherData.sunPosition}}%;"></view>
+                      </view>
+                     <view class="sun-item right">
+                       <text class="sun-label">日落</text>
+                       <text class="sun-time">{{weatherData.sunset}}</text>
+                     </view>
+                  </view>
+                </view>
+              </view>
+
+              <view class="footer-safe-area"></view>
             </view>
-          </block>
-        </view>
-        <view class="expand-btn-container" bindtap="toggleForecast">
-            <view class="expand-btn">{{showAllDays ? '收起' : '未来 15 日天气预报'}}</view>
-        </view>
-      </view>
-
-      <!-- Details Grid -->
-      <view class="details-grid fade-in-up" style="animation-delay: 0.5s;">
-        <view class="detail-box">
-          <view class="d-label">💦 湿度</view>
-          <view class="d-value">{{weatherData.humidity}}</view>
-        </view>
-        <view class="detail-box">
-          <view class="d-label">🌡️ 体感</view>
-          <view class="d-value">{{weatherData.feelsLike}}°</view>
-        </view>
-        <view class="detail-box">
-          <view class="d-label">🌬️ 风向</view>
-          <view class="d-value-sm">{{weatherData.windDir}} {{weatherData.windSpeed}}</view>
-        </view>
-        <view class="detail-box">
-          <view class="d-label">🎈 气压</view>
-          <view class="d-value">{{weatherData.pressure}}</view>
-        </view>
-        <view class="detail-box">
-          <view class="d-label">👁️ 能见度</view>
-          <view class="d-value">{{weatherData.visibility}}</view>
-        </view>
-        <view class="detail-box">
-          <view class="d-label">🌧️ 降雨概率</view>
-          <view class="d-value">{{weatherData.rainProb}}</view>
-        </view>
-        
-        <!-- Sunrise Sunset Full Width -->
-        <view class="detail-box sun-box">
-          <view class="d-label">🌅 日出日落</view>
-          <view class="sun-times">
-             <view class="sun-item">
-               <text class="sun-label">日出</text>
-               <text class="sun-time">{{weatherData.sunrise}}</text>
-             </view>
-             <view class="sun-visual">
-                 <view class="sun-line"></view>
-                 <view class="sun-dot" style="left: {{weatherData.sunPosition}}%;"></view>
-              </view>
-             <view class="sun-item right">
-               <text class="sun-label">日落</text>
-               <text class="sun-time">{{weatherData.sunset}}</text>
-             </view>
-          </view>
-        </view>
-      </view>
-
-      <view class="footer-safe-area"></view>
-    </scroll-view>
+          </scroll-view>
+        </swiper-item>
+      </block>
+    </swiper>
+    
+    <!-- Page Indicators (Dots) -->
+    <view class="indicators-container {{showIndicators ? 'show' : ''}}">
+      <block wx:for="{{cities}}" wx:key="name">
+        <view class="dot {{index === currentCityIndex ? 'active' : ''}}"></view>
+      </block>
+    </view>
   </block>
 </view>

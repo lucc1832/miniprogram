@@ -1,0 +1,157 @@
+.menu-container {
+  background-color: #FFF8F0;
+  height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.custom-header {
+  position: fixed;
+  left: 20rpx;
+  right: 200rpx; /* Avoid capsule */
+  display: flex;
+  align-items: center;
+  z-index: 100;
+  gap: 20rpx;
+}
+
+.search-bar {
+  flex: 1;
+  background: rgba(0,0,0,0.05);
+  height: 64rpx;
+  border-radius: 32rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 20rpx;
+}
+
+.search-bar input {
+  margin-left: 10rpx;
+  font-size: 26rpx;
+  flex: 1;
+}
+
+.fav-btn {
+  background: rgba(0,0,0,0.05);
+  height: 64rpx;
+  border-radius: 32rpx;
+  padding: 0 24rpx;
+  display: flex;
+  align-items: center;
+  font-size: 24rpx;
+  color: #666;
+  white-space: nowrap;
+}
+
+.category-scroll {
+  display: flex;
+  white-space: nowrap;
+  height: 80rpx;
+  margin-top: 20rpx;
+  padding: 0 20rpx;
+}
+
+.cat-item {
+  display: inline-block;
+  padding: 10rpx 30rpx;
+  margin-right: 20rpx;
+  background: #fff;
+  border-radius: 30rpx;
+  font-size: 26rpx;
+  color: #666;
+}
+
+.cat-item.active {
+  background: #FFD700;
+  color: #333;
+  font-weight: bold;
+}
+
+.notice-bar {
+  background: #FFF9C4;
+  padding: 16rpx 20rpx;
+  display: flex;
+  align-items: center;
+  font-size: 24rpx;
+  color: #8D6E63;
+}
+
+.bell-icon {
+  margin-right: 10rpx;
+}
+
+.food-scroll {
+  flex: 1;
+  padding: 20rpx;
+  box-sizing: border-box;
+}
+
+.food-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20rpx;
+}
+
+.food-item {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 20rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.food-img-wrapper {
+  width: 200rpx;
+  height: 200rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 20rpx;
+  background: #f0f0f0;
+}
+
+.food-img {
+  width: 100%;
+  height: 100%;
+}
+
+.food-info {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chef-icon {
+  background: #D7CCC8;
+  color: #fff;
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 40rpx;
+  font-size: 24rpx;
+}
+
+.food-name {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.add-btn {
+  background: #FFD700;
+  color: #fff;
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 36rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+.padding-bottom-placeholder {
+  height: 120rpx;
+}
