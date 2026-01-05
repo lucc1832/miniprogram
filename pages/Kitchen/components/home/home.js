@@ -7,11 +7,18 @@ Component({
   data: {
     todayStatus: 'empty', // 'empty' | 'planned' | 'completed'
     todayMenu: null,
-    heatData: [] // For mini heatmap
+    heatData: [], // For mini heatmap logic if needed, or full heatmap
+    
+    // UI Restoration Data
+    weekDays: [],
+    activeView: 'cart', // Default to cart to show actions
+    currentYear: new Date().getFullYear(),
+    heatmapGrid: [] // For the big heatmap
   },
 
   lifetimes: {
     attached() {
+      this.initDateData();
       this.checkTodayStatus();
     }
   },
@@ -23,6 +30,36 @@ Component({
   },
 
   methods: {
+    initDateData() {
+      const now = new Date();
+      const days = [];
+      // Generate current week (Mon-Sun) or just surrounding days
+      // Let's do a simple 7-day strip ending today or centered?
+      // Old UI had "Mon 29", "Tue 30"...
+      // Let's generate a static week for now or dynamic
+      for (let i = -3; i <= 3; i++) {
+        const d = new Date(now.getTime() + i * 24 * 60 * 60 * 1000);
+        const weeks = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+        days.push({
+          week: weeks[d.getDay()],
+          date: d.getDate().toString().padStart(2, '0'),
+          active: i === 0
+        });
+      }
+      this.setData({ weekDays: days });
+
+      // Init Heatmap Grid (Mock)
+      const grid = [];
+      for (let m = 0; m < 12; m++) {
+        const squares = [];
+        for (let d = 0; d < 30; d++) { // Simplified
+           squares.push({ level: Math.floor(Math.random() * 5) });
+        }
+        grid.push({ month: m + 1, squares });
+      }
+      this.setData({ heatmapGrid: grid });
+    },
+
     checkTodayStatus() {
       const now = new Date();
       const todayStr = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
@@ -35,28 +72,14 @@ Component({
         if (menu) {
           this.setData({ todayMenu: menu });
         }
-      } else if (status === 'completed') {
-        // Load recent history for heatmap
-        this.loadHeatData();
       }
+      // If completed, we don't necessarily need to force view switch, but we could
     },
 
-    loadHeatData() {
-      // Simple mock for now or read from kitchen_orders
-      // We can check last 7 days status
-      const days = [];
-      const now = new Date();
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-        const dStr = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
-        const status = wx.getStorageSync('daily_status_' + dStr);
-        days.push({
-          date: d.getDate(),
-          active: status === 'completed',
-          isToday: i === 0
-        });
-      }
-      this.setData({ heatData: days });
+    switchView(e) {
+      this.setData({
+        activeView: e.currentTarget.dataset.view
+      });
     },
 
     goToMenu() {
@@ -87,8 +110,13 @@ Component({
       }
 
       // 3. Update UI
-      this.setData({ todayStatus: 'completed' });
-      this.loadHeatData();
+      this.setData({ 
+        todayStatus: 'completed',
+        activeView: 'heat' // Switch to heatmap to show result? Or stay in cart?
+        // Let's switch to heat as a reward? Or stay in cart and show "Done". 
+        // User asked to restore UI, old UI had separate views. 
+        // Let's stay in cart but show "Done" state.
+      });
 
       wx.hideLoading();
       wx.showToast({ title: '打卡成功', icon: 'success' });
