@@ -30,6 +30,8 @@
   margin-left: 10rpx;
   font-size: 26rpx;
   flex: 1;
+  text-align: center;
+  line-height: 64rpx;
 }
 
 .fav-btn {
@@ -39,9 +41,12 @@
   padding: 0 24rpx;
   display: flex;
   align-items: center;
+  justify-content: center;
   font-size: 24rpx;
   color: #666;
   white-space: nowrap;
+  text-align: center;
+  line-height: 64rpx;
 }
 
 .category-scroll {
@@ -60,6 +65,7 @@
   border-radius: 30rpx;
   font-size: 26rpx;
   color: #666;
+  text-align: center;
 }
 
 .cat-item.active {
@@ -73,8 +79,10 @@
   padding: 16rpx 20rpx;
   display: flex;
   align-items: center;
+  justify-content: center;
   font-size: 24rpx;
   color: #8D6E63;
+  text-align: center;
 }
 
 .bell-icon {
@@ -138,6 +146,9 @@
   font-size: 28rpx;
   font-weight: bold;
   color: #333;
+  flex: 1;
+  text-align: center;
+  line-height: 40rpx;
 }
 
 .add-btn {
@@ -150,6 +161,14 @@
   line-height: 36rpx;
   font-size: 32rpx;
   font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-btn-pressed {
+  transform: scale(0.95);
+  opacity: 0.9;
 }
 
 .padding-bottom-placeholder {
@@ -182,16 +201,22 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20rpx;
+  position: relative;
 }
 
 .modal-title {
   font-size: 32rpx;
   font-weight: bold;
+  flex: 1;
+  text-align: center;
+  line-height: 40rpx;
 }
 
 .close-btn {
   font-size: 40rpx;
   color: #999;
+  position: absolute;
+  right: 0;
 }
 
 .detail-img {
@@ -205,6 +230,7 @@
   font-size: 28rpx;
   color: #666;
   margin-bottom: 30rpx;
+  text-align: center;
 }
 
 .detail-actions {
@@ -230,15 +256,43 @@
 
 .cart-float-btn {
   position: fixed;
-  bottom: 140rpx;
-  right: 40rpx;
+  bottom: 32rpx;
+  right: 32rpx;
+  width: 88rpx;
+  height: 88rpx;
   background: #FFD700;
   color: #fff;
-  padding: 20rpx 40rpx;
-  border-radius: 40rpx;
-  font-weight: bold;
-  box-shadow: 0 4rpx 10rpx rgba(0,0,0,0.2);
-  z-index: 900;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6rpx 16rpx rgba(0,0,0,0.25);
+  z-index: 1200;
+}
+
+.cart-float-btn-pressed {
+  transform: scale(0.96);
+}
+
+.cart-icon {
+  font-size: 40rpx;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -6rpx;
+  right: -6rpx;
+  min-width: 32rpx;
+  height: 32rpx;
+  padding: 0 8rpx;
+  background: #F44336;
+  color: #fff;
+  border-radius: 16rpx;
+  font-size: 22rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.2);
 }
 
 .bottom-sheet {
@@ -259,15 +313,18 @@
   justify-content: space-between;
   padding: 20rpx 0;
   border-bottom: 1rpx solid #eee;
+  text-align: center;
 }
 
 .submit-btn {
   background: #4CAF50;
   color: #fff;
   border-radius: 40rpx;
+  text-align: center;
 }
 
 .clear-btn {
   color: #999;
   font-size: 24rpx;
+  text-align: center;
 }

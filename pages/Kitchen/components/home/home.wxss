@@ -15,8 +15,10 @@
   z-index: 100;
   display: flex;
   align-items: center;
-  padding-left: 30rpx;
+  justify-content: center; /* Center the title */
+  padding-left: 0;
   box-sizing: border-box;
+  pointer-events: none; /* Allow clicks to pass through empty areas */
 }
 
 .today-btn {
@@ -30,6 +32,7 @@
   font-size: 28rpx;
   color: #333;
   box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.1);
+  pointer-events: auto; /* Re-enable clicks on the button itself */
 }
 
 /* Calendar Strip */

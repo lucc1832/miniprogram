@@ -37,7 +37,7 @@
         <view class="food-info">
           <view class="chef-icon">👨‍🍳</view>
           <text class="food-name">{{item.name}}</text>
-          <view class="add-btn" catchtap="addToCart" data-food="{{item}}">+</view>
+          <view class="add-btn" catchtap="addToCart" data-food="{{item}}" hover-class="add-btn-pressed">+</view>
         </view>
       </view>
     </view>
@@ -45,8 +45,9 @@
   </scroll-view>
 
   <!-- Floating Cart Button -->
-  <view class="cart-float-btn" wx:if="{{cart.length > 0}}" bindtap="showCart">
-    <text>🛒 {{cart.length}}</text>
+  <view class="cart-float-btn" wx:if="{{cart.length > 0}}" bindtap="showCart" hover-class="cart-float-btn-pressed">
+    <text class="cart-icon">🛒</text>
+    <view class="cart-badge">{{cart.length}}</view>
   </view>
 
   <!-- Recipe Detail Modal -->

@@ -46,13 +46,16 @@ Component({
       }
     },
 
-    // 加入购物车
+    // 加入购物车（首次不提示，重复点击同一商品才提示）
     addToCart(e) {
       const food = e.currentTarget.dataset.food;
-      const cart = this.data.cart;
+      const cart = this.data.cart.slice();
+      const exists = cart.findIndex(item => item && item.name === food.name) !== -1;
       cart.push(food);
       this.setData({ cart });
-      wx.showToast({ title: '已加入清单', icon: 'none' });
+      if (exists) {
+        wx.showToast({ title: '已加入清单', icon: 'none', duration: 2500 });
+      }
     },
 
     // 显示购物车详情

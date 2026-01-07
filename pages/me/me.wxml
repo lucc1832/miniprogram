@@ -1,10 +1,61 @@
-
 <view class="wrap">
-  <view class="card banner">
-    <view class="avatar"></view>
-    <view class="btxt">
-      <view class="bt">点击头像完善资料</view>
-      <view class="muted">云开发：数据随微信号保存</view>
+  <view class="user-card">
+    <button class="avatar-wrapper" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+      <image class="avatar" src="{{userInfo.avatarUrl || defaultAvatar}}" mode="aspectFill"></image>
+      <view class="edit-icon">📷</view>
+    </button>
+    <view class="user-info">
+      <input type="nickname" class="nickname-input" placeholder="点击设置昵称" value="{{userInfo.nickName}}" bindchange="onNicknameInput" />
+      <view class="member-badge {{memberInfo.isMember ? 'active' : ''}}">
+        <text class="badge-icon">👑</text>
+        <text>{{memberInfo.isMember ? memberInfo.name : '未开通会员'}}</text>
+      </view>
     </view>
+    <view class="status-tag {{hasUserInfo ? 'online' : 'offline'}}">
+      {{hasUserInfo ? '已登录' : '未登录'}}
+    </view>
+  </view>
+
+  <view class="stats-card">
+    <view class="stat-item">
+      <text class="stat-num">{{stats.daysJoined}}</text>
+      <text class="stat-label">陪伴天数</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <text class="stat-num">{{stats.totalRecords}}</text>
+      <text class="stat-label">累计记录</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <text class="stat-num">{{stats.streakDays}}</text>
+      <text class="stat-label">连续打卡</text>
+    </view>
+  </view>
+
+  <view class="menu-list">
+    <view class="menu-group" wx:for="{{menuGroups}}" wx:key="title">
+      <view class="group-title" wx:if="{{item.title}}">{{item.title}}</view>
+      <view class="group-content">
+        <view class="menu-item" wx:for="{{item.items}}" wx:key="name" wx:for-item="menu" bindtap="handleMenuClick" data-item="{{menu}}">
+          <view class="item-left">
+            <text wx:if="{{menu.icon}}" class="item-icon">{{menu.icon}}</text>
+            <text class="item-name {{menu.danger ? 'text-danger' : ''}}">{{menu.name}}</text>
+          </view>
+          <view class="item-right">
+            <text wx:if="{{!menu.type}}" class="item-desc">{{menu.desc || ''}}</text>
+            <text wx:if="{{!menu.type}}" class="arrow">›</text>
+            <switch wx:if="{{menu.type === 'switch'}}" checked="{{settings[menu.key]}}" bindchange="onSwitchChange" data-key="{{menu.key}}" color="#F4C430" style="transform: scale(0.8);" />
+            <picker wx:if="{{menu.type === 'time'}}" mode="time" value="{{settings[menu.key]}}" bindchange="onTimeChange" data-key="{{menu.key}}">
+              <view class="picker-val">{{settings[menu.key]}} ›</view>
+            </picker>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="footer-info">
+    <text>Kitchen v1.0.0</text>
   </view>
 </view>

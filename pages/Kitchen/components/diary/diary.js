@@ -1,7 +1,16 @@
 Component({
   properties: {
     statusBarHeight: Number,
-    navBarHeight: Number
+    navBarHeight: Number,
+    isActive: {
+      type: Boolean,
+      value: false,
+      observer: function(newVal) {
+        if (newVal) {
+          this.loadData();
+        }
+      }
+    }
   },
 
   data: {

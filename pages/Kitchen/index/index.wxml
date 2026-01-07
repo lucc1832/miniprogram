@@ -8,30 +8,40 @@
   
   <!-- Content Area -->
   <view class="content-area">
-    <kitchen-home 
-      wx:if="{{currentTab === 0}}" 
-      statusBarHeight="{{statusBarHeight}}" 
-      navBarHeight="{{navBarHeight}}"
-      bind:switchTab="handleSwitchTab"
-    ></kitchen-home>
-    <kitchen-menu 
-      wx:if="{{currentTab === 1}}" 
-      statusBarHeight="{{statusBarHeight}}" 
-      navBarHeight="{{navBarHeight}}"
-      bind:switchTab="handleSwitchTab"
-    ></kitchen-menu>
-    <kitchen-diary 
-      wx:if="{{currentTab === 2}}" 
-      statusBarHeight="{{statusBarHeight}}" 
-      navBarHeight="{{navBarHeight}}"
-      bind:switchTab="handleSwitchTab"
-    ></kitchen-diary>
-    <kitchen-profile 
-      wx:if="{{currentTab === 3}}" 
-      statusBarHeight="{{statusBarHeight}}" 
-      navBarHeight="{{navBarHeight}}"
-      bind:switchTab="handleSwitchTab"
-    ></kitchen-profile>
+    <view class="tab-content" hidden="{{currentTab !== 0}}">
+       <kitchen-home 
+         id="kitchen-home"
+         statusBarHeight="{{statusBarHeight}}" 
+         navBarHeight="{{navBarHeight}}"
+         isActive="{{currentTab === 0}}"
+         bind:switchTab="handleSwitchTab"
+       ></kitchen-home>
+     </view>
+    <view class="tab-content" hidden="{{currentTab !== 1}}">
+      <kitchen-menu 
+        id="kitchen-menu"
+        statusBarHeight="{{statusBarHeight}}" 
+        navBarHeight="{{navBarHeight}}"
+        bind:switchTab="handleSwitchTab"
+      ></kitchen-menu>
+    </view>
+    <view class="tab-content" hidden="{{currentTab !== 2}}">
+       <kitchen-diary 
+         id="kitchen-diary"
+         statusBarHeight="{{statusBarHeight}}" 
+         navBarHeight="{{navBarHeight}}"
+         isActive="{{currentTab === 2}}"
+         bind:switchTab="handleSwitchTab"
+       ></kitchen-diary>
+     </view>
+    <view class="tab-content" hidden="{{currentTab !== 3}}">
+      <kitchen-profile 
+        id="kitchen-profile"
+        statusBarHeight="{{statusBarHeight}}" 
+        navBarHeight="{{navBarHeight}}"
+        bind:switchTab="handleSwitchTab"
+      ></kitchen-profile>
+    </view>
   </view>
 
   <!-- Custom TabBar -->
