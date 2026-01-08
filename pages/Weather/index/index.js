@@ -5,6 +5,7 @@ const WEATHER_BASE = 'https://api.openweathermap.org/data/2.5';
 const GEO_BASE = 'https://api.openweathermap.org/geo/1.0';
 
 const CACHE_DURATION = 2 * 60 * 60 * 1000; // 2 hours
+const iconManager = require('../../../utils/iconManager');
 
 Page({
   data: {
@@ -22,7 +23,8 @@ Page({
     chartMinTemp: 0,
     chartMaxTemp: 20,
     showIndicators: false,
-    isRefreshing: false
+    isRefreshing: false,
+    currentTheme: 'emoji'
   },
 
   onLoad() {
@@ -36,7 +38,8 @@ Page({
       statusBarHeight: sysInfo.statusBarHeight,
       navBarHeight: navBarHeight,
       menuButtonTop: menuButtonInfo.top,
-      menuButtonHeight: menuButtonInfo.height
+      menuButtonHeight: menuButtonInfo.height,
+      menuButtonLeft: menuButtonInfo.left // Store left position for custom button
     });
     
     // 尝试从缓存读取城市列表
@@ -117,6 +120,17 @@ Page({
   },
 
   onShow() {
+    // Check theme change
+    const currentTheme = wx.getStorageSync('weather_theme') || 'emoji';
+    if (this.data.currentTheme !== currentTheme) {
+      this.setData({ currentTheme });
+      // Reload current weather to apply new icons
+      const city = this.data.cities[this.data.currentCityIndex];
+      if (city) {
+        this.loadWeatherData(city);
+      }
+    }
+
     // Check if cities changed
     const cachedCities = wx.getStorageSync('weather_cities');
     if (cachedCities && JSON.stringify(cachedCities) !== JSON.stringify(this.data.cities)) {
@@ -140,19 +154,19 @@ Page({
     });
   },
 
-  onGoKitchen() {
-    wx.navigateTo({
-      url: '/pages/Kitchen/index/index'
-    });
-  },
-
   // 显示菜单（删除城市等）
   onShowMenu() {
-    const itemList = ['删除当前城市'];
+    const itemList = ['城市管理', '图标管理', '删除当前城市'];
     wx.showActionSheet({
       itemList: itemList,
       success: (res) => {
         if (res.tapIndex === 0) {
+          this.onManageCities();
+        } else if (res.tapIndex === 1) {
+          wx.navigateTo({
+            url: '/pages/Weather/settings/settings'
+          });
+        } else if (res.tapIndex === 2) {
           this.deleteCurrentCity();
         }
       }
@@ -765,20 +779,8 @@ Page({
   },
 
   getIcon(code) {
-    // OpenWeatherMap icon code to Emoji
-    // https://openweathermap.org/weather-conditions
-    const map = {
-      '01d': '☀️', '01n': '🌙',
-      '02d': '⛅', '02n': '☁️',
-      '03d': '☁️', '03n': '☁️',
-      '04d': '☁️', '04n': '☁️',
-      '09d': '🌧️', '09n': '🌧️',
-      '10d': '🌦️', '10n': '🌧️',
-      '11d': '⛈️', '11n': '⛈️',
-      '13d': '❄️', '13n': '❄️',
-      '50d': '🌫️', '50n': '🌫️'
-    };
-    return map[code] || '⛅';
+    const theme = this.data.currentTheme || 'emoji';
+    return iconManager.getIcon(code, theme);
   },
 
   calcChinaAQI(pm25) {

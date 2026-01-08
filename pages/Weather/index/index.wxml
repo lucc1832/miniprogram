@@ -9,6 +9,9 @@
         <text class="city-name">{{weatherData.city}}</text>
         <view class="location-icon">📍</view>
       </view>
+      <view class="menu-btn" bindtap="onShowMenu" style="position: absolute; left: {{menuButtonLeft - 40}}px; top: {{menuButtonTop}}px; height: {{menuButtonHeight}}px; width: 40px; display: flex; align-items: center; justify-content: center; z-index: 1001;">
+        <text style="font-size: 20px;">⚙️</text>
+      </view>
     </view>
   </view>
 
@@ -61,22 +64,6 @@
                 <view class="aqi-tag">
                   <text class="aqi-label">空气{{weatherData.aqiLevel}}</text>
                   <text class="aqi-val">{{weatherData.aqi}}</text>
-                </view>
-              </view>
-
-              <!-- Action Buttons Row -->
-              <view class="action-row fade-in-up" style="animation-delay: 0.1s;">
-                <view class="action-btn" bindtap="onManageCities">
-                  <text class="action-icon">🏙️</text>
-                  <text class="action-text">城市</text>
-                </view>
-                <view class="action-btn" bindtap="onGoKitchen">
-                  <text class="action-icon">🍳</text>
-                  <text class="action-text">厨房</text>
-                </view>
-                <view class="action-btn" bindtap="onShowMenu">
-                  <text class="action-icon">⚙️</text>
-                  <text class="action-text">管理</text>
                 </view>
               </view>
 

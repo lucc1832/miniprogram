@@ -1,27 +1,129 @@
-.wrap { padding: 24rpx; padding-bottom: calc(24rpx + env(safe-area-inset-bottom)); }
-.header { padding: 20rpx 10rpx; }
-.title { font-size: 30rpx; font-weight: 600; color: #333; }
-.subtitle { font-size: 22rpx; color: #999; margin-top: 6rpx; }
-.card { background: #fff; border-radius: 24rpx; box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.05); padding: 28rpx; margin-bottom: 24rpx; }
-.row { display: flex; align-items: center; justify-content: space-between; }
-.row-left { display: flex; align-items: center; }
-.label { font-size: 28rpx; color: #333; }
-.section-title { font-size: 26rpx; color: #666; margin-bottom: 16rpx; }
-.form { display: flex; gap: 16rpx; align-items: center; }
-.input { flex: 1; height: 72rpx; border: 1rpx solid #eee; border-radius: 16rpx; padding: 0 20rpx; font-size: 28rpx; }
-.picker { height: 72rpx; border: 1rpx solid #eee; border-radius: 16rpx; padding: 0 20rpx; display: flex; align-items: center; }
-.picker-val { font-size: 26rpx; color: #666; }
-.tips { font-size: 22rpx; color: #999; margin-top: 12rpx; }
-.btn { margin-top: 20rpx; height: 72rpx; line-height: 72rpx; background: #6b5cff; color: #fff; border-radius: 16rpx; }
-.arrow-indicator { margin-top: 16rpx; display: flex; align-items: center; gap: 10rpx; color: #666; }
-.arrow-text { font-size: 24rpx; }
-.timeswitch { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16rpx; }
-.ts-btn { height: 56rpx; line-height: 56rpx; padding: 0 20rpx; border-radius: 12rpx; background: #f5f5f5; color: #333; }
-.ts-btn.active { background: #6b5cff; color: #fff; }
-.hide-toggle { display: flex; align-items: center; gap: 10rpx; color: #666; }
-.chart { width: 100%; height: 300rpx; background: #fafafa; border-radius: 16rpx; }
-.stats-row { display: flex; align-items: center; justify-content: space-around; }
-.stat { display: flex; flex-direction: column; align-items: center; gap: 8rpx; }
-.stat-num { font-size: 36rpx; font-weight: 600; color: #333; }
-.stat-label { font-size: 22rpx; color: #999; }
-.watermark { position: fixed; right: 16rpx; bottom: calc(16rpx + env(safe-area-inset-bottom)); font-size: 22rpx; color: rgba(0,0,0,0.25); }
+.wrap { padding: 24rpx; padding-bottom: calc(40rpx + env(safe-area-inset-bottom)); background: #f7f8fa; min-height: 100vh; box-sizing: border-box; }
+
+/* Header & User Switch */
+.header-row { display: flex; align-items: center; justify-content: space-between; padding: 0 10rpx 30rpx; }
+.title-block { display: flex; flex-direction: column; }
+.title { font-size: 36rpx; font-weight: 700; color: #333; }
+.subtitle { font-size: 24rpx; color: #999; margin-top: 6rpx; }
+
+.header-action { display: flex; align-items: center; }
+.bind-btn { background: #333; color: #fff; padding: 12rpx 24rpx; border-radius: 30rpx; font-size: 26rpx; font-weight: 600; box-shadow: 0 4rpx 10rpx rgba(0,0,0,0.1); }
+.partner-badge { background: #fff0f5; color: #ff6b81; padding: 10rpx 24rpx; border-radius: 30rpx; font-size: 26rpx; font-weight: 600; }
+
+/* Dual Card */
+.dual-card { padding: 30rpx; background: #fff; border-radius: 32rpx; margin-bottom: 24rpx; box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.03); }
+.dual-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24rpx; }
+.dual-user { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.u-avatar { width: 100rpx; height: 100rpx; background: #6b5cff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 32rpx; font-weight: bold; margin-bottom: 16rpx; box-shadow: 0 4rpx 12rpx rgba(107,92,255,0.3); }
+.p-avatar { background: #ff6b81; box-shadow: 0 4rpx 12rpx rgba(255,107,129,0.3); }
+.u-status { display: flex; flex-direction: column; align-items: center; }
+.u-tag { font-size: 24rpx; padding: 4rpx 16rpx; border-radius: 20rpx; margin-bottom: 6rpx; }
+.u-tag.done { background: #e8f5e9; color: #4caf50; }
+.u-tag.todo { background: #ffebee; color: #ef5350; }
+.u-streak { font-size: 20rpx; color: #999; }
+.dual-divider { width: 1rpx; height: 100rpx; background: #eee; margin: 0 20rpx; }
+
+/* Interaction */
+.interaction-area { background: #f9f9fc; border-radius: 24rpx; padding: 20rpx; display: flex; justify-content: space-between; align-items: center; }
+.interaction-msg { font-size: 26rpx; color: #666; flex: 1; }
+.like-btn { background: #fff; padding: 10rpx 24rpx; border-radius: 30rpx; font-size: 24rpx; color: #6b5cff; border: 1rpx solid #e0e0ff; transition: all 0.2s; }
+.like-btn.liked { background: #e0e0ff; color: #6b5cff; opacity: 0.8; }
+
+/* Bind Modal Specifics */
+.invite-section { display: flex; flex-direction: column; align-items: center; margin-bottom: 30rpx; }
+.invite-label { font-size: 26rpx; color: #999; margin-bottom: 10rpx; }
+.invite-code-box { background: #f0f2f5; padding: 20rpx 40rpx; border-radius: 16rpx; text-align: center; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; }
+.code-text { font-size: 48rpx; font-weight: 700; color: #333; letter-spacing: 4rpx; }
+.copy-hint { font-size: 20rpx; color: #999; margin-top: 6rpx; }
+.bind-divider { text-align: center; color: #ccc; font-size: 24rpx; margin: 20rpx 0; position: relative; }
+.bind-divider::before, .bind-divider::after { content: ''; position: absolute; top: 50%; width: 40%; height: 1rpx; background: #eee; }
+.bind-divider::before { left: 0; }
+.bind-divider::after { right: 0; }
+.modal-actions { display: flex; gap: 20rpx; margin-top: 40rpx; }
+.cancel-btn { flex: 1; background: #f5f5f5; color: #666; border-radius: 40rpx; font-size: 28rpx; }
+.confirm-btn { flex: 1; background: #6b5cff; color: #fff; border-radius: 40rpx; font-size: 28rpx; font-weight: 600; }
+
+/* Cards */
+.card { background: #fff; border-radius: 32rpx; padding: 32rpx; margin-bottom: 24rpx; box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.03); }
+
+/* Current Weight Card */
+.current-card { background: linear-gradient(135deg, #6b5cff 0%, #8ca6ff 100%); color: #fff; }
+.card-label { font-size: 26rpx; opacity: 0.8; margin-bottom: 10rpx; }
+.current-weight-row { display: flex; align-items: baseline; justify-content: space-between; }
+.weight-val { display: flex; align-items: baseline; }
+.val { font-size: 80rpx; font-weight: 700; line-height: 1; }
+.unit { font-size: 32rpx; margin-left: 10rpx; opacity: 0.9; }
+.delta-tag { padding: 6rpx 16rpx; border-radius: 12rpx; background: rgba(255,255,255,0.2); font-size: 26rpx; backdrop-filter: blur(4px); }
+.delta-tag.up { background: rgba(255, 100, 100, 0.3); } /* Weight gain usually bad? or good? Neutral color better. Red for up? */
+.delta-tag.down { background: rgba(100, 255, 100, 0.3); } /* Green for down */
+.tips { font-size: 24rpx; opacity: 0.8; margin-top: 20rpx; }
+
+/* Form Card */
+.section-title { font-size: 28rpx; font-weight: 600; color: #333; margin-bottom: 24rpx; }
+.form-row { display: flex; align-items: center; gap: 20rpx; margin-bottom: 24rpx; }
+.input-group { flex: 1; display: flex; align-items: center; background: #f5f5f5; border-radius: 20rpx; padding: 0 24rpx; height: 96rpx; }
+.weight-input { flex: 1; font-size: 40rpx; font-weight: 600; color: #333; height: 100%; }
+.input-unit { font-size: 28rpx; color: #999; margin-left: 10rpx; }
+.date-picker { background: #f5f5f5; border-radius: 20rpx; padding: 0 24rpx; height: 96rpx; display: flex; align-items: center; }
+.date-val { font-size: 28rpx; color: #666; }
+.save-btn { width: 100%; background: #333; color: #fff; border-radius: 24rpx; font-size: 30rpx; font-weight: 600; height: 88rpx; line-height: 88rpx; margin-top: 10rpx; }
+.save-btn[disabled] { background: #ccc; color: #fff; }
+
+/* Chart Card */
+.chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20rpx; }
+.chart-controls { display: flex; align-items: center; }
+.days-toggle { display: flex; align-items: center; font-size: 24rpx; color: #999; background: #f5f5f5; padding: 6rpx 16rpx; border-radius: 20rpx; }
+.days-toggle text.active { color: #6b5cff; font-weight: 600; }
+.sep { margin: 0 8rpx; color: #ddd; }
+.chart { width: 100%; height: 320rpx; }
+
+/* History Card */
+.history-card { padding: 0 32rpx; }
+.record-list { display: flex; flex-direction: column-reverse; } /* Show latest first visually if array is chronological? No, array is chronological, so flex-direction reverse shows latest at top */
+.record-item { display: flex; justify-content: space-between; align-items: center; padding: 24rpx 0; border-bottom: 1rpx solid #f0f0f0; }
+.record-item:last-child { border-bottom: none; } /* In reverse flex, first child is visually last */
+.record-item:first-child { border-bottom: 1rpx solid #f0f0f0; } 
+/* Wait, flex-direction: column-reverse changes visual order but DOM order remains. :last-child applies to last DOM element (latest date). So we want borders between items. */
+/* Actually, let's just use normal order and slice in WXML or just reverse in JS. But WXML slicing is easier. */
+/* The WXML iterates `index >= records.length - 5`. This shows last 5. 
+   If I want latest at top, I should render them in reverse order or use flex-direction: column-reverse. 
+   If I use column-reverse, the list starts from bottom.
+   Let's just keep standard list styling. */
+.record-item { border-bottom: 1rpx solid #f0f0f0; }
+.record-item:first-child { border-bottom: none; } 
+.rec-date { font-size: 28rpx; color: #666; }
+.rec-val { font-size: 32rpx; font-weight: 600; color: #333; }
+
+.watermark { text-align: center; font-size: 22rpx; color: #ccc; margin-top: 20rpx; }
+
+/* Feedback */
+.feedback-text { margin-top: 24rpx; font-size: 28rpx; color: #fff; background: rgba(255,255,255,0.2); padding: 12rpx 20rpx; border-radius: 16rpx; text-align: center; font-weight: 500; backdrop-filter: blur(4px); }
+
+/* Metrics */
+.metrics-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24rpx; }
+.edit-profile { font-size: 32rpx; padding: 10rpx; color: #999; }
+.metrics-row { display: flex; justify-content: space-around; align-items: center; padding: 10rpx 0; }
+.metric-item { display: flex; flex-direction: column; align-items: center; }
+.m-val { font-size: 48rpx; font-weight: 700; color: #333; }
+.m-label { font-size: 24rpx; color: #999; margin-top: 6rpx; }
+.metric-divider { width: 1rpx; height: 60rpx; background: #eee; }
+.setup-hint { padding: 30rpx 0; text-align: center; color: #6b5cff; font-size: 28rpx; }
+
+/* Status Selection */
+.status-section { margin: 24rpx 0; }
+.status-label { font-size: 26rpx; color: #666; margin-bottom: 16rpx; }
+.status-options { display: flex; justify-content: space-between; gap: 16rpx; }
+.status-chip { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f5f5f5; padding: 16rpx 0; border-radius: 20rpx; border: 2rpx solid transparent; transition: all 0.2s; }
+.status-chip.active { background: #eef0ff; border-color: #6b5cff; color: #6b5cff; }
+.chip-label { font-size: 22rpx; margin-top: 8rpx; }
+
+/* Modal */
+.modal-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; display: flex; align-items: center; justify-content: center; }
+.modal-content { width: 80%; background: #fff; border-radius: 32rpx; padding: 40rpx; }
+.modal-header { font-size: 36rpx; font-weight: 700; text-align: center; margin-bottom: 40rpx; }
+.form-item { margin-bottom: 30rpx; }
+.f-label { display: block; font-size: 28rpx; color: #666; margin-bottom: 10rpx; }
+.f-input { background: #f5f5f5; height: 80rpx; border-radius: 16rpx; padding: 0 24rpx; font-size: 30rpx; }
+.f-radio-group { display: flex; gap: 40rpx; margin-top: 10rpx; }
+.radio-label { display: flex; align-items: center; font-size: 30rpx; }
+.save-profile-btn { background: #6b5cff; color: #fff; border-radius: 40rpx; margin-top: 40rpx; font-weight: 600; }

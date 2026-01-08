@@ -1,0 +1,92 @@
+.container {
+  min-height: 100vh;
+  background: #F7F8FA;
+  padding: 30rpx;
+  box-sizing: border-box;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 24rpx;
+  padding-left: 10rpx;
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24rpx;
+}
+
+.theme-card {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 2rpx solid transparent;
+  transition: all 0.3s;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
+}
+
+.theme-card.active {
+  border-color: #4A90E2;
+  background: #F0F7FF;
+}
+
+.theme-preview {
+  display: flex;
+  gap: 20rpx;
+  margin-bottom: 24rpx;
+}
+
+.preview-icon {
+  font-size: 48rpx;
+}
+
+.theme-info {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.theme-name {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.upload-card {
+  background: #fff;
+  border-radius: 20rpx;
+  border: 2rpx dashed #ccc;
+  padding: 40rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-card:active {
+  background: #f9f9f9;
+}
+
+.upload-icon {
+  font-size: 48rpx;
+  color: #999;
+  margin-bottom: 16rpx;
+}
+
+.upload-text {
+  font-size: 30rpx;
+  color: #666;
+  margin-bottom: 8rpx;
+}
+
+.upload-sub {
+  font-size: 24rpx;
+  color: #999;
+}

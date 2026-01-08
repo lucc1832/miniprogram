@@ -1,64 +1,213 @@
 <view class="wrap responsive-container">
-  <view class="header">
-    <view class="title">身体状态长期记录与自我关照</view>
-    <view class="subtitle">非强制/自主/无压力</view>
+  <view class="header-row">
+    <view class="title-block">
+      <view class="title">体重管理</view>
+      <view class="subtitle">记录每一天的变化</view>
+    </view>
+    <view class="header-action">
+      <view class="bind-btn" wx:if="{{!isBound}}" bindtap="showBind">
+        <text>➕ 绑定搭子</text>
+      </view>
+      <view class="partner-badge" wx:else>
+        <text>❤️ {{partnerName}}</text>
+      </view>
+    </view>
   </view>
 
-  <view class="card row">
-    <view class="row-left">
-      <view class="label">启用体重管理</view>
+  <!-- Dual Status Card (Only if Bound) -->
+  <view class="card dual-card" wx:if="{{isBound}}">
+    <view class="dual-row">
+      <!-- Me -->
+      <view class="dual-user me">
+        <view class="u-avatar">我</view>
+        <view class="u-status">
+           <text class="u-tag {{inputDate === today && records.length > 0 && records[records.length-1].date === today ? 'done' : 'todo'}}">
+             {{inputDate === today && records.length > 0 && records[records.length-1].date === today ? '已记录' : '未记录'}}
+           </text>
+           <text class="u-streak">连续 {{myStreak}} 天</text>
+        </view>
+      </view>
+      
+      <view class="dual-divider"></view>
+      
+      <!-- Partner -->
+      <view class="dual-user partner">
+        <view class="u-avatar p-avatar">TA</view>
+        <view class="u-status">
+           <text class="u-tag {{partnerTodayStatus === 'recorded' ? 'done' : 'todo'}}">
+             {{partnerTodayStatus === 'recorded' ? '已记录' : '未记录'}}
+           </text>
+           <text class="u-streak">连续 {{partnerStreak}} 天</text>
+        </view>
+      </view>
     </view>
-    <switch checked="{{enabled}}" bindchange="onToggleEnabled" color="#F4C430"/>
+    
+    <!-- Interaction Area -->
+    <view class="interaction-area">
+      <view class="interaction-msg" wx:if="{{partnerRecord && partnerRecord.change}}">
+        TA 今天变化: {{partnerRecord.change > 0 ? '+' : ''}}{{partnerRecord.change}}kg
+      </view>
+      <view class="interaction-msg" wx:elif="{{partnerTodayStatus === 'recorded'}}">
+        TA 今天已打卡，去鼓励一下吧
+      </view>
+      <view class="interaction-msg" wx:else>
+        TA 今天还没动静，提醒一下？
+      </view>
+      
+      <view class="like-btn {{interaction.likedToday ? 'liked' : ''}}" bindtap="sendLike">
+        <text>{{interaction.likedToday ? '已鼓励 👍' : '点赞鼓励 👍'}}</text>
+      </view>
+    </view>
   </view>
 
-  <view wx:if="{{enabled}}">
-    <view class="card">
-      <view class="section-title">记录体重（kg）</view>
-      <view class="form">
-        <input class="input" type="digit" placeholder="输入体重（kg）" value="{{inputWeight}}" bindinput="onWeightInput"/>
-        <picker class="picker" mode="date" value="{{inputDate}}" start="{{minDate}}" end="{{today}}" bindchange="onDateChange">
-          <view class="picker-val">{{inputDate}} ›</view>
-        </picker>
+  <!-- Big Current Weight Display -->
+  <view class="card current-card">
+    <view class="card-label">当前体重 ({{inputDate === today ? '今天' : inputDate}})</view>
+    <view class="current-weight-row">
+      <view class="weight-val">
+        <text class="val">{{hideNumbers ? '***' : (records.length > 0 ? records[records.length-1].weight : '--')}}</text>
+        <text class="unit">kg</text>
       </view>
-      <view class="tips">每日最多记录一次，支持历史补录（最长追溯1年）</view>
-      <button class="btn" bindtap="onSaveRecord" disabled="{{saveDisabled}}">保存记录</button>
-      <view class="arrow-indicator" wx:if="{{lastDelta!==0}}">
-        <text>{{lastDelta>0?'↑':'↓'}}</text>
-        <text class="arrow-text">最近两次变化：{{hideNumbers ? '' : (lastDelta>0?('+'+lastDelta):lastDelta)}} kg</text>
+      <view class="delta-tag {{lastDelta > 0 ? 'up' : (lastDelta < 0 ? 'down' : '')}}" wx:if="{{records.length >= 2}}">
+        <text>{{lastDelta > 0 ? '+' : ''}}{{lastDelta}} kg</text>
+      </view>
+    </view>
+    <view class="tips" wx:if="{{records.length === 0}}">还没有记录，开始第一次记录吧</view>
+    <view class="feedback-text" wx:if="{{feedbackText}}">{{feedbackText}}</view>
+  </view>
+
+  <!-- Metrics Card -->
+  <view class="card metrics-card" bindtap="checkProfile">
+    <view class="metrics-header">
+      <text class="section-title">身体指标</text>
+      <text class="edit-profile" catchtap="checkProfile">⚙️</text>
+    </view>
+    <view class="metrics-row" wx:if="{{bmi > 0}}">
+      <view class="metric-item">
+        <text class="m-val">{{bmi}}</text>
+        <text class="m-label">BMI</text>
+      </view>
+      <view class="metric-divider"></view>
+      <view class="metric-item">
+        <text class="m-val">{{bodyFat}}%</text>
+        <text class="m-label">体脂率</text>
+      </view>
+    </view>
+    <view class="setup-hint" wx:else>
+      <text>点击完善信息，查看BMI和体脂率 👉</text>
+    </view>
+  </view>
+
+  <view class="card form-card">
+    <view class="section-title">记录新数据</view>
+    <view class="form-row">
+      <view class="input-group">
+        <input class="weight-input" type="digit" placeholder="0.0" value="{{inputWeight}}" bindinput="onWeightInput"/>
+        <text class="input-unit">kg</text>
+      </view>
+      <picker class="date-picker" mode="date" value="{{inputDate}}" start="{{minDate}}" end="{{today}}" bindchange="onDateChange">
+        <view class="date-val">{{inputDate}} 📅</view>
+      </picker>
+    </view>
+    
+    <!-- Status Selection -->
+    <view class="status-section">
+      <view class="status-label">今日状态</view>
+      <view class="status-options">
+        <view class="status-chip {{selectedStatus===item.val?'active':''}}" 
+              wx:for="{{statusOptions}}" wx:key="val" 
+              bindtap="onStatusSelect" data-val="{{item.val}}">
+          <text>{{item.icon}}</text>
+          <text class="chip-label">{{item.label}}</text>
+        </view>
       </view>
     </view>
 
-    <view class="card">
-      <view class="section-title">趋势图（免费）</view>
-      <view class="timeswitch">
-        <button class="ts-btn {{trendDays===7?'active':''}}" bindtap="setTrendDays" data-days="7">7天</button>
-        <button class="ts-btn {{trendDays===30?'active':''}}" bindtap="setTrendDays" data-days="30">30天</button>
-        <view class="hide-toggle">
-          <text>隐藏数值</text>
-          <switch checked="{{hideNumbers}}" bindchange="onToggleHideNumbers" color="#F4C430"/>
-        </view>
-      </view>
-      <canvas type="2d" class="chart" id="trendChart" canvas-id="trendChart"></canvas>
-    </view>
+    <button class="save-btn" bindtap="onSaveRecord" disabled="{{saveDisabled}}">
+      {{saveDisabled ? '今日已记录' : '保存记录'}}
+    </button>
+  </view>
 
-    <view class="card" wx:if="{{isMember}}">
-      <view class="section-title">会员增强</view>
-      <view class="stats-row">
-        <view class="stat">
-          <view class="stat-num">{{hideNumbers ? '•••' : stats.max}}</view>
-          <view class="stat-label">最大值</view>
+  <view class="card chart-card">
+    <view class="chart-header">
+      <view class="section-title">体重趋势</view>
+      <view class="chart-controls">
+        <view class="days-toggle">
+          <text class="{{trendDays===7?'active':''}}" bindtap="setTrendDays" data-days="7">7天</text>
+          <text class="sep">/</text>
+          <text class="{{trendDays===30?'active':''}}" bindtap="setTrendDays" data-days="30">30天</text>
         </view>
-        <view class="stat">
-          <view class="stat-num">{{hideNumbers ? '•••' : stats.min}}</view>
-          <view class="stat-label">最小值</view>
-        </view>
-        <view class="stat">
-          <view class="stat-num">{{hideNumbers ? '•••' : stats.avg}}</view>
-          <view class="stat-label">平均值</view>
+        <view class="eye-toggle" bindtap="onToggleHideNumbers" style="margin-left: 20rpx;">
+          <text>{{hideNumbers ? '🙈' : '👁️'}}</text>
         </view>
       </view>
     </view>
+    <canvas type="2d" class="chart" id="trendChart" canvas-id="trendChart"></canvas>
+  </view>
 
-    <view class="watermark">仅供参考</view>
+  <!-- Recent Records List -->
+  <view class="card history-card" wx:if="{{records.length > 0}}">
+    <view class="section-title">最近记录</view>
+    <view class="record-list">
+      <block wx:for="{{records}}" wx:key="date">
+        <!-- Show last 5 records reverse -->
+        <view class="record-item" wx:if="{{index >= records.length - 5}}">
+          <text class="rec-date">{{item.date}}</text>
+          <text class="rec-val">{{hideNumbers ? '***' : item.weight}} kg</text>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <view class="watermark">仅供参考</view>
+
+  <!-- Profile Modal -->
+  <view class="modal-mask" wx:if="{{showProfileModal}}">
+    <view class="modal-content">
+      <view class="modal-header">完善个人信息</view>
+      <view class="modal-body">
+        <view class="form-item">
+          <text class="f-label">身高 (cm)</text>
+          <input class="f-input" type="number" placeholder="170" value="{{tempProfile.height}}" bindinput="onProfileInput" data-field="height"/>
+        </view>
+        <view class="form-item">
+          <text class="f-label">出生年份</text>
+          <input class="f-input" type="number" placeholder="1990" value="{{tempProfile.birthYear}}" bindinput="onProfileInput" data-field="birthYear"/>
+        </view>
+        <view class="form-item">
+          <text class="f-label">性别</text>
+          <radio-group class="f-radio-group" bindchange="onProfileInput" data-field="gender">
+            <label class="radio-label"><radio value="1" checked="{{tempProfile.gender==1}}"/>男</label>
+            <label class="radio-label"><radio value="0" checked="{{tempProfile.gender==0}}"/>女</label>
+          </radio-group>
+        </view>
+      </view>
+      <button class="save-profile-btn" bindtap="onSaveProfile">保存并计算</button>
+    </view>
+  </view>
+
+  <!-- Bind Modal -->
+  <view class="modal-mask" wx:if="{{showBindModal}}">
+    <view class="modal-content">
+      <view class="modal-header">绑定体重搭子</view>
+      <view class="modal-body">
+        <view class="invite-section">
+          <text class="invite-label">我的邀请码</text>
+          <view class="invite-code-box" bindtap="copyInviteCode">
+            <text class="code-text">{{inviteCode}}</text>
+            <text class="copy-hint">点击复制</text>
+          </view>
+        </view>
+        <view class="bind-divider">或者</view>
+        <view class="form-item">
+          <text class="f-label">输入对方邀请码</text>
+          <input class="f-input" type="text" placeholder="请输入邀请码" value="{{bindInput}}" bindinput="onBindInput"/>
+        </view>
+      </view>
+      <view class="modal-actions">
+        <button class="cancel-btn" bindtap="hideBind">取消</button>
+        <button class="confirm-btn" bindtap="confirmBind">确认绑定</button>
+      </view>
+    </view>
   </view>
 </view>

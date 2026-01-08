@@ -1,0 +1,26 @@
+<view class="container">
+  <view class="section-title">选择图标主题</view>
+  
+  <view class="theme-grid">
+    <block wx:for="{{themes}}" wx:key="id">
+      <view class="theme-card {{currentTheme === item.id ? 'active' : ''}}" bindtap="onSelectTheme" data-id="{{item.id}}">
+        <view class="theme-preview">
+          <text class="preview-icon">{{item.preview[0]}}</text>
+          <text class="preview-icon">{{item.preview[1]}}</text>
+          <text class="preview-icon">{{item.preview[2]}}</text>
+        </view>
+        <view class="theme-info">
+          <text class="theme-name">{{item.name}}</text>
+          <icon type="success" size="18" color="#4A90E2" wx:if="{{currentTheme === item.id}}"/>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <view class="section-title" style="margin-top: 40rpx;">自定义</view>
+  <view class="upload-card" bindtap="onUploadIcon">
+    <view class="upload-icon">+</view>
+    <text class="upload-text">上传自定义图标包</text>
+    <text class="upload-sub">支持 SVG / PNG 格式</text>
+  </view>
+</view>
