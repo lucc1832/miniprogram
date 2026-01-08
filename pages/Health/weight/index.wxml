@@ -1,0 +1,64 @@
+<view class="wrap responsive-container">
+  <view class="header">
+    <view class="title">身体状态长期记录与自我关照</view>
+    <view class="subtitle">非强制/自主/无压力</view>
+  </view>
+
+  <view class="card row">
+    <view class="row-left">
+      <view class="label">启用体重管理</view>
+    </view>
+    <switch checked="{{enabled}}" bindchange="onToggleEnabled" color="#F4C430"/>
+  </view>
+
+  <view wx:if="{{enabled}}">
+    <view class="card">
+      <view class="section-title">记录体重（kg）</view>
+      <view class="form">
+        <input class="input" type="digit" placeholder="输入体重（kg）" value="{{inputWeight}}" bindinput="onWeightInput"/>
+        <picker class="picker" mode="date" value="{{inputDate}}" start="{{minDate}}" end="{{today}}" bindchange="onDateChange">
+          <view class="picker-val">{{inputDate}} ›</view>
+        </picker>
+      </view>
+      <view class="tips">每日最多记录一次，支持历史补录（最长追溯1年）</view>
+      <button class="btn" bindtap="onSaveRecord" disabled="{{saveDisabled}}">保存记录</button>
+      <view class="arrow-indicator" wx:if="{{lastDelta!==0}}">
+        <text>{{lastDelta>0?'↑':'↓'}}</text>
+        <text class="arrow-text">最近两次变化：{{hideNumbers ? '' : (lastDelta>0?('+'+lastDelta):lastDelta)}} kg</text>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">趋势图（免费）</view>
+      <view class="timeswitch">
+        <button class="ts-btn {{trendDays===7?'active':''}}" bindtap="setTrendDays" data-days="7">7天</button>
+        <button class="ts-btn {{trendDays===30?'active':''}}" bindtap="setTrendDays" data-days="30">30天</button>
+        <view class="hide-toggle">
+          <text>隐藏数值</text>
+          <switch checked="{{hideNumbers}}" bindchange="onToggleHideNumbers" color="#F4C430"/>
+        </view>
+      </view>
+      <canvas type="2d" class="chart" id="trendChart" canvas-id="trendChart"></canvas>
+    </view>
+
+    <view class="card" wx:if="{{isMember}}">
+      <view class="section-title">会员增强</view>
+      <view class="stats-row">
+        <view class="stat">
+          <view class="stat-num">{{hideNumbers ? '•••' : stats.max}}</view>
+          <view class="stat-label">最大值</view>
+        </view>
+        <view class="stat">
+          <view class="stat-num">{{hideNumbers ? '•••' : stats.min}}</view>
+          <view class="stat-label">最小值</view>
+        </view>
+        <view class="stat">
+          <view class="stat-num">{{hideNumbers ? '•••' : stats.avg}}</view>
+          <view class="stat-label">平均值</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="watermark">仅供参考</view>
+  </view>
+</view>

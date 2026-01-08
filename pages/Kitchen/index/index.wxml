@@ -7,7 +7,7 @@
   </view>
   
   <!-- Content Area -->
-  <view class="content-area">
+  <view class="content-area responsive-container">
     <view class="tab-content" hidden="{{currentTab !== 0}}">
        <kitchen-home 
          id="kitchen-home"

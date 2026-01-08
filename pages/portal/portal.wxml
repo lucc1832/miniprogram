@@ -1,10 +1,10 @@
-<view class="wrap">
+<view class="wrap responsive-container">
   <view class="hero">
     <view class="hero-title">工具箱</view>
     <view class="hero-sub">选择一个小程序模块进入</view>
   </view>
 
-  <view class="grid">
+  <view class="grid responsive-grid">
     <!-- 入口1：到期&回本 -->
     <view class="card" bindtap="go" data-url="/pages/Breakeven/ReturnHomepage/ReturnHomepage">
       <view class="card-ico">📌</view>
@@ -30,6 +30,13 @@
       <view class="card-ico">🍳</view>
       <view class="card-title">我的厨房</view>
       <view class="card-desc">点餐 / 菜谱 / 订单</view>
+    </view>
+
+    <!-- 身体记录 -->
+    <view class="card" bindtap="go" data-url="/pages/Health/weight/index">
+      <view class="card-ico">⚖️</view>
+      <view class="card-title">身体记录</view>
+      <view class="card-desc">长期记录与自我关照</view>
     </view>
 
     <!-- 预留 -->

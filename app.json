@@ -46,6 +46,12 @@
       ]
     },
     {
+      "root": "pages/Health",
+      "pages": [
+        "weight/index"
+      ]
+    },
+    {
       "root": "pages/Kitchen",
       "pages": [
         "index/index"

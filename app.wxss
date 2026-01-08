@@ -2,3 +2,40 @@
 page { background: #f6f7fb; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial; }
 .card { border-radius: 16rpx; background: #fff; box-shadow: 0 8rpx 24rpx rgba(20,20,20,.06); }
 .muted { color: #8a8f99; }
+
+/* 响应式容器：移动端默认全宽，平板/桌面端居中并限制最大宽度 */
+.responsive-container {
+  width: 100%;
+  max-width: 600px; /* 平板/桌面最大宽度 */
+  margin: 0 auto;   /* 水平居中 */
+  box-sizing: border-box;
+}
+
+/* 响应式 Grid：移动端 2 列，平板/桌面 3-4 列 */
+.responsive-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18rpx;
+}
+
+/* 媒体查询：平板及以上 (>768px) */
+@media (min-width: 768px) {
+  .responsive-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24rpx;
+  }
+  .wrap {
+    padding: 40rpx !important;
+  }
+}
+
+/* 媒体查询：桌面大屏 (>1024px) */
+@media (min-width: 1024px) {
+  .responsive-container {
+    max-width: 800px;
+  }
+  .responsive-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+

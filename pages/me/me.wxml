@@ -1,4 +1,4 @@
-<view class="wrap">
+<view class="wrap responsive-container">
   <view class="user-card">
     <button class="avatar-wrapper" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
       <image class="avatar" src="{{userInfo.avatarUrl || defaultAvatar}}" mode="aspectFill"></image>

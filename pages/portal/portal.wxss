@@ -25,6 +25,11 @@
   gap: 18rpx;
 }
 
+/* 覆盖默认 grid，交给 responsive-grid 控制 */
+.grid {
+  display: block; /* Fallback or override by responsive-grid */
+}
+
 .card{
   background: #ffffff;
   border-radius: 22rpx;

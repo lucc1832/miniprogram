@@ -92,7 +92,11 @@ Page({
     this.setData({ stats: { daysJoined, totalRecords, streakDays } });
   },
   onChooseAvatar(e) {
-    const { avatarUrl } = e.detail;
+    const avatarUrl = e && e.detail && e.detail.avatarUrl;
+    if (!avatarUrl) {
+      wx.showToast({ title: '已取消选择头像', icon: 'none' });
+      return;
+    }
     const userInfo = this.data.userInfo || {};
     userInfo.avatarUrl = avatarUrl;
     this.setData({ userInfo, hasUserInfo: true });
