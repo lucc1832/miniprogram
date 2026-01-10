@@ -1,0 +1,61 @@
+<view class="wrap">
+  <!-- 地址信息 -->
+  <view class="section">
+    <view class="section-title">收货信息</view>
+    <view class="card">
+      <input class="input-row" placeholder="收货地址（例：某某路xx号）" value="{{address}}" bindinput="onAddress"/>
+      <input class="input-row" placeholder="备注信息（可选）" value="{{remark}}" bindinput="onRemark"/>
+    </view>
+  </view>
+
+  <!-- 订单明细 -->
+  <view class="section">
+    <view class="section-title-row">
+      <view class="section-title">订单明细</view>
+      <view class="edit-btn" bindtap="goBack">修改</view>
+    </view>
+    <view class="card">
+      <block wx:for="{{groupedCartList}}" wx:key="name">
+        <view class="item-row">
+          <view class="item-info">
+            <view class="item-name">{{item.name}}</view>
+            <view class="item-price">¥{{item.price}}</view>
+          </view>
+          <view class="item-count">x{{item.count}}</view>
+          <view class="item-total">¥{{item.totalPriceStr}}</view>
+        </view>
+      </block>
+      <view class="divider"></view>
+      <view class="total-row">
+        <text>合计</text>
+        <text class="total-price">¥{{cartTotal}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 支付方式 -->
+  <view class="section">
+    <view class="section-title">支付方式</view>
+    <view class="card payment-card">
+      <view class="payment-option {{paymentMethod === 'wechat' ? 'active' : ''}}" bindtap="selectPayment" data-method="wechat">
+        <view class="payment-icon wechat-icon"></view>
+        <text>微信支付</text>
+        <view class="radio {{paymentMethod === 'wechat' ? 'checked' : ''}}"></view>
+      </view>
+      <view class="payment-option {{paymentMethod === 'balance' ? 'active' : ''}}" bindtap="selectPayment" data-method="balance">
+        <view class="payment-icon balance-icon"></view>
+        <text>余额支付</text>
+        <view class="radio {{paymentMethod === 'balance' ? 'checked' : ''}}"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部固定栏 -->
+  <view class="bottom-bar">
+    <view class="bottom-total">
+      <text class="label">实付金额</text>
+      <text class="amount">¥{{cartTotal}}</text>
+    </view>
+    <view class="submit-btn" bindtap="submit">立即支付</view>
+  </view>
+</view>

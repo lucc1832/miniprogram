@@ -57,12 +57,44 @@ Component({
       }
       this.setData({ weekDays: days });
 
-      // Init Heatmap Grid (Mock)
+      this.loadHeatmapData();
+    },
+
+    loadHeatmapData() {
+      const orders = wx.getStorageSync('kitchen_orders') || [];
+      const orderMap = {};
+      
+      orders.forEach(o => {
+        // Normalize date string (handle "YYYY-M-D" or full ISO)
+        let dateStr = o.date;
+        if (dateStr && dateStr.indexOf(' ') > -1) {
+          dateStr = dateStr.split(' ')[0];
+        }
+        if (dateStr) {
+          orderMap[dateStr] = (orderMap[dateStr] || 0) + 1;
+        }
+      });
+
       const grid = [];
+      const year = this.data.currentYear;
+
       for (let m = 0; m < 12; m++) {
         const squares = [];
-        for (let d = 0; d < 30; d++) { // Simplified
-           squares.push({ level: Math.floor(Math.random() * 5) });
+        // Get days in month
+        const daysInMonth = new Date(year, m + 1, 0).getDate();
+        
+        for (let d = 1; d <= daysInMonth; d++) {
+          const dateKey = `${year}-${m + 1}-${d}`;
+          const count = orderMap[dateKey] || 0;
+          let color = '#f0f0f0'; // Default empty
+          
+          if (count > 0) {
+            // Simple logic: Green if cooked/ordered
+            // Could be dynamic based on count or flavor in future
+            color = '#4CAF50'; 
+          }
+
+          squares.push({ color });
         }
         grid.push({ month: m + 1, squares });
       }
@@ -75,6 +107,9 @@ Component({
       const status = wx.getStorageSync('daily_status_' + todayStr) || 'empty';
       
       this.setData({ todayStatus: status });
+      
+      // Reload heatmap data to ensure realtime update
+      this.loadHeatmapData();
 
       if (status === 'planned') {
         const menu = wx.getStorageSync('today_menu');

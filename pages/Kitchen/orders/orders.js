@@ -1,4 +1,4 @@
-// pages/Orderfood/cart/cart.js
+// pages/Kitchen/orders/orders.js
 Page({
 
   /**

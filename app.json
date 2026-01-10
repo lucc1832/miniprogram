@@ -15,19 +15,6 @@
       ]
     },
     {
-      "root": "pages/Orderfood",
-      "pages": [
-        "home/home",
-        "ordering/ordering",
-        "orders/orders",
-        "menu/menu",
-        "menu/category/category",
-        "menu/edit/edit",
-        "cart/cart",
-        "checkout/checkout"
-      ]
-    },
-    {
       "root": "pages/Anniversary",
       "pages": [
         "home/home",
@@ -54,7 +41,15 @@
     {
       "root": "pages/Kitchen",
       "pages": [
-        "index/index"
+        "index/index",
+        "order-home/home",
+        "ordering/ordering",
+        "orders/orders",
+        "manage-menu/menu",
+        "manage-menu/category/category",
+        "manage-menu/edit/edit",
+        "cart/cart",
+        "checkout/checkout"
       ]
     }
   ],
@@ -88,7 +83,7 @@
   "preloadRule": {
     "pages/portal/portal": {
       "network": "all",
-      "packages": ["pages/Weather", "pages/Breakeven", "pages/Orderfood"]
+      "packages": ["pages/Weather", "pages/Breakeven", "pages/Kitchen"]
     }
   },
   "requiredPrivateInfos": [

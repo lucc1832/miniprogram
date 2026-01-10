@@ -47,7 +47,7 @@
         <text class="month-label">{{item.month}}</text>
         <view class="squares">
           <view class="square" wx:for="{{item.squares}}" wx:key="*this" 
-                style="background-color: {{index % 7 === 0 ? '#E0E0E0' : '#E0E0E0'}}"></view>
+                style="background-color: {{item.color}}; transition: background-color 0.3s ease;"></view>
         </view>
       </view>
     </view>

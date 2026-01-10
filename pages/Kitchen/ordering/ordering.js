@@ -1,4 +1,4 @@
-// Orderfood 首页逻辑：左侧分类 + 右侧菜单列表 + 购物车抽屉
+// Kitchen 点餐页逻辑：左侧分类 + 右侧菜单列表 + 购物车抽屉
 Page({
   data: {
     // 搜索关键字
@@ -161,7 +161,7 @@ removeFood(e) {
         price: Number(it.price || 0) * Number(it.count || 0)
       }));
     wx.setStorageSync('of_cart_v1', list);
-    wx.navigateTo({ url: '/pages/Orderfood/checkout/checkout' });
+    wx.navigateTo({ url: '/pages/Kitchen/checkout/checkout' });
   },
 
   // 应用筛选并计算总数与总价，同时生成已选列表
@@ -269,10 +269,10 @@ removeFood(e) {
         price: Number(it.price || 0) * Number(it.count || 0)
       }));
     wx.setStorageSync('of_cart_v1', list);
-    wx.navigateTo({ url: '/pages/Orderfood/checkout/checkout' });
+    wx.navigateTo({ url: '/pages/Kitchen/checkout/checkout' });
   },
   openRemark() {
-    wx.navigateTo({ url: '/pages/Orderfood/checkout/checkout' });
+    wx.navigateTo({ url: '/pages/Kitchen/checkout/checkout' });
   },
   fitAmountFont(retry = 0) {
     if (retry > 5) return; // 防止无限递归

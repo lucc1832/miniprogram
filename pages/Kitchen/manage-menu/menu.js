@@ -23,7 +23,7 @@ Page({
 
   goToCategoryManage() {
     wx.navigateTo({
-      url: '/pages/Orderfood/menu/category/category'
+      url: '/pages/Kitchen/manage-menu/category/category'
     });
   },
 
@@ -125,7 +125,7 @@ Page({
   onEditDish(e) {
     const id = e.currentTarget.dataset.id;
     wx.navigateTo({
-      url: `/pages/Orderfood/menu/edit/edit?id=${id}`
+      url: `/pages/Kitchen/manage-menu/edit/edit?id=${id}`
     });
   },
 
@@ -139,7 +139,7 @@ Page({
 
   onAddDish() {
     wx.navigateTo({
-      url: '/pages/Orderfood/menu/edit/edit'
+      url: '/pages/Kitchen/manage-menu/edit/edit'
     });
   }
 });

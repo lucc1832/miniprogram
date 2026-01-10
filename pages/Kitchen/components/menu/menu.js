@@ -1,113 +1,272 @@
+// Kitchen 点餐组件
 Component({
   properties: {
-    statusBarHeight: Number,
-    navBarHeight: Number
+    statusBarHeight: {
+      type: Number,
+      value: 20
+    },
+    navBarHeight: {
+      type: Number,
+      value: 44
+    }
   },
 
   data: {
+    // 搜索关键字
+    keyword: '',
+    // 当前激活分类
     activeCat: 'all',
-    foods: [
-      { name: '蒸鸡蛋', img: 'https://img.yzcdn.cn/vant/cat.jpeg', desc: '嫩滑可口，营养丰富' },
-      { name: '辣椒炒牛肉', img: 'https://img.yzcdn.cn/vant/cat.jpeg', desc: '香辣下饭，肉质鲜嫩' },
-      { name: '土豆炖牛腩', img: 'https://img.yzcdn.cn/vant/cat.jpeg', desc: '软烂入味，汤汁浓郁' },
-      { name: '辣椒炒牛肚', img: 'https://img.yzcdn.cn/vant/cat.jpeg', desc: '口感爽脆，香辣过瘾' },
-      { name: '黄瓜炒火腿', img: 'https://img.yzcdn.cn/vant/cat.jpeg', desc: '清淡爽口，简单快手' },
-      { name: '清炒上海青', img: 'https://img.yzcdn.cn/vant/cat.jpeg', desc: '清脆爽口，解腻佳品' }
+    // 左侧分类列表
+    catsData: [
+      { key: 'all', name: '全部' },
+      { key: 'drink', name: '饮品' },
+      { key: 'main', name: '主食' },
+      { key: 'snack', name: '小吃' }
     ],
-    cart: [],
-    showDetail: false,
-    selectedFood: null,
-    showCartModal: false
+    // 是否显示购物车抽屉
+    selectedFoods: [],
+    showSelected: true,
+    cartVisible: false,
+    // 抽屉内已选列表及统计
+    selectedList: [],
+    selectedCount: 0,
+    cartListMaxH: '60vh',
+    // 顶部次级菜单（预留）
+    deliveryMode: 'waisong',
+    activeMenu: 'menu',
+
+    // 菜品数据
+    foods: [{
+        id: 'f1',
+        name: '珍珠奶茶',
+        price: 18,
+        cat: 'drink',
+        count: 0,
+        img: 'https://img.yzcdn.cn/upload_files/2020/06/15/FmYH5S0ZPp7QzZfrgK8p0sG_C5kZ.png'
+      },
+      {
+        id: 'f2',
+        name: '美式咖啡',
+        price: 15,
+        cat: 'drink',
+        count: 0,
+        img: 'https://img.yzcdn.cn/upload_files/2020/06/15/FmYH5S0ZPp7QzZfrgK8p0sG_C5kZ.png'
+      },
+      {
+        id: 'f3',
+        name: '牛肉饭',
+        price: 28,
+        cat: 'main',
+        count: 0,
+        img: 'https://img.yzcdn.cn/upload_files/2020/06/15/FmYH5S0ZPp7QzZfrgK8p0sG_C5kZ.png'
+      },
+      {
+        id: 'f4',
+        name: '炸鸡',
+        price: 22,
+        cat: 'snack',
+        count: 0,
+        img: 'https://img.yzcdn.cn/upload_files/2020/06/15/FmYH5S0ZPp7QzZfrgK8p0sG_C5kZ.png'
+      }
+    ],
+
+    // 渲染用列表
+    filteredFoods: [],
+
+    // 底部合计
+    totalCount: 0,
+    totalPrice: '0.00',
+    amountFontSize: 36,
+  },
+
+  lifetimes: {
+    attached() {
+      this.applyFilterAndCalc();
+    }
   },
 
   methods: {
-    switchCat(e) {
-      this.setData({ activeCat: e.currentTarget.dataset.cat });
-    },
-
-    // 显示菜品详情
-    onShowDetail(e) {
-      const food = e.currentTarget.dataset.food;
+    // 搜索框输入回调
+    onKeywordInput(e) {
       this.setData({
-        selectedFood: food,
-        showDetail: true
+        keyword: e.detail.value || ''
       });
+      this.applyFilterAndCalc();
     },
 
-    closeDetail() {
-      this.setData({ showDetail: false });
+    // 左侧分类点击
+    pickCat(e) {
+      const cat = e.currentTarget.dataset.cat || 'all';
+      this.setData({
+        activeCat: cat
+      });
+      this.applyFilterAndCalc();
     },
 
-    toggleFav() {
-      // 模拟收藏/取消收藏
-      const food = this.data.selectedFood;
-      if (food) {
-        wx.showToast({ title: '操作成功', icon: 'success' });
-      }
+    // 空操作
+    noop() {},
+
+    // 外送/自取（占位）
+    switchDelivery(e) {
+      const mode = e.currentTarget.dataset.mode || 'waisong';
+      this.setData({ deliveryMode: mode });
     },
 
-    // 加入购物车（首次不提示，重复点击同一商品才提示）
-    addToCart(e) {
-      const food = e.currentTarget.dataset.food;
-      const cart = this.data.cart.slice();
-      const exists = cart.findIndex(item => item && item.name === food.name) !== -1;
-      cart.push(food);
-      this.setData({ cart });
-      if (exists) {
-        wx.showToast({ title: '已加入清单', icon: 'none', duration: 2500 });
-      }
+    // 次级菜单切换（占位）
+    switchMenu(e) {
+      const menu = e.currentTarget.dataset.menu || 'menu';
+      this.setData({ activeMenu: menu });
     },
 
-    // 显示购物车详情
-    showCart() {
-      if (this.data.cart.length > 0) {
-        this.setData({ showCartModal: true });
-      }
+    // 菜品 +1
+    addOne(e) {
+      const id = e.currentTarget.dataset.id;
+      const foods = this.data.foods.map(it => {
+        if (it.id === id) return {
+          ...it,
+          count: (it.count || 0) + 1
+        };
+        return it;
+      });
+      this.setData({
+        foods
+      });
+      this.applyFilterAndCalc();
     },
 
-    closeCart() {
-      this.setData({ showCartModal: false });
+    // 菜品 -1
+    minusOne(e) {
+      const id = e.currentTarget.dataset.id;
+      const foods = this.data.foods.map(it => {
+        if (it.id === id) return {
+          ...it,
+          count: Math.max((it.count || 0) - 1, 0)
+        };
+        return it;
+      });
+      this.setData({
+        foods
+      });
+      this.applyFilterAndCalc();
     },
 
-    clearCart() {
-      this.setData({ cart: [], showCartModal: false });
+    // 删除某个已选
+    removeFood(e) {
+      const id = e.currentTarget.dataset.id;
+      const foods = this.data.foods.map(it => {
+        if (it.id === id) return { ...it, count: 0 };
+        return it;
+      });
+      this.setData({ foods });
+      this.applyFilterAndCalc();
     },
 
-    // 提交今日菜单 (Plan)
-    submitOrder() {
-      if (this.data.cart.length === 0) return;
-      
-      const now = new Date();
-      const todayStr = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-      
-      const todayMenu = {
-        date: todayStr,
-        items: this.data.cart,
-        createTime: Date.now()
+    // 跳转结算页
+    goCheckout() {
+      const list = this.data.foods
+        .filter(it => Number(it.count || 0) > 0)
+        .map(it => ({
+          id: it.id,
+          name: it.name,
+          price: Number(it.price || 0) * Number(it.count || 0)
+        }));
+      wx.setStorageSync('of_cart_v1', list);
+      wx.navigateTo({ url: '/pages/Kitchen/checkout/checkout' });
+    },
+
+    // 应用筛选并计算
+    applyFilterAndCalc() {
+      const {
+        foods,
+        keyword,
+        activeCat
+      } = this.data;
+      const kw = (keyword || '').trim().toLowerCase();
+
+      const filteredFoods = foods.filter(it => {
+        const hitKw = !kw || (it.name || '').toLowerCase().includes(kw);
+        const hitCat = activeCat === 'all' || it.cat === activeCat;
+        return hitKw && hitCat;
+      });
+
+      let totalCount = 0;
+      let totalPriceNum = 0;
+
+      foods.forEach(it => {
+        const c = Number(it.count || 0);
+        totalCount += c;
+        totalPriceNum += c * Number(it.price || 0);
+      }); 
+
+      const selectedList = foods.filter(it => Number(it.count || 0) > 0);
+      const selectedCount = selectedList.length;
+
+      const updates = {
+        filteredFoods,
+        totalCount,
+        totalPrice: totalPriceNum.toFixed(2),
+        selectedList,
+        selectedCount,
       };
 
-      // 1. 保存今日菜单
-      wx.setStorageSync('today_menu', todayMenu);
-      
-      // 2. 更新今日状态为 "planned"
-      wx.setStorageSync('daily_status_' + todayStr, 'planned');
+      if (totalCount === 0) {
+        updates.cartVisible = false;
+      }
 
-      this.setData({
-        cart: [],
-        showCartModal: false
-      });
+      this.setData(updates);
+    },
 
-      // 3. 引导回首页
-      wx.showToast({
-        title: '已安排！准备做饭',
-        icon: 'success',
-        duration: 1500,
-        success: () => {
-          setTimeout(() => {
-            this.triggerEvent('switchTab', { tabIndex: 0 });
-          }, 1500);
+    // 展开/收起购物车抽屉
+    toggleCart() {
+      const visible = !this.data.cartVisible;
+      this.setData({ cartVisible: visible });
+      if (visible) {
+        const selectedList = this.data.foods.filter(it => Number(it.count || 0) > 0);
+        const count = selectedList.length;
+        let cartListMaxH = '60vh';
+        if (count <= 1) {
+          const h = Math.max(200, count * 132);
+          cartListMaxH = h + 'rpx';
         }
+        this.setData({ selectedList, selectedCount: count, cartListMaxH });
+      }
+    },
+
+    // 抽屉内 +1
+    inc(e) {
+      const id = e.currentTarget.dataset.id;
+      const foods = this.data.foods.map(it => {
+        if (it.id === id) return { ...it, count: Number(it.count || 0) + 1 };
+        return it;
       });
+      this.setData({ foods });
+      this.applyFilterAndCalc();
+    },
+
+    // 抽屉内 -1
+    dec(e) {
+      const id = e.currentTarget.dataset.id;
+      const foods = this.data.foods.map(it => {
+        if (it.id === id) return { ...it, count: Math.max(Number(it.count || 0) - 1, 0) };
+        return it;
+      });
+      this.setData({ foods });
+      this.applyFilterAndCalc();
+    },
+
+    // 抽屉内删除条目
+    removeItem(e) {
+      const id = e.currentTarget.dataset.id;
+      const foods = this.data.foods.map(it => {
+        if (it.id === id) return { ...it, count: 0 };
+        return it;
+      });
+      this.setData({ foods });
+      this.applyFilterAndCalc();
+    },
+
+    openRemark() {
+      wx.navigateTo({ url: '/pages/Kitchen/checkout/checkout' });
     }
   }
-})
+});

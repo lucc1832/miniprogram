@@ -104,50 +104,59 @@
 /* 右侧菜品列表容器 */
 .menu-list{
   flex: 1;
-  background: #fff;
+  background: transparent;
   border-radius: 18rpx;
   padding: 12rpx;
 }
 
-/* 菜品行：图片 + 文案 + 操作按钮 */
+/* 菜品行：图片 + 文案 + 操作按钮 - 卡片式设计 */
 .food-row{
   display: flex;
   align-items: center;
-  padding: 14rpx 10rpx;
-  border-bottom: 1rpx solid #f1f5f9;
+  padding: 24rpx;
+  margin-bottom: 24rpx;
+  background: #ffffff;
+  border-radius: 24rpx;
+  box-shadow: 0 8rpx 20rpx rgba(0,0,0,0.05);
+  border-bottom: none;
+  transition: all 0.2s ease;
 }
+
+.food-row:active {
+  transform: scale(0.98);
+}
+
 /* 菜品图片缩略图 */
 .food-img{
-  width: 150rpx;
-  height: 110rpx;
-  border-radius: 14rpx;
-  background: #eee;
-  margin-right: 6rpx;
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 20rpx;
+  background: #f3f4f6;
+  margin-right: 24rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
 }
+
 /* 菜品中部信息（名称、价格） */
 .food-mid{
   flex: 1;
   min-width: 0;
-}
-
-.food-card{
-  background: #fff;
-  border-radius: 18rpx;
-  padding: 18rpx 18rpx;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  height: 140rpx;
 }
 
 .food-name{
-  font-size: 32rpx;
-  font-weight: 800;
-  color: #111827;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 12rpx;
+  line-height: 1.4;
 }
+
 .food-price{
-  margin-top: 6rpx;
-  font-size: 28rpx;
-  color: #16a34a;
+  font-size: 32rpx;
+  color: #ef4444;
   font-weight: 800;
 }
 

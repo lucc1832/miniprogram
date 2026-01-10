@@ -54,7 +54,7 @@
         <text class="bb-price" style="font-size: {{amountFontSize}}rpx;">¥{{totalPrice}}</text>
       </view>
     </view>
-    <view class="bb-right" bindtap="checkout">选好啦</view>
+    <view class="bb-right" bindtap="goCheckout">选好啦</view>
   </view>
   <!-- 遮罩：抽屉打开时显示，点击关闭抽屉 -->
   <view class="mask" wx:if="{{cartVisible}}" catchtap="toggleCart"></view>
