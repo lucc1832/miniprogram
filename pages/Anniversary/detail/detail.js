@@ -1,5 +1,31 @@
 const app = getApp();
-const { getEventEmotion } = require('../../../utils/emotion.js');
+const emotionUtils = (() => {
+  try {
+    return require('../utils/emotion.js');
+  } catch (err) {
+    console.warn('emotion utils load failed, use fallback', err);
+    return { getEventEmotion: () => '时间正在慢慢靠近。' };
+  }
+})();
+const dateUtils = (() => {
+  try {
+    return require('../utils/date.js');
+  } catch (err) {
+    console.warn('date utils load failed, use fallback', err);
+    return {
+      calcEventDays(event) {
+        const target = new Date(String(event.date).replace(/-/g, '/'));
+        const today = new Date();
+        target.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+        const days = Math.ceil((target.getTime() - today.getTime()) / 86400000);
+        return { days: Math.abs(days), label: days >= 0 ? '还有' : '已过' };
+      }
+    };
+  }
+})();
+const { getEventEmotion } = emotionUtils;
+const { calcEventDays } = dateUtils;
 
 Page({
   data: {
@@ -37,7 +63,6 @@ Page({
   },
 
   renderEvent(event) {
-    const { calcEventDays } = require('../../../utils/date.js');
     const calc = calcEventDays(event);
     
     // 优化 label 逻辑

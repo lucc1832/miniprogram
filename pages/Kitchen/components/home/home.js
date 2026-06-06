@@ -39,6 +39,29 @@ Component({
   },
 
   methods: {
+    formatDateKey(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    },
+
+    normalizeDateKey(value) {
+      if (!value) return '';
+      const str = String(value).trim();
+      const datePart = str.split(' ')[0].replace(/\//g, '-');
+      const parts = datePart.split('-');
+
+      if (parts.length >= 3) {
+        const y = parts[0];
+        const m = String(parseInt(parts[1], 10)).padStart(2, '0');
+        const d = String(parseInt(parts[2], 10)).padStart(2, '0');
+        if (y && m !== 'NaN' && d !== 'NaN') return `${y}-${m}-${d}`;
+      }
+
+      return datePart;
+    },
+
     initDateData() {
       const now = new Date();
       const days = [];
@@ -65,11 +88,7 @@ Component({
       const orderMap = {};
       
       orders.forEach(o => {
-        // Normalize date string (handle "YYYY-M-D" or full ISO)
-        let dateStr = o.date;
-        if (dateStr && dateStr.indexOf(' ') > -1) {
-          dateStr = dateStr.split(' ')[0];
-        }
+        const dateStr = this.normalizeDateKey(o.dateKey || o.date);
         if (dateStr) {
           orderMap[dateStr] = (orderMap[dateStr] || 0) + 1;
         }
@@ -84,7 +103,7 @@ Component({
         const daysInMonth = new Date(year, m + 1, 0).getDate();
         
         for (let d = 1; d <= daysInMonth; d++) {
-          const dateKey = `${year}-${m + 1}-${d}`;
+          const dateKey = `${year}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
           const count = orderMap[dateKey] || 0;
           let color = '#f0f0f0'; // Default empty
           
@@ -103,8 +122,11 @@ Component({
 
     checkTodayStatus() {
       const now = new Date();
-      const todayStr = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-      const status = wx.getStorageSync('daily_status_' + todayStr) || 'empty';
+      const todayStr = this.formatDateKey(now);
+      const legacyTodayStr = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+      const status = wx.getStorageSync('daily_status_' + todayStr)
+        || wx.getStorageSync('daily_status_' + legacyTodayStr)
+        || 'empty';
       
       this.setData({ todayStatus: status });
       
@@ -134,7 +156,7 @@ Component({
       wx.showLoading({ title: '记录中...' });
       
       const now = new Date();
-      const todayStr = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+      const todayStr = this.formatDateKey(now);
       const menu = this.data.todayMenu;
 
       // 1. Update Status
@@ -144,6 +166,7 @@ Component({
       if (menu) {
         const order = {
           id: Date.now(),
+          dateKey: todayStr,
           date: now.toLocaleString(),
           items: menu.items,
           status: '已完成'

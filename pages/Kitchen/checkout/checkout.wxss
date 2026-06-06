@@ -265,3 +265,8 @@ page {
 .submit-btn:active {
   transform: scale(0.96);
 }
+
+.submit-btn.disabled {
+  opacity: 0.72;
+  box-shadow: none;
+}

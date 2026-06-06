@@ -1,3 +1,6 @@
+const amapWeather = require('../utils/amapWeather.js');
+const PENDING_CITY_INDEX_KEY = 'weather_pending_city_index';
+
 Page({
   data: {
     searchText: '',
@@ -15,9 +18,9 @@ Page({
       '厦门'
     ],
     intlCities: [
-      '纽约', '巴黎', '伦敦', '东京',
-      '罗马', '迪拜', '莫斯科', '悉尼',
-      '新加坡', '北京', '雅典'
+      '天津', '合肥', '福州', '昆明',
+      '南昌', '南宁', '贵阳', '太原',
+      '哈尔滨', '长春', '石家庄'
     ],
     searchResults: []
   },
@@ -36,18 +39,24 @@ Page({
       menuButtonTop: menuButtonInfo.top,
       menuButtonHeight: menuButtonInfo.height
     });
-    this.initLocation();
+    this.locationTimer = setTimeout(() => {
+      this.locationTimer = null;
+      this.initLocation();
+    }, 300);
   },
 
   onCancel() {
     wx.navigateBack();
   },
 
+  onUnload() {
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+    if (this.locationTimer) clearTimeout(this.locationTimer);
+  },
+
   initLocation() {
-    // Attempt to get current location city name
-    // We can reuse the logic from index.js but simpler
     wx.getLocation({
-      type: 'wgs84',
+      type: 'gcj02',
       success: (res) => {
         this.reverseGeocode(res.latitude, res.longitude);
       },
@@ -58,85 +67,82 @@ Page({
   },
 
   reverseGeocode(lat, lon) {
-    const API_KEY = '8968074cbf2aacf93ece6a19f282351a';
-    const GEO_BASE = 'https://api.openweathermap.org/geo/1.0/reverse';
-    
-    wx.request({
-      url: GEO_BASE,
-      data: { lat, lon, limit: 1, appid: API_KEY },
-      success: (res) => {
-        if (res.data && res.data.length > 0) {
-          const top = res.data[0];
-          const name = (top.local_names && top.local_names.zh) ? top.local_names.zh : top.name;
-          this.setData({ currentLocation: name });
-        }
-      }
+    amapWeather.reverseGeocode(lat, lon).then(city => {
+      this.currentLocationCity = city;
+      this.setData({ currentLocation: city && city.name ? city.name : '定位失败' });
+    }).catch(() => {
+      this.setData({ currentLocation: '定位失败' });
     });
   },
 
   onInput(e) {
-    const val = e.detail.value;
+    const val = (e.detail && e.detail.value) || '';
     this.setData({ searchText: val });
-    if (val.length > 0) {
-      this.doSearch(val);
-    } else {
+
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+
+    if (!val.trim()) {
+      this.searchSeq = (this.searchSeq || 0) + 1;
       this.setData({ searchResults: [] });
+      return;
     }
+
+    this.searchTimer = setTimeout(() => {
+      this.doSearch(val.trim());
+    }, 260);
+  },
+
+  clearSearch() {
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+    this.searchSeq = (this.searchSeq || 0) + 1;
+    this.setData({ searchText: '', searchResults: [] });
   },
 
   doSearch(keyword) {
-    const API_KEY = '8968074cbf2aacf93ece6a19f282351a';
-    const GEO_BASE = 'https://api.openweathermap.org/geo/1.0/direct';
-    
-    wx.request({
-      url: GEO_BASE,
-      data: {
-        q: keyword,
-        limit: 10,
-        appid: API_KEY
-      },
-      success: (res) => {
-        if (res.data && Array.isArray(res.data)) {
-          const results = res.data.map(item => ({
-            name: (item.local_names && item.local_names.zh) ? item.local_names.zh : item.name,
-            province: item.state || item.country,
-            lat: item.lat,
-            lon: item.lon,
-            country: item.country
-          }));
-          this.setData({ searchResults: results });
-        } else {
-           this.setData({ searchResults: [] });
-        }
-      },
-      fail: (err) => {
+    const seq = (this.searchSeq || 0) + 1;
+    this.searchSeq = seq;
+
+    amapWeather.geocode(keyword).then(results => {
+      if (seq !== this.searchSeq) return;
+      this.setData({
+        searchResults: results.map(item => ({
+          ...item,
+          country: '中国'
+        }))
+      });
+    }).catch(err => {
         console.error('Search failed', err);
         wx.showToast({ title: '搜索失败', icon: 'none' });
-      }
     });
   },
 
   onSelectCity(e) {
-    const { name, lat, lon } = e.currentTarget.dataset;
+    const { name, lat, lon, adcode } = e.currentTarget.dataset;
     if (!name || name === '定位中...' || name === '定位失败') return;
 
-    if (lat && lon) {
-      this.addCityDirectly({ name, lat, lon });
+    if (adcode) {
+      const city = this.data.searchResults.find(item => item.adcode === adcode);
+      if (city) {
+        this.addCityDirectly(city);
+        return;
+      }
+    }
+
+    if (this.currentLocationCity && this.currentLocationCity.name === name) {
+      this.addCityDirectly(this.currentLocationCity);
+    } else if (lat && lon) {
+      this.addCityDirectly({ name, lat: Number(lat), lon: Number(lon), adcode });
     } else {
       this.addCityToStorage(name);
     }
   },
 
   switchToCity(index) {
+    wx.setStorageSync(PENDING_CITY_INDEX_KEY, index);
     const pages = getCurrentPages();
     const indexPage = pages.find(p => p.route === 'pages/Weather/index/index');
     
     if (indexPage) {
-      indexPage.setData({ currentCityIndex: index });
-      const cities = wx.getStorageSync('weather_cities');
-      if (cities && cities[index]) {
-        indexPage.loadWeatherData(cities[index]);
-      }
       const delta = pages.length - pages.indexOf(indexPage) - 1;
       wx.navigateBack({ delta: delta });
     } else {
@@ -147,60 +153,37 @@ Page({
   addCityDirectly(cityObj) {
     let cities = wx.getStorageSync('weather_cities') || [];
     
-    // Check duplicates (Name or Coordinates)
     const index = cities.findIndex(c => {
       const sameName = c.name === cityObj.name;
-      const sameLoc = Math.abs(c.lat - cityObj.lat) < 0.01 && Math.abs(c.lon - cityObj.lon) < 0.01;
-      return sameName || sameLoc;
+      const sameAdcode = cityObj.adcode && c.adcode === cityObj.adcode;
+      const sameLoc = c.lat && c.lon && cityObj.lat && cityObj.lon
+        && Math.abs(c.lat - cityObj.lat) < 0.01
+        && Math.abs(c.lon - cityObj.lon) < 0.01;
+      return sameAdcode || sameName || sameLoc;
     });
 
     if (index === -1) {
       cities.push(cityObj);
       wx.setStorageSync('weather_cities', cities);
-      // Navigate back with success
-      const pages = getCurrentPages();
-      const indexPage = pages.find(p => p.route === 'pages/Weather/index/index');
-      if (indexPage) {
-        // Reload cities in index page
-        indexPage.setData({ cities: cities });
-        indexPage.switchToCity(cities.length - 1); // Switch to new city
-        
-        const delta = pages.length - pages.indexOf(indexPage) - 1;
-        wx.navigateBack({ delta: delta });
-      } else {
-        wx.navigateBack();
-      }
+      this.switchToCity(cities.length - 1);
     } else {
        this.switchToCity(index);
     }
   },
 
   addCityToStorage(cityName) {
-    // We need coordinates for the weather app to work best.
     wx.showLoading({ title: '添加中...' });
-    
-    const API_KEY = '8968074cbf2aacf93ece6a19f282351a';
-    const GEO_BASE = 'https://api.openweathermap.org/geo/1.0/direct';
 
-    wx.request({
-      url: GEO_BASE,
-      data: { q: cityName, limit: 1, appid: API_KEY },
-      success: (res) => {
+    amapWeather.geocode(cityName).then(list => {
         wx.hideLoading();
-        if (res.data && res.data.length > 0) {
-          const top = res.data[0];
-          const name = (top.local_names && top.local_names.zh) ? top.local_names.zh : top.name;
-          const newCity = { name: name, lat: top.lat, lon: top.lon };
-          
-          this.addCityDirectly(newCity); // Reuse addCityDirectly
+        if (list.length > 0) {
+          this.addCityDirectly(list[0]);
         } else {
           wx.showToast({ title: '未找到该城市信息', icon: 'none' });
         }
-      },
-      fail: () => {
+      }).catch(() => {
         wx.hideLoading();
         wx.showToast({ title: '网络错误', icon: 'none' });
-      }
-    });
+      });
   }
 });

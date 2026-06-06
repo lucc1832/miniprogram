@@ -1,3 +1,6 @@
+const amapWeather = require('../utils/amapWeather.js');
+const PENDING_CITY_INDEX_KEY = 'weather_pending_city_index';
+
 Page({
   data: {
     cities: [],
@@ -10,7 +13,23 @@ Page({
     windowWidth: 375
   },
 
+  onLoad() {
+    this.initLayout();
+  },
+
   onShow() {
+    this.loadCities();
+  },
+
+  onUnload() {
+    if (this.weatherUpdateTimer) clearTimeout(this.weatherUpdateTimer);
+  },
+
+  onHide() {
+    if (this.weatherUpdateTimer) clearTimeout(this.weatherUpdateTimer);
+  },
+
+  initLayout() {
     const sysInfo = wx.getSystemInfoSync();
     const menuButtonInfo = wx.getMenuButtonBoundingClientRect();
     
@@ -24,11 +43,19 @@ Page({
       menuButtonHeight: menuButtonInfo.height,
       windowWidth: sysInfo.windowWidth
     });
-    this.loadCities();
   },
 
   back() {
     wx.navigateBack();
+  },
+
+  cleanCitiesForStorage(cities) {
+    return (cities || []).map(city => {
+      const next = { ...city };
+      delete next.x;
+      delete next.isLocation;
+      return next;
+    });
   },
 
   onCancel() {
@@ -43,84 +70,98 @@ Page({
   loadCities() {
     let cities = wx.getStorageSync('weather_cities') || [];
     
-    // Deduplicate: Keep the first occurrence (index 0 is priority)
-    // Use Name + Lat + Lon to match index.js logic
     const seen = new Set();
     const uniqueCities = [];
     cities.forEach(c => {
-      const key = `${c.name}_${Math.round(c.lat*100)}_${Math.round(c.lon*100)}`;
+      const key = c.adcode || `${c.name}_${Math.round((c.lat || 0) * 100)}_${Math.round((c.lon || 0) * 100)}`;
       if (!seen.has(key)) {
         seen.add(key);
-        c.x = 0; // Reset slide
-        uniqueCities.push(c);
+        uniqueCities.push({ ...c, x: 0, isLocation: uniqueCities.length === 0 });
       }
     });
 
     // If duplicates were found, update storage
     if (uniqueCities.length !== cities.length) {
       cities = uniqueCities;
-      wx.setStorageSync('weather_cities', cities);
+      wx.setStorageSync('weather_cities', this.cleanCitiesForStorage(cities));
     } else {
       // Just reset x for existing
-      cities.forEach(c => c.x = 0);
+      cities = uniqueCities;
     }
     
     this.setData({ cities });
-    this.updateWeatherForCities(cities);
+    this.scheduleWeatherUpdate(cities);
+  },
+
+  scheduleWeatherUpdate(cities) {
+    if (this.weatherUpdateTimer) clearTimeout(this.weatherUpdateTimer);
+    this.weatherUpdateTimer = setTimeout(() => {
+      this.weatherUpdateTimer = null;
+      this.updateWeatherForCities(cities);
+    }, 360);
   },
 
   updateWeatherForCities(cities) {
-    const API_KEY = '8968074cbf2aacf93ece6a19f282351a';
-    const WEATHER_BASE = 'https://api.openweathermap.org/data/2.5/weather';
     const CACHE_DURATION = 2 * 60 * 60 * 1000;
     const now = Date.now();
 
-    cities.forEach((city, index) => {
-      // Check if update is needed: No temp, or lastUpdate is missing, or expired (>2h)
-      const shouldUpdate = !city.temp || !city.lastUpdate || (now - city.lastUpdate > CACHE_DURATION);
+    const staleCities = (cities || [])
+      .map((city, index) => ({ city, index }))
+      .filter(({ city }) => !city.temp || !city.lastUpdate || (now - city.lastUpdate > CACHE_DURATION));
 
-      if (shouldUpdate) { 
-        wx.request({
-          url: WEATHER_BASE,
-          data: {
-            lat: city.lat,
-            lon: city.lon,
-            appid: API_KEY,
-            units: 'metric',
-            lang: 'zh_cn'
-          },
-          success: (res) => {
-            if (res.data && res.data.main) {
-              const temp = Math.round(res.data.main.temp);
-              const condition = res.data.weather[0].description;
-              
-              const key = `cities[${index}]`;
-              this.setData({
-                [key + '.temp']: temp,
-                [key + '.condition']: condition,
-                [key + '.isLocation']: index === 0 
-              });
-              
-              // Update storage
-              // Reload from storage to ensure we don't overwrite other parallel updates
-              const currentCities = wx.getStorageSync('weather_cities') || [];
-              // Find index in storage (safe check)
-              if (currentCities[index] && currentCities[index].name === city.name) {
-                  currentCities[index].temp = temp;
-                  currentCities[index].condition = condition;
-                  currentCities[index].lastUpdate = now;
-                  wx.setStorageSync('weather_cities', currentCities);
-              }
+    staleCities.reduce((chain, { city, index }) => chain.then(() => {
+      return this.ensureCityWithAdcode(city, index).then(nextCity => {
+          if (!nextCity || !nextCity.adcode) return;
+          return amapWeather.getWeather(nextCity.adcode).then(({ live }) => {
+            if (!live) return;
+
+            const temp = Math.round(Number(live.temperature || 0));
+            const condition = live.weather || '';
+            const key = `cities[${index}]`;
+            this.setData({
+              [key + '.temp']: temp,
+              [key + '.condition']: condition
+            });
+
+            const currentCities = wx.getStorageSync('weather_cities') || [];
+            if (currentCities[index] && (currentCities[index].adcode === nextCity.adcode || currentCities[index].name === nextCity.name)) {
+              currentCities[index] = {
+                ...currentCities[index],
+                ...nextCity,
+                temp,
+                condition,
+                lastUpdate: now
+              };
+              wx.setStorageSync('weather_cities', this.cleanCitiesForStorage(currentCities));
             }
-          }
+          });
+        }).catch(err => {
+          console.warn('城市天气更新失败', err);
         });
-      } else {
-        // Just update UI isLocation if needed
-        const key = `cities[${index}]`;
-        this.setData({
-             [key + '.isLocation']: index === 0
-        });
+    }), Promise.resolve());
+  },
+
+  ensureCityWithAdcode(city, index) {
+    if (city && city.adcode) return Promise.resolve(city);
+
+    const byLocation = city && city.lat && city.lon
+      ? amapWeather.reverseGeocode(city.lat, city.lon)
+      : Promise.resolve(null);
+
+    return byLocation.then(res => {
+      if (res && res.adcode) return res;
+      if (!city || !city.name) return null;
+      return amapWeather.geocode(city.name).then(list => list[0] || null);
+    }).then(resolved => {
+      if (!resolved) return city;
+      const nextCity = { ...city, ...resolved };
+      if (typeof index === 'number') {
+        const cities = [...this.data.cities];
+        cities[index] = nextCity;
+        this.setData({ cities });
+        wx.setStorageSync('weather_cities', this.cleanCitiesForStorage(cities));
       }
+      return nextCity;
     });
   },
 
@@ -156,12 +197,7 @@ Page({
       this.setData({ selectedCities: selected });
     } else {
       // Switch city
-      const pages = getCurrentPages();
-      const prevPage = pages[pages.length - 2];
-      if (prevPage) {
-        prevPage.setData({ currentCityIndex: index });
-        prevPage.loadWeatherData(this.data.cities[index]);
-      }
+      wx.setStorageSync(PENDING_CITY_INDEX_KEY, index);
       wx.navigateBack();
     }
   },
@@ -188,7 +224,7 @@ Page({
     }
     
     this.setData({ cities, selectedCities: [], isEditing: false });
-    wx.setStorageSync('weather_cities', cities);
+    wx.setStorageSync('weather_cities', this.cleanCitiesForStorage(cities));
   },
 
   // Slide interactions
@@ -225,7 +261,7 @@ Page({
           // Reset x for all (or just re-render)
           cities.forEach(c => c.x = 0);
           this.setData({ cities });
-          wx.setStorageSync('weather_cities', cities);
+          wx.setStorageSync('weather_cities', this.cleanCitiesForStorage(cities));
           wx.showToast({ title: '已删除', icon: 'none' });
         } else {
           // Cancelled, reset slide

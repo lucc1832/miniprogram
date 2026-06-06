@@ -1,30 +1,67 @@
-const db = wx.cloud.database();
-const CART_KEY = "of_cart_v1";
+const db = wx.cloud ? wx.cloud.database() : null;
+const CART_KEY = 'of_cart_v1';
 
 function loadCart() {
   return wx.getStorageSync(CART_KEY) || [];
 }
+
 function saveCart(list) {
   wx.setStorageSync(CART_KEY, list);
 }
+
+function getCount(item) {
+  return Math.max(1, Number(item.count || 1));
+}
+
+function getUnitPrice(item) {
+  return Number(item.unitPrice != null ? item.unitPrice : item.price || 0);
+}
+
+function getItemTotal(item) {
+  if (item.totalPrice != null) return Number(item.totalPrice || 0);
+  return getUnitPrice(item) * getCount(item);
+}
+
+function normalizeCart(list) {
+  return (list || []).map(item => {
+    const count = getCount(item);
+    const unitPrice = getUnitPrice(item);
+    const totalPrice = Number(getItemTotal(item).toFixed(2));
+    return {
+      ...item,
+      count,
+      unitPrice,
+      price: unitPrice,
+      totalPrice
+    };
+  });
+}
+
 function calcTotal(list) {
-  const total = list.reduce((s, x) => s + Number(x.price || 0), 0);
+  const total = list.reduce((sum, item) => sum + getItemTotal(item), 0);
   return Number(total.toFixed(2));
+}
+
+function formatDateKey(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
 Page({
   data: {
-    address: "",
-    remark: "",
+    address: '',
+    remark: '',
     cartList: [],
     groupedCartList: [],
     cartTotal: 0,
-    paymentMethod: 'wechat', // wechat | balance
+    paymentMethod: 'wechat',
     isSubmitting: false
   },
 
   onLoad() {
-    const cartList = loadCart();
+    const cartList = normalizeCart(loadCart());
     this.setData({
       cartList,
       groupedCartList: this.groupCartItems(cartList),
@@ -32,35 +69,43 @@ Page({
     });
   },
 
-  // 聚合购物车商品用于展示
   groupCartItems(list) {
     const map = {};
     list.forEach(item => {
-      const key = item.name; // 假设name唯一，或者可以用id
+      const key = item.id || item.name;
+      const count = getCount(item);
+      const unitPrice = getUnitPrice(item);
+      const total = getItemTotal(item);
+
       if (map[key]) {
-        map[key].count++;
-        map[key].totalPrice += Number(item.price);
+        map[key].count += count;
+        map[key].totalPrice += total;
       } else {
         map[key] = {
           ...item,
-          count: 1,
-          totalPrice: Number(item.price)
+          count,
+          price: unitPrice.toFixed(2),
+          totalPrice: total
         };
       }
     });
-    // 格式化价格
+
     return Object.values(map).map(item => ({
       ...item,
       totalPriceStr: item.totalPrice.toFixed(2)
     }));
   },
 
-  onAddress(e) { this.setData({ address: e.detail.value }); },
-  onRemark(e) { this.setData({ remark: e.detail.value }); },
+  onAddress(e) {
+    this.setData({ address: e.detail.value });
+  },
+
+  onRemark(e) {
+    this.setData({ remark: e.detail.value });
+  },
   
   selectPayment(e) {
-    const method = e.currentTarget.dataset.method;
-    this.setData({ paymentMethod: method });
+    this.setData({ paymentMethod: e.currentTarget.dataset.method });
   },
 
   goBack() {
@@ -72,73 +117,66 @@ Page({
 
     if (isSubmitting) return;
     if (!cartList.length) {
-      wx.showToast({ title: "购物车为空", icon: "none" });
+      wx.showToast({ title: '购物车为空', icon: 'none' });
       return;
     }
     if (!address.trim()) {
-      wx.showToast({ title: "请填写地址", icon: "none" });
+      wx.showToast({ title: '请填写地址', icon: 'none' });
       return;
     }
 
     this.setData({ isSubmitting: true });
-    wx.showLoading({ title: '正在支付...', mask: true });
+    wx.showLoading({ title: '正在记录...', mask: true });
 
-    // 模拟支付过程
     setTimeout(async () => {
+      const total = calcTotal(cartList);
+      const order = {
+        address: address.trim(),
+        remark: remark.trim(),
+        items: cartList,
+        total,
+        paymentMethod,
+        status: 'paid',
+        createdAt: Date.now()
+      };
+
       try {
-        const total = calcTotal(cartList);
-        
-        // 模拟支付成功，写入云数据库
-        // 注意：实际项目中这里应该调用云函数进行支付下单
-        await db.collection("orders").add({
-          data: {
-            address: address.trim(),
-            remark: remark.trim(),
-            items: cartList,
-            total,
-            paymentMethod,
-            status: "paid", // 简化流程，直接设为paid
-            createdAt: Date.now()
-          }
-        });
-
-        // 同步数据到 Kitchen 模块
-        this.syncToKitchen(cartList, total);
-
-        // 清空购物车
-        saveCart([]);
-        
-        wx.hideLoading();
-        wx.showToast({ title: "支付成功", icon: "success", duration: 2000 });
-
-        setTimeout(() => {
-          wx.navigateBack({ delta: 1 });
-        }, 1500);
-
+        if (db) {
+          await db.collection('orders').add({ data: order });
+        }
       } catch (e) {
-        console.error(e);
-        wx.hideLoading();
-        wx.showToast({ title: "系统繁忙，请重试", icon: "none" });
-        this.setData({ isSubmitting: false });
+        console.warn('云端订单写入失败，已保留本地订单', e);
       }
-    }, 1500); // 模拟1.5秒网络延迟
+
+      this.syncToKitchen(cartList, total, order);
+      saveCart([]);
+
+      wx.hideLoading();
+      wx.showToast({ title: '订单已记录', icon: 'success', duration: 1600 });
+
+      setTimeout(() => {
+        wx.navigateBack({ delta: 1 });
+      }, 1200);
+    }, 600);
   },
 
-  syncToKitchen(cartList, total) {
+  syncToKitchen(cartList, total, order) {
     const now = new Date();
-    const todayStr = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+    const todayStr = formatDateKey(now);
     
-    // 1. 更新今日状态（触发热力图变化）
-    wx.setStorageSync('daily_status_' + todayStr, 'ordered'); 
+    wx.setStorageSync('daily_status_' + todayStr, 'ordered');
 
-    // 2. 添加到厨房日记订单列表
     const kitchenOrders = wx.getStorageSync('kitchen_orders') || [];
     kitchenOrders.unshift({
       id: Date.now(),
+      dateKey: todayStr,
       date: todayStr,
       items: cartList,
-      total: total,
-      status: '已下单' // 这里可以根据支付状态调整，目前保持一致
+      total,
+      address: order.address,
+      remark: order.remark,
+      paymentMethod: order.paymentMethod,
+      status: '已下单'
     });
     wx.setStorageSync('kitchen_orders', kitchenOrders);
   }

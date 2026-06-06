@@ -74,6 +74,7 @@
     ]
   },
   "style": "v2",
+  "lazyCodeLoading": "requiredComponents",
   "sitemapLocation": "sitemap.json",
   "permission": {
     "scope.userLocation": {
@@ -82,8 +83,8 @@
   },
   "preloadRule": {
     "pages/portal/portal": {
-      "network": "all",
-      "packages": ["pages/Weather", "pages/Breakeven", "pages/Kitchen"]
+      "network": "wifi",
+      "packages": ["pages/Weather"]
     }
   },
   "requiredPrivateInfos": [

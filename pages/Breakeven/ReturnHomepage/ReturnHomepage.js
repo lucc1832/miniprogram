@@ -1,7 +1,29 @@
 
 const db = wx.cloud.database();
 const _ = db.command;
-const { todayStr, diffDays } = require('../../../utils/date');
+let { todayStr, diffDays } = (() => {
+  try {
+    return require('../utils/date.js');
+  } catch (err) {
+    console.warn('date utils load failed, use fallback', err);
+    return {
+      todayStr() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      },
+      diffDays(date, today) {
+        const a = new Date(String(date).replace(/-/g, '/'));
+        const b = new Date(String(today).replace(/-/g, '/'));
+        a.setHours(0, 0, 0, 0);
+        b.setHours(0, 0, 0, 0);
+        return Math.ceil((a.getTime() - b.getTime()) / 86400000);
+      }
+    };
+  }
+})();
 
 Page({
   data: {
@@ -32,7 +54,13 @@ Page({
 
   onShow() {
     this.setData({ today: todayStr() });
-    this.loadCategories().then(() => this.loadGoods());
+    this.loadCategories()
+      .then(() => this.loadGoods())
+      .catch(err => {
+        console.error('load breakeven page failed', err);
+        this.setData({ categories: [], goods: [], filtered: [] });
+        wx.showToast({ title: '数据加载失败', icon: 'none' });
+      });
   },
 
   async loadCategories() {

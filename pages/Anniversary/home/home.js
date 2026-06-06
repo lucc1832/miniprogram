@@ -1,6 +1,42 @@
 const app = getApp();
-const { getDailyEmotion, getEventEmotion } = require('../../../utils/emotion.js');
-const { supportsLunar } = require('../../../utils/lunar.js');
+const emotionUtils = (() => {
+  try {
+    return require('../utils/emotion.js');
+  } catch (err) {
+    console.warn('emotion utils load failed, use fallback', err);
+    return {
+      getDailyEmotion: () => '把重要的日子认真收好。',
+      getEventEmotion: () => '时间正在慢慢靠近。'
+    };
+  }
+})();
+const lunarUtils = (() => {
+  try {
+    return require('../utils/lunar.js');
+  } catch (err) {
+    console.warn('lunar utils load failed, use fallback', err);
+    return { supportsLunar: () => false };
+  }
+})();
+const dateUtils = (() => {
+  try {
+    return require('../utils/date.js');
+  } catch (err) {
+    console.warn('date utils load failed, use fallback', err);
+    return {
+      calcEventDays(event, today = new Date()) {
+        const target = new Date(String(event.date).replace(/-/g, '/'));
+        target.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+        const days = Math.ceil((target.getTime() - today.getTime()) / 86400000);
+        return { days: Math.abs(days), label: days >= 0 ? '还有' : '已过' };
+      }
+    };
+  }
+})();
+const { getDailyEmotion, getEventEmotion } = emotionUtils;
+const { supportsLunar } = lunarUtils;
+const { calcEventDays } = dateUtils;
 
 Page({
   data: {
@@ -31,7 +67,6 @@ Page({
   },
 
   processEvents(events) {
-    const { calcEventDays } = require('../../../utils/date.js');
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 

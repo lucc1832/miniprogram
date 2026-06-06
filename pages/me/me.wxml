@@ -56,6 +56,6 @@
   </view>
 
   <view class="footer-info">
-    <text>Kitchen v1.0.0</text>
+    <text>{{appVersion}}</text>
   </view>
 </view>

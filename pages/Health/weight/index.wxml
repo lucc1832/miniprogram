@@ -65,7 +65,7 @@
     <view class="card-label">当前体重 ({{inputDate === today ? '今天' : inputDate}})</view>
     <view class="current-weight-row">
       <view class="weight-val">
-        <text class="val">{{hideNumbers ? '***' : (records.length > 0 ? records[records.length-1].weight : '--')}}</text>
+        <text class="val">{{hideNumbers ? '***' : (selectedRecord ? selectedRecord.weight : (records.length > 0 ? records[records.length-1].weight : '--'))}}</text>
         <text class="unit">kg</text>
       </view>
       <view class="delta-tag {{lastDelta > 0 ? 'up' : (lastDelta < 0 ? 'down' : '')}}" wx:if="{{records.length >= 2}}">
@@ -73,6 +73,7 @@
       </view>
     </view>
     <view class="tips" wx:if="{{records.length === 0}}">还没有记录，开始第一次记录吧</view>
+    <view class="tips" wx:elif="{{!selectedRecord}}">这一天还没有记录，下面可以补上</view>
     <view class="feedback-text" wx:if="{{feedbackText}}">{{feedbackText}}</view>
   </view>
 
@@ -124,7 +125,7 @@
     </view>
 
     <button class="save-btn" bindtap="onSaveRecord" disabled="{{saveDisabled}}">
-      {{saveDisabled ? '今日已记录' : '保存记录'}}
+      {{saveButtonText}}
     </button>
   </view>
 

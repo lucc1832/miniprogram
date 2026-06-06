@@ -8,6 +8,8 @@ Page({
     today: '',
     minDate: '',
     saveDisabled: false,
+    saveButtonText: '保存记录',
+    selectedRecord: null,
     isMember: false,
     stats: { max: 0, min: 0, avg: 0 },
     trendDays: 30, // Default to 30 days for better view
@@ -363,7 +365,9 @@ Page({
     wx.setStorageSync('weight_enabled', val);
   },
   onToggleHideNumbers(e) {
-    const val = e.detail.value;
+    const val = e && e.detail && typeof e.detail.value === 'boolean'
+      ? e.detail.value
+      : !this.data.hideNumbers;
     this.setData({ hideNumbers: val });
     wx.setStorageSync('weight_hide', val);
     this.renderChart();
@@ -378,7 +382,14 @@ Page({
   },
   updateSaveDisabled() {
     const existing = this.data.records.find(r => r.date === this.data.inputDate);
-    this.setData({ saveDisabled: !!existing });
+    this.setData({
+      saveDisabled: !!existing,
+      selectedRecord: existing || null,
+      selectedStatus: existing && existing.status ? existing.status : 'normal',
+      saveButtonText: existing
+        ? (this.data.inputDate === this.data.today ? '今日已记录' : '当天已记录')
+        : '保存记录'
+    });
   },
   onSaveRecord() {
     const val = parseFloat(this.data.inputWeight);
@@ -452,7 +463,9 @@ Page({
       allRecords, 
       records: currentRecords, 
       inputWeight: '', 
-      saveDisabled: true 
+      saveDisabled: true,
+      selectedRecord: currentRecords.find(r => r.date === date) || null,
+      saveButtonText: date === this.data.today ? '今日已记录' : '当天已记录'
     });
     
     this.saveRecords(allRecords);

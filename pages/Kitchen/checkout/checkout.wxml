@@ -56,6 +56,8 @@
       <text class="label">实付金额</text>
       <text class="amount">¥{{cartTotal}}</text>
     </view>
-    <view class="submit-btn" bindtap="submit">立即支付</view>
+    <view class="submit-btn {{isSubmitting ? 'disabled' : ''}}" bindtap="submit">
+      {{isSubmitting ? '提交中...' : '立即支付'}}
+    </view>
   </view>
 </view>

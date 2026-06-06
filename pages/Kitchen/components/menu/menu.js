@@ -165,11 +165,19 @@ Component({
     goCheckout() {
       const list = this.data.foods
         .filter(it => Number(it.count || 0) > 0)
-        .map(it => ({
-          id: it.id,
-          name: it.name,
-          price: Number(it.price || 0) * Number(it.count || 0)
-        }));
+        .map(it => {
+          const count = Number(it.count || 0);
+          const unitPrice = Number(it.price || 0);
+          return {
+            id: it.id,
+            name: it.name,
+            img: it.img,
+            price: unitPrice,
+            unitPrice,
+            count,
+            totalPrice: Number((unitPrice * count).toFixed(2))
+          };
+        });
       wx.setStorageSync('of_cart_v1', list);
       wx.navigateTo({ url: '/pages/Kitchen/checkout/checkout' });
     },

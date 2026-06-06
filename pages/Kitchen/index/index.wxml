@@ -8,7 +8,7 @@
   
   <!-- Content Area -->
   <view class="content-area responsive-container">
-    <view class="tab-content" hidden="{{currentTab !== 0}}">
+    <view class="tab-content" hidden="{{currentTab !== 0}}" wx:if="{{homeReady}}">
        <kitchen-home 
          id="kitchen-home"
          statusBarHeight="{{statusBarHeight}}" 
@@ -17,7 +17,7 @@
          bind:switchTab="handleSwitchTab"
        ></kitchen-home>
      </view>
-    <view class="tab-content" hidden="{{currentTab !== 1}}">
+    <view class="tab-content" hidden="{{currentTab !== 1}}" wx:if="{{menuReady}}">
       <kitchen-menu 
         id="kitchen-menu"
         statusBarHeight="{{statusBarHeight}}" 
@@ -25,7 +25,7 @@
         bind:switchTab="handleSwitchTab"
       ></kitchen-menu>
     </view>
-    <view class="tab-content" hidden="{{currentTab !== 2}}">
+    <view class="tab-content" hidden="{{currentTab !== 2}}" wx:if="{{diaryReady}}">
        <kitchen-diary 
          id="kitchen-diary"
          statusBarHeight="{{statusBarHeight}}" 
@@ -34,7 +34,7 @@
          bind:switchTab="handleSwitchTab"
        ></kitchen-diary>
      </view>
-    <view class="tab-content" hidden="{{currentTab !== 3}}">
+    <view class="tab-content" hidden="{{currentTab !== 3}}" wx:if="{{profileReady}}">
       <kitchen-profile 
         id="kitchen-profile"
         statusBarHeight="{{statusBarHeight}}" 

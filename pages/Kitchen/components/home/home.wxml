@@ -86,6 +86,12 @@
     </view>
 
     <!-- State 3: Completed -->
+    <view class="completed-state" wx:elif="{{todayStatus === 'ordered'}}">
+      <text class="completed-text">今天已下单，等开饭</text>
+      <button class="action-btn secondary" bindtap="goToDiary">查看订单</button>
+    </view>
+
+    <!-- State 4: Completed -->
     <view class="completed-state" wx:else>
       <text class="completed-text">今日打卡成功！🎉</text>
       <button class="action-btn secondary" bindtap="goToDiary">查看食记</button>

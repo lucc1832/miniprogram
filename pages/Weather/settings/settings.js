@@ -1,4 +1,4 @@
-const iconManager = require('../../../utils/iconManager');
+const iconManager = require('../utils/iconManager.js');
 
 Page({
   data: {

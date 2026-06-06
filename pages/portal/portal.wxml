@@ -1,54 +1,54 @@
 <view class="wrap responsive-container">
   <view class="hero">
-    <view class="hero-title">工具箱</view>
-    <view class="hero-sub">选择一个小程序模块进入</view>
+    <view class="hero-top">
+      <view class="eyebrow">{{todayLabel}}</view>
+      <view class="status-pill">常用工具</view>
+    </view>
+    <view class="hero-title">小小工具箱</view>
+    <view class="hero-sub">把天气、纪念日、厨房和记录都收在一个顺手的入口里。</view>
+
+    <view class="quick-row">
+      <view class="quick-item">
+        <view class="quick-num">{{enabledCount}}</view>
+        <view class="quick-label">已启用</view>
+      </view>
+      <view class="quick-divider"></view>
+      <view class="quick-item recent-entry" wx:if="{{recentModule}}" bindtap="openRecent">
+        <view class="quick-num">{{recentModule.icon}}</view>
+        <view class="quick-label">继续 {{recentModule.title}}</view>
+      </view>
+      <view class="quick-item" wx:else>
+        <view class="quick-num">＋</view>
+        <view class="quick-label">选择模块</view>
+      </view>
+    </view>
   </view>
 
-  <view class="grid responsive-grid">
-    <!-- 入口1：到期&回本 -->
-    <view class="card" bindtap="go" data-url="/pages/Breakeven/ReturnHomepage/ReturnHomepage">
-      <view class="card-ico">📌</view>
-      <view class="card-title">到期 & 使用成本</view>
-      <view class="card-desc">管理物品、到期提醒、使用成本</view>
-    </view>
-
-    <!-- 天气预报 -->
-    <view class="card" bindtap="go" data-url="/pages/Weather/index/index">
-      <view class="card-ico">🌤️</view>
-      <view class="card-title">天气预报</view>
-      <view class="card-desc">查看实时天气与未来预报</view>
-    </view>
-    <!-- 纪念日 -->
-    <view class="card" bindtap="go" data-url="/pages/Anniversary/home/home">
-      <view class="card-ico">💛</view>
-      <view class="card-title">纪念日</view>
-      <view class="card-desc">情绪时间线与陪伴</view>
-    </view>
-
-    <!-- 厨房 -->
-    <view class="card" bindtap="go" data-url="/pages/Kitchen/index/index">
-      <view class="card-ico">🍳</view>
-      <view class="card-title">我的厨房</view>
-      <view class="card-desc">点餐 / 菜谱 / 订单</view>
-    </view>
-
-    <!-- 身体记录 -->
-    <view class="card" bindtap="go" data-url="/pages/Health/weight/index">
-      <view class="card-ico">⚖️</view>
-      <view class="card-title">身体记录</view>
-      <view class="card-desc">长期记录与自我关照</view>
-    </view>
-
-    <!-- 预留 -->
-    <view class="card disabled" bindtap="toast">
-      <view class="card-title">🧾 记账</view>
-      <view class="card-sub">即将上线</view>
+  <view class="section-head">
+    <view>
+      <view class="section-title">全部模块</view>
+      <view class="section-sub">点击卡片进入对应功能</view>
     </view>
   </view>
-  <!-- 入口4：预留其他模块 -->
-  <view class="card ghost" bindtap="toast">
-    <view class="card-ico">✨</view>
-    <view class="card-title">更多模块</view>
-    <view class="card-desc">后续你想加什么都能放这</view>
+
+  <view class="grid">
+    <view
+      class="tool-card {{item.accentClass}} {{item.disabled ? 'disabled' : ''}}"
+      wx:for="{{modules}}"
+      wx:key="key"
+      bindtap="handleCardTap"
+      data-index="{{index}}"
+    >
+      <view class="card-top">
+        <view class="card-ico">{{item.icon}}</view>
+        <view class="card-badge" wx:if="{{item.badge}}">{{item.badge}}</view>
+      </view>
+      <view class="card-title">{{item.title}}</view>
+      <view class="card-desc">{{item.desc}}</view>
+      <view class="card-footer">
+        <text>{{item.disabled ? '即将上线' : '进入'}}</text>
+        <text class="arrow">›</text>
+      </view>
+    </view>
   </view>
 </view>
