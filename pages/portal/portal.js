@@ -52,6 +52,15 @@ Page({
         accentClass: 'accent-green'
       },
       {
+        key: 'period',
+        icon: '🌙',
+        title: '月经记录',
+        desc: '记录周期、经量、疼痛和症状变化',
+        badge: '私密',
+        url: '/pages/Health/period/index',
+        accentClass: 'accent-period'
+      },
+      {
         key: 'accounting',
         icon: '🧾',
         title: '记账',

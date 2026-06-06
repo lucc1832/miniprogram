@@ -1,4 +1,4 @@
-const db = wx.cloud.database();
+const cloudStore = require('../../../utils/cloudStore.js');
 let { todayStr } = (() => {
   try {
     return require('../utils/date.js');
@@ -29,8 +29,13 @@ Page({
     categories: [],
     catNames: [],
     catIndex: 0,
+    showCategoryCreator: false,
+    newCategoryName: '',
+    creatingCategory: false,
 
     priceEnabled: false,
+    recognizing: false,
+    ocrSummary: '',
 
     form: {
       name: '',
@@ -77,14 +82,14 @@ Page({
   },
 
   async loadCategories() {
-    const res = await db.collection('categories').orderBy('sort', 'asc').get();
-    const categories = res.data || [];
+    const categories = (await cloudStore.getUserRows('categories'))
+      .sort((a, b) => Number(a.sort || 0) - Number(b.sort || 0));
     const catNames = ['未分类', ...categories.map(c => c.name)];
     this.setData({ categories, catNames });
   },
 
   async loadGoods(id) {
-    const res = await db.collection('goods').doc(id).get();
+    const res = await cloudStore.getUserDoc('goods', id);
     const g = res.data;
 
     // priceEnabled：是否填写购买价（你现在用开关控制，这里做回填）
@@ -132,11 +137,176 @@ Page({
     this.setData({ type });
     // 切换类型时，可以自动调整一些默认开关，提升体验
     if (type === 'expire') {
-      this.setData({ 'form.expireEnabled': true });
-      // 这里的 priceEnabled 是否要自动关？看需求。暂时不强制关，用户可能想记账但不算ROI
+      this.setData({
+        'form.expireEnabled': true,
+        priceEnabled: false,
+        'form.buyPrice': '',
+        'form.status': 'using'
+      });
     } else {
-      this.setData({ priceEnabled: true });
+      this.setData({
+        'form.expireEnabled': false,
+        'form.expireDate': '',
+        priceEnabled: true,
+        'form.status': this.data.form.status || 'using'
+      });
     }
+  },
+
+  selectType(e) {
+    const type = e.currentTarget.dataset.value;
+    this.onTypeChange({ detail: { value: type } });
+  },
+
+  selectStatus(e) {
+    this.setData({ 'form.status': e.currentTarget.dataset.value });
+  },
+
+  async chooseReceiptImage() {
+    if (this.data.recognizing) return;
+
+    try {
+      const filePath = await this.pickReceiptImage();
+      if (!filePath) return;
+
+      this.setData({
+        recognizing: true,
+        ocrSummary: '正在识别截图...'
+      });
+
+      const ext = (filePath.match(/\.(\w+)$/) || [])[1] || 'jpg';
+      const uploadRes = await wx.cloud.uploadFile({
+        cloudPath: `breakeven_receipts/${Date.now()}_${Math.floor(Math.random() * 10000)}.${ext}`,
+        filePath
+      });
+
+      const ocrRes = await this.callOcrFunction(uploadRes.fileID);
+
+      const result = ocrRes.result || {};
+      if (!result.ok) {
+        const stage = result.stage ? `${result.stage}：` : '';
+        throw new Error(stage + (result.message || '截图识别失败'));
+      }
+
+      this.applyOcrResult(result.parsed || {});
+    } catch (err) {
+      console.error('chooseReceiptImage error', err);
+      const message = this.getReadableOcrError(err);
+      this.setData({
+        ocrSummary: message
+      });
+      wx.showToast({
+        title: message,
+        icon: 'none'
+      });
+    } finally {
+      this.setData({ recognizing: false });
+    }
+  },
+
+  async callOcrFunction(fileID, extraData = {}) {
+    const payload = Object.assign({}, extraData, fileID ? { fileID } : {});
+    try {
+      return await wx.cloud.callFunction({
+        name: 'ocrReceipt',
+        data: payload
+      });
+    } catch (err) {
+      const message = String(err && (err.errMsg || err.message || ''));
+      if (/ocrReceipt|not exist|not found|不存在|找不到/i.test(message)) {
+        console.warn('ocrReceipt failed, retry ocrReceip', err);
+        return wx.cloud.callFunction({
+          name: 'ocrReceip',
+          data: payload
+        });
+      }
+      throw err;
+    }
+  },
+
+  getReadableOcrError(err) {
+    const raw = String(err && (err.errMsg || err.message || err) || '');
+    console.error('OCR readable error raw:', raw);
+
+    if (/ocrReceip|ocrReceipt|not exist|not found|不存在|找不到/i.test(raw)) {
+      return '云函数名称不一致，请检查 ocrReceipt';
+    }
+    if (/无返回|返回异常|不是最新版本|重新部署/i.test(raw)) {
+      return raw.slice(0, 40);
+    }
+    if (/BAIDU_OCR_API_KEY|BAIDU_OCR_SECRET_KEY|环境变量/i.test(raw)) {
+      return '缺少百度OCR环境变量';
+    }
+    if (/access_token|invalid client|client_id|client_secret/i.test(raw)) {
+      return '百度Key配置不正确';
+    }
+    if (/download|uploadFile|fileID|上传|下载|图片下载/i.test(raw)) {
+      return '图片上传或下载失败';
+    }
+    if (/timeout|ETIMEDOUT|超时/i.test(raw)) {
+      return 'OCR请求超时，请重试';
+    }
+    if (/image size|image format|image/i.test(raw)) {
+      return '图片格式或大小不支持';
+    }
+
+    return raw ? raw.slice(0, 40) : '识别失败，可以手动填写';
+  },
+
+  pickReceiptImage() {
+    return new Promise(resolve => {
+      if (wx.chooseMedia) {
+        wx.chooseMedia({
+          count: 1,
+          mediaType: ['image'],
+          sourceType: ['album', 'camera'],
+          success: res => {
+            const file = res.tempFiles && res.tempFiles[0];
+            resolve(file && file.tempFilePath);
+          },
+          fail: () => resolve('')
+        });
+        return;
+      }
+
+      wx.chooseImage({
+        count: 1,
+        sourceType: ['album', 'camera'],
+        success: res => resolve(res.tempFilePaths && res.tempFilePaths[0]),
+        fail: () => resolve('')
+      });
+    });
+  },
+
+  applyOcrResult(parsed) {
+    const patch = {};
+    const pieces = [];
+
+    if (parsed.name) {
+      patch['form.name'] = parsed.name;
+      pieces.push('商品名');
+    }
+    if (parsed.buyDate) {
+      patch['form.buyDate'] = parsed.buyDate;
+      pieces.push('购买日期');
+    }
+    if (parsed.buyPrice) {
+      patch['form.buyPrice'] = String(parsed.buyPrice);
+      patch.priceEnabled = true;
+      pieces.push('价格');
+    }
+
+    if (this.data.type === 'expire') {
+      patch['form.expireEnabled'] = true;
+    }
+
+    patch.ocrSummary = pieces.length ? `已识别：${pieces.join('、')}` : '未识别到明确字段，请手动补充';
+    this.setData(patch);
+
+    wx.showToast({
+      title: pieces.length ? '已自动填入' : '请手动补充',
+      icon: 'none'
+    });
   },
 
   // ---- 表单绑定 ----
@@ -167,6 +337,70 @@ Page({
     this.setData({ catIndex: idx, 'form.categoryId': cid });
   },
 
+  openCategoryCreator() {
+    this.setData({ showCategoryCreator: true, newCategoryName: '' });
+  },
+
+  closeCategoryCreator() {
+    this.setData({ showCategoryCreator: false, newCategoryName: '' });
+  },
+
+  setNewCategoryName(e) {
+    this.setData({ newCategoryName: e.detail.value });
+  },
+
+  async createCategory() {
+    const name = (this.data.newCategoryName || '').trim();
+    if (!name) {
+      wx.showToast({ title: '请输入分类名', icon: 'none' });
+      return;
+    }
+
+    const exists = this.data.categories.some(item => item.name === name);
+    if (exists) {
+      wx.showToast({ title: '分类已存在', icon: 'none' });
+      return;
+    }
+
+    if (this.data.creatingCategory) return;
+    this.setData({ creatingCategory: true });
+
+    try {
+      const list = this.data.categories || [];
+      const last = list.length ? list[list.length - 1] : null;
+      const sort = Number(last && last.sort || 0) + 10;
+      const res = await cloudStore.addUserDoc('categories', {
+        name,
+        sort,
+        createdAt: Date.now()
+      });
+
+      const category = {
+        _id: res._id,
+        name,
+        sort,
+        createdAt: Date.now()
+      };
+      const categories = [...list, category];
+      const catNames = ['未分类', ...categories.map(c => c.name)];
+
+      this.setData({
+        categories,
+        catNames,
+        catIndex: categories.length,
+        'form.categoryId': category._id,
+        showCategoryCreator: false,
+        newCategoryName: ''
+      });
+      wx.showToast({ title: '已新增' });
+    } catch (err) {
+      console.error('createCategory error', err);
+      wx.showToast({ title: '新增失败', icon: 'none' });
+    } finally {
+      this.setData({ creatingCategory: false });
+    }
+  },
+
   toggleExpire(e) { this.setData({ 'form.expireEnabled': e.detail.value }); },
   pickExpire(e) { this.setData({ 'form.expireDate': e.detail.value }); },
 
@@ -195,6 +429,9 @@ Page({
     if (!f.buyDate) {
       wx.showToast({ title: '请选择购买日期', icon: 'none' }); return;
     }
+    if (this.data.type === 'expire' && !f.expireDate) {
+      wx.showToast({ title: '请选择到期日期', icon: 'none' }); return;
+    }
 
     // 统一拼 doc
     const doc = {
@@ -210,7 +447,11 @@ Page({
       updatedAt: Date.now()
     };
 
-    if (this.data.priceEnabled) {
+    if (this.data.type === 'roi' && !f.buyPrice) {
+      wx.showToast({ title: '请输入购买价格', icon: 'none' }); return;
+    }
+
+    if (f.buyPrice) {
       // buyPrice 必须是数字
       const priceNum = Number(f.buyPrice);
       if (!isFinite(priceNum) || priceNum <= 0) {
@@ -224,18 +465,16 @@ Page({
 
     try {
       if (this.data.isEdit) {
-        await db.collection('goods').doc(this.data.goodsId).update({ data: doc });
+        await cloudStore.updateUserDoc('goods', this.data.goodsId, doc);
         wx.showToast({ title: '已更新' });
       } else {
         // 新增时才补 createdAt/累计字段
-        await db.collection('goods').add({
-          data: {
-            ...doc,
-            createdAt: Date.now(),
-            totalUseCount: 0,
-            totalValue: 0,
-            breakevenAt: ''
-          }
+        await cloudStore.addUserDoc('goods', {
+          ...doc,
+          createdAt: Date.now(),
+          totalUseCount: 0,
+          totalValue: 0,
+          breakevenAt: ''
         });
         wx.showToast({ title: '已保存' });
       }
@@ -264,7 +503,7 @@ Page({
     if (!ok) return;
 
     try {
-      await db.collection('goods').doc(this.data.goodsId).remove();
+      await cloudStore.removeUserDoc('goods', this.data.goodsId);
 
       wx.showToast({ title: '已删除' });
       setTimeout(() => wx.navigateBack(), 600);

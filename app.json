@@ -35,7 +35,8 @@
     {
       "root": "pages/Health",
       "pages": [
-        "weight/index"
+        "weight/index",
+        "period/index"
       ]
     },
     {

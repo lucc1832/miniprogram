@@ -228,6 +228,8 @@
 .accent-amber .card-badge { background: #fff4df; color: #c76f00; }
 .accent-green::before { background: #26a269; }
 .accent-green .card-badge { background: #eaf8f1; color: #1c8b58; }
+.accent-period::before { background: #d94f82; }
+.accent-period .card-badge { background: #fff0f6; color: #c33f70; }
 .accent-slate::before { background: #64748b; }
 .accent-slate .card-badge { background: #eef2f7; color: #64748b; }
 

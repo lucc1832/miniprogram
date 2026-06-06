@@ -1,5 +1,5 @@
 
-const db = wx.cloud.database();
+const cloudStore = require('../../../utils/cloudStore.js');
 
 Page({
   data: {
@@ -12,8 +12,9 @@ Page({
   onShow(){ this.load(); },
 
   async load(){
-    const res = await db.collection('categories').orderBy('sort','asc').get();
-    this.setData({ categories: res.data || [] });
+    const categories = (await cloudStore.getUserRows('categories'))
+      .sort((a, b) => Number(a.sort || 0) - Number(b.sort || 0));
+    this.setData({ categories });
   },
 
   toggleSort(){ this.setData({ sorting: !this.data.sorting }); },
@@ -27,7 +28,7 @@ Page({
     const name = (this.data.newName||'').trim();
     if (!name) { wx.showToast({ title:'请输入分类名', icon:'none' }); return; }
     const maxSort = this.data.categories.length ? this.data.categories[this.data.categories.length-1].sort : 0;
-    await db.collection('categories').add({ data: { name, sort: (maxSort||0)+10, createdAt: Date.now() } });
+    await cloudStore.addUserDoc('categories', { name, sort: (maxSort||0)+10, createdAt: Date.now() });
     wx.showToast({ title:'已新增' });
     this.closeAdd();
     this.load();
@@ -36,7 +37,7 @@ Page({
   async delCat(e){
     const id = e.currentTarget.dataset.id;
     // 简化：直接删除；若分类下有物品，建议你后续加校验
-    await db.collection('categories').doc(id).remove();
+    await cloudStore.removeUserDoc('categories', id);
     wx.showToast({ title:'已删除' });
     this.load();
   },
@@ -48,8 +49,8 @@ Page({
     const a=list[idx-1], b=list[idx];
     const tmp=a.sort; a.sort=b.sort; b.sort=tmp;
     await Promise.all([
-      db.collection('categories').doc(a._id).update({ data: { sort: a.sort }}),
-      db.collection('categories').doc(b._id).update({ data: { sort: b.sort }})
+      cloudStore.updateUserDoc('categories', a._id, { sort: a.sort }),
+      cloudStore.updateUserDoc('categories', b._id, { sort: b.sort })
     ]);
     this.load();
   },
@@ -61,8 +62,8 @@ Page({
     const a=list[idx], b=list[idx+1];
     const tmp=a.sort; a.sort=b.sort; b.sort=tmp;
     await Promise.all([
-      db.collection('categories').doc(a._id).update({ data: { sort: a.sort }}),
-      db.collection('categories').doc(b._id).update({ data: { sort: b.sort }})
+      cloudStore.updateUserDoc('categories', a._id, { sort: a.sort }),
+      cloudStore.updateUserDoc('categories', b._id, { sort: b.sort })
     ]);
     this.load();
   }

@@ -1,79 +1,80 @@
 <view class="wrap">
   <view class="card form">
-    <view class="row">
-      <text class="label">记录类型</text>
-      <radio-group bindchange="onTypeChange">
-        <label class="radio">
-          <radio value="expire" checked="{{type==='expire'}}" /> 到期便签
-        </label>
-        <label class="radio">
-          <radio value="roi" checked="{{type==='roi'}}" /> 使用成本
-        </label>
-      </radio-group>
+    <view class="field-block">
+      <view class="label">记录类型</view>
+      <view class="choice-group">
+        <view class="choice {{type==='expire'?'choice-active':''}}" bindtap="selectType" data-value="expire">到期便签</view>
+        <view class="choice {{type==='roi'?'choice-active':''}}" bindtap="selectType" data-value="roi">使用成本</view>
+      </view>
     </view>
 
-    <view class="row">
-      <text class="label">物品名称</text>
-      <input class="input" placeholder="请输入物品名称" value="{{form.name}}" bindinput="setName" />
+    <view class="ocr-panel">
+      <view class="ocr-title">截图识别</view>
+      <view class="ocr-desc">识别商品名、购买日期和价格</view>
+      <button class="ocr-btn" loading="{{recognizing}}" bindtap="chooseReceiptImage">{{recognizing ? '识别中' : '选择截图'}}</button>
+      <view wx:if="{{ocrSummary}}" class="ocr-summary">{{ocrSummary}}</view>
     </view>
 
-    <view class="row">
-      <text class="label">分类</text>
-      <picker mode="selector" range="{{catNames}}" value="{{catIndex}}" bindchange="onCatPick">
-        <view class="picker">{{catNames[catIndex] || '请选择分类'}}</view>
-      </picker>
+    <view class="field-block">
+      <view class="label">物品名称</view>
+      <input class="input" placeholder="请输入物品名称" placeholder-class="placeholder" value="{{form.name}}" bindinput="setName" />
     </view>
 
-    <view class="row">
-      <text class="label">到期时间</text>
-      <switch checked="{{form.expireEnabled}}" bindchange="toggleExpire" />
-    </view>
-    <view wx:if="{{form.expireEnabled}}" class="row">
-      <text class="label muted">到期日期</text>
-      <picker mode="date" value="{{form.expireDate}}" bindchange="pickExpire">
-        <view class="picker">{{form.expireDate || '请选择日期 >'}}</view>
-      </picker>
+    <view class="field-grid">
+      <view class="field-block compact">
+        <view class="label">分类</view>
+        <picker mode="selector" range="{{catNames}}" value="{{catIndex}}" bindchange="onCatPick">
+          <view class="picker">{{catNames[catIndex] || '未分类'}}</view>
+        </picker>
+        <view class="cat-add" bindtap="openCategoryCreator">新增分类</view>
+      </view>
+
+      <view class="field-block compact">
+        <view class="label">购买日期</view>
+        <picker mode="date" value="{{form.buyDate}}" bindchange="pickBuyDate">
+          <view class="picker">{{form.buyDate}}</view>
+        </picker>
+      </view>
     </view>
 
-    <view class="row">
-      <text class="label">购买价格(¥)</text>
-      <switch checked="{{priceEnabled}}" bindchange="togglePrice" />
-    </view>
-    <view wx:if="{{priceEnabled}}" class="row">
-      <text class="label muted">金额</text>
-      <input class="input" type="digit" placeholder="请输入金额" value="{{form.buyPrice}}" bindinput="setPrice" />
-    </view>
-    
-    
-
-    <view class="row">
-      <text class="label">购买日期</text>
-      <picker mode="date" value="{{form.buyDate}}" bindchange="pickBuyDate">
-        <view class="picker">{{form.buyDate}}</view>
-      </picker>
+    <view wx:if="{{showCategoryCreator}}" class="cat-creator">
+      <input class="cat-input" placeholder="输入新分类" placeholder-class="placeholder" value="{{newCategoryName}}" bindinput="setNewCategoryName" />
+      <view class="cat-actions">
+        <view class="cat-action ghost" bindtap="closeCategoryCreator">取消</view>
+        <view class="cat-action primary" bindtap="createCategory">{{creatingCategory ? '新增中' : '新增'}}</view>
+      </view>
     </view>
 
-    <view class="row">
-      <text class="label">使用状态</text>
-      <radio-group bindchange="onStatus">
-        <label class="radio">
-          <radio value="using" checked="{{form.status==='using'}}" /> 使用中
-        </label>
-        <label class="radio">
-          <radio value="archived" checked="{{form.status==='archived'}}" /> 归档
-        </label>
-      </radio-group>
-    </view>
+    <block wx:if="{{type==='expire'}}">
+      <view class="field-block">
+        <view class="label">到期日期</view>
+        <picker mode="date" value="{{form.expireDate}}" bindchange="pickExpire">
+          <view class="picker main-picker">{{form.expireDate || '请选择到期日期'}}</view>
+        </picker>
+      </view>
+    </block>
 
-    <view class="row">
-      <text class="label">购买渠道</text>
-      <input class="input" placeholder="请选择常见渠道/手动输入" value="{{form.channel}}" bindinput="setChannel" />
-    </view>
+    <block wx:if="{{type==='expire' && priceEnabled}}">
+      <view class="field-block">
+        <view class="label">购买价格</view>
+        <input class="input price-input" type="digit" placeholder="可选，识别后自动填入" placeholder-class="placeholder" value="{{form.buyPrice}}" bindinput="setPrice" />
+      </view>
+    </block>
 
-    <view class="row">
-      <text class="label">备注</text>
-      <input class="input" maxlength="30" placeholder="请输入备注（30字内）" value="{{form.note}}" bindinput="setNote" />
-    </view>
+    <block wx:if="{{type==='roi'}}">
+      <view class="field-block">
+        <view class="label">购买价格</view>
+        <input class="input price-input" type="digit" placeholder="请输入金额" placeholder-class="placeholder" value="{{form.buyPrice}}" bindinput="setPrice" />
+      </view>
+
+      <view class="field-block">
+        <view class="label">使用状态</view>
+        <view class="choice-group status-group">
+          <view class="choice {{form.status==='using'?'choice-active':''}}" bindtap="selectStatus" data-value="using">使用中</view>
+          <view class="choice {{form.status==='archived'?'choice-active':''}}" bindtap="selectStatus" data-value="archived">归档</view>
+        </view>
+      </view>
+    </block>
   </view>
 
   <view class="bottom-bar">

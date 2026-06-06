@@ -1,4 +1,4 @@
-const db = wx.cloud.database();
+const cloudStore = require('../../../utils/cloudStore.js');
 
 let { todayStr } = (() => {
   try {
@@ -39,14 +39,14 @@ Page({
     const id = this.data.id;
     if (!id) return;
 
-    const gRes = await db.collection('goods').doc(id).get();
+    const gRes = await cloudStore.getUserDoc('goods', id);
     const good = gRes.data;
 
     // category name（可选）
     let categoryName = '未分类';
     if (good.categoryId) {
       try {
-        const cRes = await db.collection('categories').doc(good.categoryId).get();
+        const cRes = await cloudStore.getUserDoc('categories', good.categoryId);
         categoryName = cRes.data?.name || categoryName;
       } catch (e) {}
     }
@@ -65,6 +65,33 @@ Page({
     let dailyCostStr = '0.00';
     if (good.buyPrice != null && usedDays > 0) {
       dailyCostStr = (Number(good.buyPrice) / usedDays).toFixed(2);
+    }
+
+    const isExpire = good.type === 'expire' || (!good.type && good.buyPrice == null);
+    good.isExpire = isExpire;
+    good.detailTypeLabel = isExpire ? '到期便签' : '使用成本';
+    good.statusLabel = good.status === 'archived' ? '已归档' : '使用中';
+    good.expireTone = 'calm';
+    good.expireDaysText = '长期';
+    good.expireStage = '长期有效';
+
+    if (isExpire && good.expireEnabled && good.expireDate) {
+      const target = new Date(good.expireDate + 'T00:00:00');
+      const today = new Date(todayStr() + 'T00:00:00');
+      const diff = Math.ceil((target.getTime() - today.getTime()) / 86400000);
+      if (diff < 0) {
+        good.expireTone = 'danger';
+        good.expireDaysText = `${Math.abs(diff)} 天`;
+        good.expireStage = '已超期';
+      } else if (diff <= 30) {
+        good.expireTone = 'warn';
+        good.expireDaysText = `${diff} 天`;
+        good.expireStage = '即将到期';
+      } else {
+        good.expireTone = 'calm';
+        good.expireDaysText = `${diff} 天`;
+        good.expireStage = '剩余天数';
+      }
     }
 
     // 固定回本日计算
@@ -115,15 +142,12 @@ Page({
     try {
       const today = todayStr();
       const id = this.data.id;
-      const latest = await db.collection('roi_logs')
-        .where({ goodsId: id })
-        .orderBy('date','desc')
-        .limit(1)
-        .get();
-      const last = latest.data && latest.data[0];
+      const logs = (await cloudStore.getUserRows('roi_logs'))
+        .filter(item => item.goodsId === id)
+        .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+      const last = logs[0];
       if (!last || last.date !== today || Number(last.pct || 0) !== roiPct) {
-        await db.collection('roi_logs').add({
-          data: {
+        await cloudStore.addUserDoc('roi_logs', {
             goodsId: id,
             date: today,
             pct: roiPct,
@@ -132,7 +156,6 @@ Page({
             buyPrice: good.buyPrice || 0,
             cycleDays: Math.max(1, usedDays),
             usedDays
-          }
         });
       }
     } catch (e) {
@@ -171,9 +194,7 @@ Page({
     if (!g) return;
 
     const nextStatus = g.status === 'archived' ? 'using' : 'archived';
-    await db.collection('goods').doc(this.data.id).update({
-      data: { status: nextStatus, updatedAt: Date.now() }
-    });
+    await cloudStore.updateUserDoc('goods', this.data.id, { status: nextStatus, updatedAt: Date.now() });
 
     this.load();
   }

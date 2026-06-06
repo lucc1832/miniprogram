@@ -38,11 +38,41 @@ const { getDailyEmotion, getEventEmotion } = emotionUtils;
 const { supportsLunar } = lunarUtils;
 const { calcEventDays } = dateUtils;
 
+const tagTextMap = {
+  me: '自己',
+  us: '我们',
+  family: '家人',
+  future: '未来',
+  custom: '其他'
+};
+
+function formatShortDate(dateStr) {
+  const parts = String(dateStr || '').split('-');
+  if (parts.length < 3) return dateStr || '';
+  return `${Number(parts[1])}月${Number(parts[2])}日`;
+}
+
+function getEventTone(event, calc) {
+  if (calc.days === 0) return 'today';
+  if (event.isImportant) return 'important';
+  return event.type === 'countdown' ? 'countdown' : 'memory';
+}
+
 Page({
   data: {
     dailyEmotion: '',
     mainEvent: null,
     subEvents: [],
+    todayEvents: [],
+    upcomingEvents: [],
+    memoryEvents: [],
+    stats: {
+      totalCount: 0,
+      countdownCount: 0,
+      anniversaryCount: 0,
+      todayCount: 0,
+      importantCount: 0
+    },
     loading: true
   },
 
@@ -69,35 +99,71 @@ Page({
   processEvents(events) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const safeEvents = Array.isArray(events) ? events : [];
 
     // 计算逻辑
-    const processed = events.map(e => {
+    const processed = safeEvents.filter(e => e && e.date).map(e => {
       const calc = calcEventDays(e, today);
       return { 
         ...e, 
         ...calc,
+        id: e.id || e._id || `${e.title}_${e.date}`,
+        typeText: e.type === 'countdown' ? '倒数日' : '纪念日',
+        tagText: tagTextMap[e.tag] || '其他',
+        shortDate: formatShortDate(e.date),
+        calendarText: e.isLunar && supportsLunar() ? '农历' : '公历',
+        tone: getEventTone(e, calc),
         emotion: getEventEmotion(e, calc.days)
       };
     });
 
-    // 排序逻辑
-    processed.sort((a, b) => {
-      // isImportant 优先
-      if (a.isImportant !== b.isImportant) {
-        return a.isImportant ? -1 : 1;
-      }
+    const focusSorted = processed.slice().sort((a, b) => {
+      if ((a.days === 0) !== (b.days === 0)) return a.days === 0 ? -1 : 1;
+      if (a.isImportant !== b.isImportant) return a.isImportant ? -1 : 1;
+      if (a.type !== b.type) return a.type === 'countdown' ? -1 : 1;
       return a.days - b.days;
     });
 
     let mainEvent = null;
     let subEvents = [];
 
-    if (processed.length > 0) {
-      mainEvent = processed[0];
-      subEvents = processed.slice(1, 4); // Next 2-3
+    if (focusSorted.length > 0) {
+      mainEvent = focusSorted[0];
+      subEvents = focusSorted.filter(item => item.id !== mainEvent.id).slice(0, 4);
     }
 
-    this.setData({ mainEvent, subEvents, loading: false });
+    const todayEvents = processed
+      .filter(item => item.days === 0)
+      .sort((a, b) => Number(!!b.isImportant) - Number(!!a.isImportant))
+      .slice(0, 4);
+
+    const upcomingEvents = processed
+      .filter(item => item.type === 'countdown' && item.days > 0)
+      .sort((a, b) => a.days - b.days)
+      .slice(0, 6);
+
+    const memoryEvents = processed
+      .filter(item => item.type !== 'countdown' && item.days > 0)
+      .sort((a, b) => b.days - a.days)
+      .slice(0, 6);
+
+    const stats = {
+      totalCount: processed.length,
+      countdownCount: processed.filter(item => item.type === 'countdown').length,
+      anniversaryCount: processed.filter(item => item.type !== 'countdown').length,
+      todayCount: processed.filter(item => item.days === 0).length,
+      importantCount: processed.filter(item => item.isImportant).length
+    };
+
+    this.setData({
+      mainEvent,
+      subEvents,
+      todayEvents,
+      upcomingEvents,
+      memoryEvents,
+      stats,
+      loading: false
+    });
   },
 
   goCreate() {

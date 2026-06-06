@@ -31,6 +31,7 @@
     "ignore": [],
     "include": []
   },
+  "cloudfunctionRoot": "cloudfunctions/",
   "appid": "wx73b5d1d72297d0da",
   "editorSetting": {},
   "projectArchitecture": "multiPlatform",

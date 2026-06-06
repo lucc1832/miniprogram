@@ -1,59 +1,74 @@
 <view class="wrap">
-  <view wx:if="{{!good}}" class="muted center">加载中…</view>
+  <view wx:if="{{!good}}" class="loading-card">加载中...</view>
 
-  <view wx:else class="card head">
-    <view class="name">{{good.name}}</view>
-    <view class="muted">{{good.categoryName}} · {{good.status==='archived'?'归档':'使用中'}}</view>
-    
-    <!-- 区分显示：到期便签 -->
-    <block wx:if="{{good.type === 'expire' || (!good.type && good.buyPrice == null)}}">
-      <view class="line muted">
-        <text> 购买日：{{good.buyDate}}</text>
-        <text wx:if="{{good.expireEnabled && good.expireDate}}"> 到期：{{good.expireDate}}</text>
+  <block wx:else>
+    <view class="hero card {{good.expireTone}}">
+      <view class="type-pill">{{good.detailTypeLabel}}</view>
+      <view class="name">{{good.name}}</view>
+      <view class="meta-row">
+        <text>{{good.categoryName || '未分类'}}</text>
+        <text>{{good.statusLabel}}</text>
       </view>
-    </block>
 
-    <!-- 区分显示：使用成本 -->
-    <block wx:else>
-      <view class="line muted">
-        <text wx:if="{{good.buyPrice!=null}}">购买价：¥{{good.buyPrice}}</text>
-      </view>
-      <view class="line muted" wx:if="{{good.buyPrice!=null}}">
-        <text>日均成本：¥{{dailyCostStr}}/天</text>
-        <text wx:if="{{usedDays>0}}"> · 使用天数：{{usedDays}} 天</text>
-      </view>
-      <view class="line muted">
-        <text> 购买日：{{good.buyDate}}</text>
-      </view>
-    </block>
-  </view>
+      <block wx:if="{{good.isExpire}}">
+        <view class="hero-value">{{good.expireDaysText}}</view>
+        <view class="hero-sub">{{good.expireStage}}</view>
+      </block>
 
-  <!-- ROI Stats: 仅当类型为 roi 或有价格时显示 -->
-  <view wx:if="{{good && (good.type === 'roi' || good.buyPrice!=null)}}" class="card stats">
-    <view class="stat-row">
-      <view class="stat">
-        <view class="muted">{{profitMode ? '收益' : '差额'}}</view>
-        <view class="big">¥{{profitMode ? profitStr : roiGap}}</view>
-      </view>
-    </view>
-    <view class="bar">
-      <view class="bar-inner" style="width: {{roiPct}}%">
-         <view class="bar-dot"></view>
-      </view>
-    </view>
-    <view class="muted">回本进度：{{roiPct}}% <text wx:if="{{good.breakevenAt}}">· 回本日：{{good.breakevenAt}}</text></view>
-    <view class="muted" wx:if="{{profitMode}}">每多使用一天赚：¥{{profitPerDayStr}}</view>
-  </view>
-
-  <view class="card actions">
-    <view class="btn-pill btn-edit" bindtap="goEdit">
-      <text class="btn-ico">✏️</text>
-      <text>编辑</text>
+      <block wx:else>
+        <view class="hero-value">¥{{dailyCostStr}}</view>
+        <view class="hero-sub">当前日均成本</view>
+      </block>
     </view>
 
-    <view class="btn-pill btn-archive" bindtap="toggleArchive">
-      <text class="btn-ico">{{good && good.status==='archived' ? '📂' : '🗂️'}}</text>
-      <text>{{good && good.status==='archived' ? '恢复使用' : '归档'}}</text>
+    <view class="card info-card">
+      <view class="section-title">基础信息</view>
+      <view class="info-grid">
+        <view class="info-cell">
+          <view class="info-label">购买日期</view>
+          <view class="info-value">{{good.buyDate || '-'}}</view>
+        </view>
+        <view class="info-cell" wx:if="{{good.isExpire}}">
+          <view class="info-label">到期日期</view>
+          <view class="info-value">{{good.expireDate || '长期有效'}}</view>
+        </view>
+        <view class="info-cell" wx:if="{{!good.isExpire}}">
+          <view class="info-label">购买价格</view>
+          <view class="info-value">¥{{good.buyPrice}}</view>
+        </view>
+        <view class="info-cell" wx:if="{{!good.isExpire}}">
+          <view class="info-label">使用天数</view>
+          <view class="info-value">{{usedDays}} 天</view>
+        </view>
+      </view>
     </view>
-  </view>
+
+    <view wx:if="{{!good.isExpire}}" class="card progress-card">
+      <view class="section-row">
+        <view>
+          <view class="section-title">回本进度</view>
+          <view class="section-desc">预计回本日：{{good.breakevenAt || '-'}}</view>
+        </view>
+        <view class="pct">{{roiPct}}%</view>
+      </view>
+      <view class="bar">
+        <view class="bar-inner" style="width: {{roiPct}}%"></view>
+      </view>
+      <view class="money-row">
+        <view>
+          <view class="money-label">已摊销</view>
+          <view class="money-value">¥{{totalValueStr}}</view>
+        </view>
+        <view>
+          <view class="money-label">剩余差额</view>
+          <view class="money-value">¥{{roiGap}}</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="actions">
+      <view class="btn-pill btn-edit" bindtap="goEdit">编辑物品</view>
+      <view class="btn-pill btn-archive" bindtap="toggleArchive">{{good.status==='archived' ? '恢复使用' : '归档物品'}}</view>
+    </view>
+  </block>
 </view>

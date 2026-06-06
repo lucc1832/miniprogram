@@ -1,4 +1,5 @@
 const APP_VERSION = '小小工具箱 v1.1.0';
+const cloudStore = require('../../utils/cloudStore.js');
 
 const EXPORT_KEYS = [
   'user_info',
@@ -20,65 +21,125 @@ const EXPORT_KEYS = [
   'weight_user_profiles',
   'weight_records_enc',
   'weight_key',
+  'period_records_enc',
+  'period_settings_enc',
+  'period_private_key',
   'roi_logs_local',
   'portal_recent_module'
 ];
 
-const RESET_KEYS = [
-  'anniversary_events_v2',
-  'anniversary_events',
-  'weather_cities',
-  'weather_theme',
-  'kitchen_orders',
-  'today_menu',
-  'of_cart_v1',
-  'weight_enabled',
-  'weight_hide',
-  'weight_current_user',
-  'weight_is_bound',
-  'weight_partner_name',
-  'weight_invite_code',
-  'weight_last_like_date',
-  'weight_received_like_date',
-  'weight_user_profiles',
-  'weight_records_enc',
-  'weight_key',
-  'roi_logs_local',
-  'portal_recent_module',
-  'last_sync_time'
+const RESET_PRESERVE_KEYS = [
+  'cloud_openid'
 ];
 
+const DEFAULT_MEMBER_INFO = {
+  isMember: false,
+  name: '普通用户',
+  expireDate: ''
+};
+
+const DEFAULT_SETTINGS = {
+  reminder: false,
+  reminderTime: '17:00',
+  theme: '默认'
+};
+
+const BASE_MENU_GROUPS = [
+  {
+    title: '账号与权益',
+    subtitle: '账号、会员和个人权益',
+    items: [
+      { name: '云端账号', icon: '📱', desc: '未登录', action: 'bindAccount' },
+      { name: '会员状态', icon: '👑', desc: '未开通', action: 'checkMember' },
+      { name: '查看权益', icon: '✨', desc: '功能说明', action: 'showBenefits' }
+    ]
+  },
+  {
+    title: '偏好设置',
+    subtitle: '提醒时间和显示偏好',
+    items: [
+      { name: '每日提醒', icon: '⏰', type: 'switch', key: 'reminder' },
+      { name: '通知时间', icon: '🕔', type: 'time', key: 'reminderTime' },
+      { name: '主题偏好', icon: '🎨', desc: '默认', action: 'changeTheme' }
+    ]
+  },
+  {
+    title: '支持与反馈',
+    subtitle: '教程、反馈和版本信息',
+    items: [
+      { name: '新手教程', icon: '📖', desc: '快速了解', action: 'showTutorial' },
+      { name: '意见反馈', icon: '📝', desc: '继续优化', action: 'feedback' },
+      { name: '联系客服', icon: '🎧', desc: '问题定位', action: 'contactService' },
+      { name: '关于我们', icon: 'ℹ️', desc: APP_VERSION, action: 'aboutUs' }
+    ]
+  }
+];
+
+const DATA_ACTIONS = [
+  { name: '同步云端', icon: '🔄', desc: '上传当前全部数据', action: 'syncData' },
+  { name: '云端恢复', icon: '☁️', desc: '登录账号后恢复', action: 'restoreCloudData' },
+  { name: '导出备份', icon: '📤', desc: '复制一份本机数据', action: 'exportData' },
+  { name: '清空数据', icon: '🗑️', desc: '清空前会先备份', action: 'resetData', danger: true }
+];
+
+function cloneMenuGroups() {
+  return BASE_MENU_GROUPS.map(group => ({
+    ...group,
+    items: group.items.map(item => ({ ...item }))
+  }));
+}
+
+function cloneDataActions(lastSync) {
+  return DATA_ACTIONS.map(item => ({
+    ...item,
+    desc: item.action === 'syncData' && lastSync ? `上次 ${lastSync}` : item.desc
+  }));
+}
+
+function buildMenuGroups(account, memberInfo, settings, lastSync) {
+  const groups = cloneMenuGroups();
+  groups.forEach(group => {
+    group.items.forEach(item => {
+      if (item.name === '云端账号') item.desc = account.phoneMask || '未登录';
+      if (item.name === '会员状态') item.desc = memberInfo.isMember ? memberInfo.name : '未开通';
+      if (item.name === '主题偏好') item.desc = settings.theme || '默认';
+      if (item.name === '数据同步') item.desc = lastSync ? `上次 ${lastSync}` : '未同步';
+    });
+  });
+  return groups;
+}
+
 Page({
+  accountResolve: null,
+
   data: {
     appVersion: APP_VERSION,
     defaultAvatar: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiBmaWxsPSIjZGVkZWRlIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIvPjxwYXRoIGQ9Ik0yNSA4MCBRNTAgNTAgNzUgODAiIGZpbGw9IiM5OTkiLz48Y2lyY2xlIGN4PSI1MCIgY3k9IjQwIiByPSIyMCIgZmlsbD0iIzk5OSIvPjwvc3ZnPg==',
     userInfo: {},
     hasUserInfo: false,
-    memberInfo: { isMember: false, name: '普通用户', expireDate: '' },
+    memberInfo: DEFAULT_MEMBER_INFO,
+    accountInfo: { accountId: '', phoneMask: '' },
     stats: { daysJoined: 0, totalRecords: 0, streakDays: 0 },
-    settings: { reminder: false, reminderTime: '17:00', theme: '默认' },
-    menuGroups: [
-      { title: '账号与权益', items: [
-        { name: '会员状态', icon: '👑', desc: '未开通', action: 'checkMember' },
-        { name: '查看权益', icon: '✨', action: 'showBenefits' }
-      ]},
-      { title: '数据管理', items: [
-        { name: '数据同步', icon: '🔄', desc: '未同步', action: 'syncData' },
-        { name: '导出数据', icon: '📤', action: 'exportData' },
-        { name: '重置数据', icon: '🗑️', action: 'resetData', danger: true }
-      ]},
-      { title: '偏好设置', items: [
-        { name: '每日提醒', icon: '⏰', type: 'switch', key: 'reminder' },
-        { name: '通知时间', icon: '🕔', type: 'time', key: 'reminderTime' },
-        { name: '主题偏好', icon: '🎨', desc: '默认', action: 'changeTheme' }
-      ]},
-      { title: '支持与反馈', items: [
-        { name: '新手教程', icon: '📖', action: 'showTutorial' },
-        { name: '意见反馈', icon: '📝', action: 'feedback' },
-        { name: '联系客服', icon: '🎧', action: 'contactService' },
-        { name: '关于我们', icon: 'ℹ️', action: 'aboutUs' }
-      ]}
-    ]
+    settings: DEFAULT_SETTINGS,
+    lastSyncLabel: '未同步',
+    menuGroups: cloneMenuGroups(),
+    dataActions: cloneDataActions(''),
+
+    modalVisible: false,
+    modalType: 'info',
+    modalIcon: '✨',
+    modalTitle: '',
+    modalDesc: '',
+    modalPrimary: '知道了',
+    modalSecondary: '取消',
+    modalDanger: false,
+    modalBusy: false,
+    modalPayload: null,
+    accountError: '',
+    accountMode: 'login',
+    accountPhoneInput: '',
+    accountPasswordInput: '',
+    accountPasswordConfirmInput: ''
   },
 
   onLoad() {
@@ -94,21 +155,20 @@ Page({
 
   checkCloudMemberStatus() {
     if (!wx.cloud) return;
-    const db = wx.cloud.database();
+    if (!cloudStore.getAccountInfo().accountId) return;
 
-    db.collection('users').where({}).limit(1).get().then(res => {
-      if (!res.data || res.data.length === 0) return;
+    cloudStore.getUserRows('users').then(list => {
+      if (!list || list.length === 0) return;
 
-      const userData = res.data[0];
+      const userData = list[0];
       const memberInfo = {
         isMember: !!userData.isMember,
         name: userData.memberName || '普通用户',
         expireDate: userData.expireDate || ''
       };
 
-      this.setData({ memberInfo });
       wx.setStorageSync('member_info', memberInfo);
-      this.updateMenuDesc('会员状态', memberInfo.isMember ? memberInfo.name : '未开通');
+      this.loadUserData();
 
       if (!this.data.hasUserInfo && userData.avatarUrl) {
         const userInfo = {
@@ -124,29 +184,43 @@ Page({
   },
 
   loadUserData() {
-    const userInfo = wx.getStorageSync('user_info');
-    const memberInfo = wx.getStorageSync('member_info') || this.data.memberInfo;
-    const settings = {
-      ...this.data.settings,
-      ...(wx.getStorageSync('user_settings') || {})
+    const rawUserInfo = wx.getStorageSync('user_info');
+    const rawMemberInfo = wx.getStorageSync('member_info');
+    const rawSettings = wx.getStorageSync('user_settings');
+    const userInfo = rawUserInfo && typeof rawUserInfo === 'object' ? rawUserInfo : {};
+    const memberInfo = {
+      ...DEFAULT_MEMBER_INFO,
+      ...(rawMemberInfo && typeof rawMemberInfo === 'object' ? rawMemberInfo : {})
     };
-    const lastSync = wx.getStorageSync('last_sync_time');
+    const settings = {
+      ...DEFAULT_SETTINGS,
+      ...(rawSettings && typeof rawSettings === 'object' ? rawSettings : {})
+    };
+    const lastSync = wx.getStorageSync('last_sync_time') || '';
+    const accountInfo = cloudStore.getAccountInfo();
 
     this.setData({
-      userInfo: userInfo || {},
-      hasUserInfo: !!userInfo,
+      userInfo,
+      hasUserInfo: !!(userInfo && (userInfo.avatarUrl || userInfo.nickName)),
       memberInfo,
-      settings
+      accountInfo,
+      settings,
+      lastSyncLabel: lastSync || '未同步',
+      menuGroups: buildMenuGroups(accountInfo, memberInfo, settings, lastSync),
+      dataActions: cloneDataActions(lastSync)
     });
-
-    this.updateMenuDesc('会员状态', memberInfo.isMember ? memberInfo.name : '未开通');
-    this.updateMenuDesc('主题偏好', settings.theme || '默认');
-    this.updateMenuDesc('数据同步', lastSync ? `上次 ${lastSync}` : '未同步');
   },
 
   calculateStats() {
-    const joinDate = wx.getStorageSync('join_date') || Date.now();
-    wx.setStorageSync('join_date', joinDate);
+    let joinDate = wx.getStorageSync('join_date');
+    if (!joinDate) {
+      if (this.resettingLocalData) {
+        this.setData({ stats: { daysJoined: 0, totalRecords: 0, streakDays: 0 } });
+        return;
+      }
+      joinDate = Date.now();
+      wx.setStorageSync('join_date', joinDate);
+    }
 
     const daysJoined = Math.floor((Date.now() - Number(joinDate)) / (1000 * 60 * 60 * 24)) + 1;
     const anniversaryCount = this.getStorageArray('anniversary_events_v2').length;
@@ -155,14 +229,33 @@ Page({
     const weightCount = Object.keys(weightRecords).reduce((sum, key) => {
       return sum + (Array.isArray(weightRecords[key]) ? weightRecords[key].length : 0);
     }, 0);
+    const periodCount = this.getPeriodRecords().length;
     const roiLogs = this.getStorageArray('roi_logs_local').length;
-    const totalRecords = anniversaryCount + kitchenOrders.length + weightCount + roiLogs;
+    const totalRecords = anniversaryCount + kitchenOrders.length + weightCount + periodCount + roiLogs;
     const streakDays = Math.max(
       this.calculateWeightStreak(weightRecords),
       this.calculateKitchenStreak()
     );
 
     this.setData({ stats: { daysJoined, totalRecords, streakDays } });
+  },
+
+  getPeriodRecords() {
+    const enc = wx.getStorageSync('period_records_enc') || '';
+    const key = wx.getStorageSync('period_private_key') || '';
+    if (!this.isHexPayload(enc) || !key) return [];
+
+    try {
+      const parsed = JSON.parse(this.xorHexDecode(enc, key));
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      console.warn('月经记录解析失败', e);
+      return [];
+    }
+  },
+
+  isHexPayload(value) {
+    return typeof value === 'string' && value.length > 0 && value.length % 2 === 0 && /^[0-9a-f]+$/i.test(value);
   },
 
   getStorageArray(key) {
@@ -173,7 +266,7 @@ Page({
   getWeightRecords() {
     const enc = wx.getStorageSync('weight_records_enc') || '';
     const key = wx.getStorageSync('weight_key') || '';
-    if (!enc || !key) return { user1: [], user2: [] };
+    if (!enc || !key || !this.isHexPayload(enc)) return { user1: [], user2: [] };
 
     try {
       const parsed = JSON.parse(this.xorHexDecode(enc, key));
@@ -256,12 +349,45 @@ Page({
     return `${y}-${m}-${d}`;
   },
 
-  onChooseAvatar(e) {
-    const avatarUrl = e && e.detail && e.detail.avatarUrl;
-    if (!avatarUrl) {
-      wx.showToast({ title: '已取消选择头像', icon: 'none' });
+  chooseAvatarImage() {
+    const setAvatar = avatarUrl => {
+      if (!avatarUrl) return;
+      const userInfo = { ...(this.data.userInfo || {}), avatarUrl };
+      this.setData({ userInfo, hasUserInfo: true });
+      wx.setStorageSync('user_info', userInfo);
+    };
+    const handleFail = err => {
+      if (err && /cancel/i.test(err.errMsg || err.message || '')) return;
+      wx.showToast({ title: '头像选择失败', icon: 'none' });
+    };
+
+    if (wx.chooseMedia) {
+      wx.chooseMedia({
+        count: 1,
+        mediaType: ['image'],
+        sourceType: ['album', 'camera'],
+        sizeType: ['compressed'],
+        success: res => {
+          const file = res.tempFiles && res.tempFiles[0];
+          setAvatar(file && file.tempFilePath);
+        },
+        fail: handleFail
+      });
       return;
     }
+
+    wx.chooseImage({
+      count: 1,
+      sizeType: ['compressed'],
+      sourceType: ['album', 'camera'],
+      success: res => setAvatar(res.tempFilePaths && res.tempFilePaths[0]),
+      fail: handleFail
+    });
+  },
+
+  onChooseAvatar(e) {
+    const avatarUrl = e && e.detail && e.detail.avatarUrl;
+    if (!avatarUrl) return;
     const userInfo = { ...(this.data.userInfo || {}), avatarUrl };
     this.setData({ userInfo, hasUserInfo: true });
     wx.setStorageSync('user_info', userInfo);
@@ -275,24 +401,29 @@ Page({
   },
 
   handleMenuClick(e) {
-    const { action, type } = e.currentTarget.dataset.item;
-    if (type) return;
-    if (this[action]) this[action]();
+    const item = e.currentTarget.dataset.item || {};
+    if (item.type) return;
+    if (item.action && this[item.action]) this[item.action]();
     else wx.showToast({ title: '功能开发中', icon: 'none' });
+  },
+
+  handleDataAction(e) {
+    const item = e.currentTarget.dataset.item || {};
+    if (item.action && this[item.action]) this[item.action]();
   },
 
   onSwitchChange(e) {
     const key = e.currentTarget.dataset.key;
     const settings = { ...this.data.settings, [key]: e.detail.value };
-    this.setData({ settings });
     wx.setStorageSync('user_settings', settings);
+    this.loadUserData();
   },
 
   onTimeChange(e) {
     const key = e.currentTarget.dataset.key;
     const settings = { ...this.data.settings, [key]: e.detail.value };
-    this.setData({ settings });
     wx.setStorageSync('user_settings', settings);
+    this.loadUserData();
   },
 
   updateMenuDesc(name, desc) {
@@ -303,31 +434,365 @@ Page({
     this.setData({ menuGroups: groups });
   },
 
-  checkMember() {
-    wx.showModal({
-      title: '会员状态',
-      content: this.data.memberInfo.isMember
-        ? `当前为 ${this.data.memberInfo.name}\n到期时间：${this.data.memberInfo.expireDate || '长期'}`
-        : '当前是普通用户，所有本地功能可正常使用。',
-      showCancel: false
+  noop() {},
+
+  openModal(config) {
+    this.setData({
+      modalVisible: true,
+      modalType: config.type || 'info',
+      modalIcon: config.icon || '✨',
+      modalTitle: config.title || '',
+      modalDesc: config.desc || '',
+      modalPrimary: config.primary || '知道了',
+      modalSecondary: config.secondary || '取消',
+      modalDanger: !!config.danger,
+      modalBusy: false,
+      modalPayload: config.payload || null,
+      accountError: '',
+      accountMode: config.accountMode || this.data.accountMode || 'login',
+      accountPhoneInput: config.keepPhone ? this.data.accountPhoneInput : '',
+      accountPasswordInput: '',
+      accountPasswordConfirmInput: ''
     });
   },
 
-  showBenefits() {
-    wx.showModal({
-      title: '工具箱权益',
-      content: '当前版本已开放本地记录、数据导出、趋势查看和模块入口。后续可把云同步、家庭协作和更多主题放到会员体系里。',
-      showCancel: false
+  closeModal() {
+    if (this.accountResolve) {
+      this.accountResolve(null);
+      this.accountResolve = null;
+    }
+
+    this.setData({
+      modalVisible: false,
+      modalBusy: false,
+      accountError: '',
+      modalPayload: null
     });
   },
 
-  syncData() {
+  closeModalSilently() {
+    this.setData({
+      modalVisible: false,
+      modalBusy: false,
+      accountError: '',
+      modalPayload: null
+    });
+  },
+
+  async confirmModal() {
+    if (this.data.modalBusy) return;
+    const payload = this.data.modalPayload || {};
+
+    if (this.data.modalType === 'account') {
+      await this.confirmAccountAuth();
+      return;
+    }
+
+    if (this.data.modalType === 'accountManage') {
+      this.openAccountBindModal('登录或注册新的云端账号后，会自动恢复这个账号的数据。', 'login');
+      return;
+    }
+
+    if (this.data.modalType === 'confirm') {
+      if (payload.action === 'restore') {
+        await this.doRestoreCloudData();
+        return;
+      }
+      if (payload.action === 'reset') {
+        await this.doResetData();
+        return;
+      }
+    }
+
+    this.closeModal();
+  },
+
+  openResultModal(title, desc, options = {}) {
+    this.openModal({
+      type: 'result',
+      icon: options.icon || '✅',
+      title,
+      desc,
+      primary: options.primary || '知道了',
+      secondary: '',
+      danger: !!options.danger
+    });
+  },
+
+  openConfirmModal(config) {
+    this.openModal({
+      type: 'confirm',
+      icon: config.icon || (config.danger ? '⚠️' : '☁️'),
+      title: config.title,
+      desc: config.desc,
+      primary: config.primary || '确认',
+      secondary: config.secondary || '取消',
+      danger: !!config.danger,
+      payload: { action: config.action }
+    });
+  },
+
+  bindAccount() {
+    const account = cloudStore.getAccountInfo();
+    if (account.accountId) {
+      this.openModal({
+        type: 'accountManage',
+        icon: '📱',
+        title: '账号已登录',
+        desc: '数据同步、恢复和清空都会按当前云端账号隔离。更换账号需要重新输入手机号和密码。',
+        primary: '切换账号',
+        secondary: '关闭'
+      });
+      return;
+    }
+
+    this.promptAccountAuth();
+  },
+
+  openAccountBindModal(message, mode = 'login') {
+    this.openModal({
+      type: 'account',
+      icon: '🔐',
+      title: '云端账号',
+      desc: message || '登录或注册后，数据只会同步和恢复到这个云端账号。',
+      primary: mode === 'register' ? '注册并恢复' : '登录并恢复',
+      secondary: '暂不登录',
+      accountMode: mode
+    });
+  },
+
+  promptAccountAuth(message) {
+    return new Promise(resolve => {
+      this.accountResolve = resolve;
+      this.openAccountBindModal(message, 'login');
+    });
+  },
+
+  switchAccountMode(e) {
+    const mode = e.currentTarget.dataset.mode || 'login';
+    this.setData({
+      accountMode: mode,
+      modalPrimary: mode === 'register' ? '注册并恢复' : '登录并恢复',
+      accountError: '',
+      accountPasswordInput: '',
+      accountPasswordConfirmInput: ''
+    });
+  },
+
+  onAccountPhoneInput(e) {
+    this.setData({
+      accountPhoneInput: e.detail.value,
+      accountError: ''
+    });
+  },
+
+  onAccountPasswordInput(e) {
+    this.setData({
+      accountPasswordInput: e.detail.value,
+      accountError: ''
+    });
+  },
+
+  onAccountPasswordConfirmInput(e) {
+    this.setData({
+      accountPasswordConfirmInput: e.detail.value,
+      accountError: ''
+    });
+  },
+
+  async confirmAccountAuth() {
+    if (this.data.modalBusy) return;
+    const phone = this.data.accountPhoneInput || '';
+    const password = this.data.accountPasswordInput || '';
+    const mode = this.data.accountMode || 'login';
+
+    if (mode === 'register' && password !== this.data.accountPasswordConfirmInput) {
+      this.setData({ accountError: '两次输入的密码不一致' });
+      return;
+    }
+
+    this.setData({ modalBusy: true, accountError: '' });
+    wx.showLoading({ title: mode === 'register' ? '注册中' : '登录中' });
+
+    try {
+      const account = mode === 'register'
+        ? await cloudStore.registerAccount(phone, password)
+        : await cloudStore.loginAccount(phone, password);
+      const resolver = this.accountResolve;
+      this.accountResolve = null;
+      this.closeModalSilently();
+      this.loadUserData();
+      this.checkCloudMemberStatus();
+      await this.restoreAfterAccountAuth(account, mode);
+      if (resolver) resolver(account);
+    } catch (err) {
+      this.setData({
+        modalBusy: false,
+        accountError: err.message || '账号验证失败'
+      });
+      wx.showToast({ title: err.message || '账号验证失败', icon: 'none' });
+    } finally {
+      wx.hideLoading();
+    }
+  },
+
+  async restoreAfterAccountAuth(account, mode) {
+    wx.showLoading({ title: '恢复数据中' });
+    try {
+      const result = await cloudStore.restoreAllToLocal({
+        overwrite: true,
+        includeDeletedFallback: true,
+        restoreCollections: true
+      });
+
+      this.loadUserData();
+      this.calculateStats();
+
+      if (!result.restored) {
+        this.openResultModal(
+          mode === 'register' ? '注册完成' : '登录完成',
+          `${account.phoneMask} 已登录。当前账号暂无云端备份，本机数据会保留；需要备份时点“同步云端”。`,
+          { icon: '✅' }
+        );
+        return;
+      }
+
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      wx.setStorageSync('last_sync_time', `今日 ${timeStr}`);
+      this.loadUserData();
+      this.calculateStats();
+
+      const localCount = result.localRestored || 0;
+      const cloudCount = result.cloudRestore ? result.cloudRestore.documents : 0;
+      this.openResultModal(
+        mode === 'register' ? '注册并恢复完成' : '登录并恢复完成',
+        `已恢复 ${account.phoneMask} 账号下的本机数据 ${localCount} 项、业务记录 ${cloudCount} 条。`,
+        { icon: '✅' }
+      );
+    } catch (err) {
+      console.error('auto restore after account auth failed', err);
+      this.openResultModal(
+        mode === 'register' ? '注册完成，恢复失败' : '登录完成，恢复失败',
+        '账号已经登录，但自动恢复没有完成。请检查云端数据库权限，或者稍后在数据管理里手动点“云端恢复”。',
+        { icon: '⚠️', danger: true }
+      );
+    } finally {
+      wx.hideLoading();
+    }
+  },
+
+  async ensureAccountBound(actionName) {
+    const account = cloudStore.getAccountInfo();
+    if (account.accountId) return account;
+
+    return this.promptAccountAuth(`${actionName || '操作'}需要先登录云端账号。登录成功后会自动恢复这个账号的数据。`);
+  },
+
+  async syncData() {
+    const account = await this.ensureAccountBound('数据同步');
+    if (!account) return;
+
     const now = new Date();
     const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    wx.setStorageSync('last_sync_time', `今日 ${timeStr}`);
-    this.updateMenuDesc('数据同步', `上次 今日 ${timeStr}`);
-    this.calculateStats();
-    wx.showToast({ title: '本地数据已刷新', icon: 'success' });
+    wx.showLoading({ title: '同步中' });
+
+    try {
+      const result = await cloudStore.migrateLocalStorage();
+
+      if (result.collectionMissing) {
+        this.openResultModal(
+          '云端空间未准备好',
+          '请先在云开发数据库创建 user_storage 集合，并确认读写权限后再同步。',
+          { icon: '⚠️', danger: true }
+        );
+        return;
+      }
+
+      wx.setStorageSync('last_sync_time', `今日 ${timeStr}`);
+      const cloudBackup = result.cloudBackup || { documents: 0, failed: 0 };
+      const uploadedCount = result.success + cloudBackup.documents;
+      this.loadUserData();
+      this.calculateStats();
+      this.updateMenuDesc('数据同步', `已同步 ${uploadedCount} 项`);
+
+      this.openResultModal(
+        result.failed || cloudBackup.failed ? '部分同步完成' : '同步完成',
+        result.failed || cloudBackup.failed
+          ? `已上传本机 ${result.success} 项、业务记录 ${cloudBackup.documents} 条，失败 ${result.failed + cloudBackup.failed} 项。请检查云端数据权限。`
+          : `已把账号 ${account.phoneMask} 的本机 ${result.success} 项、业务记录 ${cloudBackup.documents} 条备份到云端。`
+      );
+    } catch (e) {
+      console.error('cloud sync failed', e);
+      this.openResultModal('同步失败', '请确认云端数据存储已开启，并且当前账号有读写权限。', {
+        icon: '⚠️',
+        danger: true
+      });
+    } finally {
+      wx.hideLoading();
+    }
+  },
+
+  async restoreCloudData() {
+    const account = await this.ensureAccountBound('从云端恢复');
+    if (!account) return;
+
+    this.openConfirmModal({
+      action: 'restore',
+      icon: '☁️',
+      title: '从云端恢复',
+      desc: `将使用 ${account.phoneMask} 账号的云端备份覆盖本机同名数据。建议先确认当前手机上的数据已经同步。`,
+      primary: '开始恢复'
+    });
+  },
+
+  async doRestoreCloudData() {
+    this.setData({ modalBusy: true });
+    wx.showLoading({ title: '恢复中' });
+
+    try {
+      const result = await cloudStore.restoreAllToLocal({
+        overwrite: true,
+        includeDeletedFallback: true,
+        restoreCollections: true
+      });
+
+      if (!result.restored) {
+        this.openResultModal(
+          '暂无可恢复数据',
+          '当前云端账号下还没有可恢复的数据。请先在有数据的设备上点“数据同步”，再回到这里恢复。',
+          { icon: 'ℹ️' }
+        );
+        return;
+      }
+
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      wx.setStorageSync('last_sync_time', `今日 ${timeStr}`);
+      this.loadUserData();
+      this.calculateStats();
+      this.updateMenuDesc('数据同步', `已恢复 ${result.restored} 项`);
+
+      const localCount = result.localRestored || 0;
+      const cloudCount = result.cloudRestore ? result.cloudRestore.documents : 0;
+      const cloudFailed = result.cloudRestore ? result.cloudRestore.failed : 0;
+      this.openResultModal(
+        cloudFailed ? '部分恢复完成' : '恢复完成',
+        cloudFailed
+          ? `已恢复本机 ${localCount} 项、业务记录 ${cloudCount} 条，还有 ${cloudFailed} 类业务数据恢复失败，请检查云端权限。`
+          : result.usedDeletedFallback
+          ? `已恢复本机 ${localCount} 项、业务记录 ${cloudCount} 条，并找回了之前清空前保留的历史备份。`
+          : `已恢复本机 ${localCount} 项、业务记录 ${cloudCount} 条。`
+      );
+    } catch (e) {
+      console.error('cloud restore failed', e);
+      this.openResultModal('恢复失败', '请确认云端数据存储已开启，并且当前账号有读写权限。', {
+        icon: '⚠️',
+        danger: true
+      });
+    } finally {
+      wx.hideLoading();
+    }
   },
 
   exportData() {
@@ -339,7 +804,7 @@ Page({
     };
 
     info.keys.forEach(key => {
-      if (EXPORT_KEYS.includes(key) || key.startsWith('daily_status_')) {
+      if (this.shouldExportStorageKey(key)) {
         snapshot.keys[key] = wx.getStorageSync(key);
       }
     });
@@ -347,36 +812,100 @@ Page({
     wx.setClipboardData({
       data: JSON.stringify(snapshot, null, 2),
       success: () => {
-        wx.showModal({
-          title: '导出完成',
-          content: '已把本机数据备份复制到剪贴板，你可以粘贴保存。',
-          showCancel: false
+        this.openResultModal('导出完成', '已把本机数据备份复制到剪贴板，可以粘贴保存或发给自己留档。', {
+          icon: '📤'
         });
       }
     });
   },
 
-  resetData() {
-    wx.showModal({
-      title: '重置本机数据',
-      content: '将清空纪念日、天气城市、厨房记录、体重记录、购物车和最近使用；头像昵称与会员状态会保留。',
-      confirmText: '确认清空',
-      confirmColor: '#E5484D',
-      success: (res) => {
-        if (!res.confirm) return;
+  async resetData() {
+    const account = await this.ensureAccountBound('重置前备份');
+    if (!account) return;
 
-        const info = wx.getStorageInfoSync();
-        info.keys.forEach(key => {
-          if (RESET_KEYS.includes(key) || key.startsWith('weather_cache_') || key.startsWith('daily_status_')) {
-            wx.removeStorageSync(key);
-          }
-        });
+    this.openConfirmModal({
+      action: 'reset',
+      icon: '🗑️',
+      title: '重置数据',
+      desc: `会先把当前数据备份到 ${account.phoneMask}，再清空本机数据、业务记录、账号绑定、头像昵称和会员缓存。`,
+      primary: '确认清空',
+      danger: true
+    });
+  },
 
+  async doResetData() {
+    this.setData({ modalBusy: true });
+    wx.showLoading({ title: '清空中' });
+
+    try {
+      const backupResult = await cloudStore.migrateLocalStorage();
+      if (backupResult.collectionMissing) {
+        this.openResultModal(
+          '重置已取消',
+          '云端备份空间还没准备好。为避免清空后无法恢复，请先完成云端数据库初始化，再重置。',
+          { icon: '⚠️', danger: true }
+        );
+        return;
+      }
+
+      const backupFailed = backupResult.failed + ((backupResult.cloudBackup && backupResult.cloudBackup.failed) || 0);
+      if (backupFailed) {
+        this.openResultModal(
+          '重置已取消',
+          '当前数据备份没有全部完成。为避免清空后无法恢复，请先点“数据同步”确认成功，再重置。',
+          { icon: '⚠️', danger: true }
+        );
+        return;
+      }
+
+      const info = wx.getStorageInfoSync();
+      const keys = info.keys.filter(key => this.shouldResetStorageKey(key));
+      const storageClearResult = await cloudStore.clearCurrentStorage(keys);
+      const clearResult = await cloudStore.clearCloudCollections();
+
+      cloudStore.runWithoutAutoSync(() => {
+        keys.forEach(key => wx.removeStorageSync(key));
+      });
+
+      this.resettingLocalData = true;
+      try {
         this.loadUserData();
         this.calculateStats();
-        wx.showToast({ title: '已清空记录', icon: 'success' });
+      } finally {
+        this.resettingLocalData = false;
       }
-    });
+
+      this.openResultModal(
+        clearResult.failed || storageClearResult.failed ? '部分清空完成' : '清空完成',
+        clearResult.failed || storageClearResult.failed
+          ? `本机已清空 ${keys.length} 项，业务记录已清空 ${clearResult.documents} 条；还有部分云端镜像未清空，请检查云端权限。`
+          : `本机已清空 ${keys.length} 项，业务记录已清空 ${clearResult.documents} 条。需要找回时重新登录账号并点“云端恢复”。`,
+        { icon: '✅' }
+      );
+    } catch (e) {
+      console.error('reset data failed', e);
+      this.openResultModal('清空失败', '请确认云端数据存储已开启，并且当前账号有读写权限。', {
+        icon: '⚠️',
+        danger: true
+      });
+    } finally {
+      wx.hideLoading();
+    }
+  },
+
+  shouldExportStorageKey(key) {
+    if (!key) return false;
+    return EXPORT_KEYS.includes(key)
+      || key.startsWith('daily_status_')
+      || key.startsWith('weather_cache_')
+      || key.startsWith('weather_')
+      || key.startsWith('weight_')
+      || key.startsWith('period_');
+  },
+
+  shouldResetStorageKey(key) {
+    if (!key || RESET_PRESERVE_KEYS.includes(key)) return false;
+    return true;
   },
 
   changeTheme() {
@@ -385,42 +914,59 @@ Page({
       success: (res) => {
         const theme = ['默认', '清爽蓝', '暖阳橙'][res.tapIndex];
         const settings = { ...this.data.settings, theme };
-        this.setData({ settings });
         wx.setStorageSync('user_settings', settings);
-        this.updateMenuDesc('主题偏好', theme);
+        this.loadUserData();
       }
     });
   },
 
+  checkMember() {
+    this.openResultModal(
+      '会员状态',
+      this.data.memberInfo.isMember
+        ? `当前为 ${this.data.memberInfo.name}，到期时间：${this.data.memberInfo.expireDate || '长期'}。`
+        : '当前是普通用户，所有本地功能可正常使用。',
+      { icon: '👑' }
+    );
+  },
+
+  showBenefits() {
+    this.openResultModal(
+      '工具箱权益',
+      '当前版本已开放本地记录、数据导出、趋势查看、云端同步和账号隔离。后续可以继续扩展家庭协作、更多主题和会员权益。',
+      { icon: '✨' }
+    );
+  },
+
   showTutorial() {
-    wx.showModal({
-      title: '新手教程',
-      content: '首页选择模块；个人中心可查看统计、导出备份和重置本机数据；每个模块的数据会优先保存在本机。',
-      showCancel: false
-    });
+    this.openResultModal(
+      '新手教程',
+      '首页选择模块进入对应功能；个人中心负责账号绑定、云端同步、导出备份和重置本机数据。恢复数据前请先绑定同一个手机号。',
+      { icon: '📖' }
+    );
   },
 
   feedback() {
-    wx.showModal({
-      title: '意见反馈',
-      content: '可以把想优化的页面、功能或报错截图发给开发者继续迭代。',
-      showCancel: false
-    });
+    this.openResultModal(
+      '意见反馈',
+      '可以把想优化的页面、功能或报错截图发给开发者继续迭代。截图里最好保留控制台报错和当前页面。',
+      { icon: '📝' }
+    );
   },
 
   contactService() {
-    wx.showModal({
-      title: '联系客服',
-      content: '当前是个人工具箱项目，建议先通过微信开发者工具控制台截图定位问题。',
-      showCancel: false
-    });
+    this.openResultModal(
+      '联系客服',
+      '当前是个人工具箱项目。遇到问题时，建议先截图页面和开发者工具控制台，方便快速定位。',
+      { icon: '🎧' }
+    );
   },
 
   aboutUs() {
-    wx.showModal({
-      title: '关于',
-      content: `${APP_VERSION}\n一个整合生活记录、天气、厨房和纪念日的小工具箱。`,
-      showCancel: false
-    });
+    this.openResultModal(
+      '关于',
+      `${APP_VERSION}\n一个整合生活记录、天气、厨房、纪念日和周期记录的小工具箱。`,
+      { icon: 'ℹ️' }
+    );
   }
 });

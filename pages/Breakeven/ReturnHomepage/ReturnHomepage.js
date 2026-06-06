@@ -1,6 +1,5 @@
 
-const db = wx.cloud.database();
-const _ = db.command;
+const cloudStore = require('../../../utils/cloudStore.js');
 let { todayStr, diffDays } = (() => {
   try {
     return require('../utils/date.js');
@@ -25,6 +24,14 @@ let { todayStr, diffDays } = (() => {
   }
 })();
 
+function getGoodsType(g) {
+  return g.type || (g.buyPrice != null ? 'roi' : 'expire');
+}
+
+function getModeGoods(goods, mode) {
+  return goods.filter(g => getGoodsType(g) === mode);
+}
+
 Page({
   data: {
     mode: 'expire', // expire | roi
@@ -34,17 +41,25 @@ Page({
     catCounts: { all: 0 },
     selectedCatId: '',
     statusFilter: 'all',
-    sortOptions: ['到期日', '价格'],
+    sortOptions: ['到期日', '购买日'],
     sortIndex: 0,
     goods: [],
     filtered: [],
+    quickStats: [],
     summary: {
       totalAsset: '0.00',
       totalCount: 0,
       expireSoonCount: 0,
+      expiredCount: 0,
       todayCost: '0.00',
       maxDailyCost: '0.00',
-      maxDailyName: '-'
+      maxDailyName: '-',
+      focusTitle: '暂无重点',
+      focusValue: '--',
+      focusUnit: '',
+      focusMeta: '添加物品后，这里会自动提示最需要关注的一项',
+      focusTone: 'calm',
+      guideText: '先添加几个物品，后续会自动帮你排序和提醒。'
     }
   },
 
@@ -64,13 +79,15 @@ Page({
   },
 
   async loadCategories() {
-    const res = await db.collection('categories').orderBy('sort','asc').get();
-    this.setData({ categories: res.data || [] });
+    const categories = (await cloudStore.getUserRows('categories'))
+      .sort((a, b) => Number(a.sort || 0) - Number(b.sort || 0));
+    this.setData({ categories });
   },
 
   async loadGoods() {
-    const res = await db.collection('goods').orderBy('updatedAt','desc').get();
-    const goods = (res.data || []).map(g => ({...g}));
+    const goods = (await cloudStore.getUserRows('goods'))
+      .sort((a, b) => Number(b.updatedAt || 0) - Number(a.updatedAt || 0))
+      .map(g => ({...g}));
     const catMap = {};
     this.data.categories.forEach(c => { catMap[c._id]=c.name; });
 
@@ -183,10 +200,8 @@ Page({
       const ids = goods.filter(g => (g.buyPrice === 0 || g.buyPrice)).map(g => g._id);
       if (!ids.length) return;
 
-      const existingRes = await db.collection('roi_logs')
-        .where({ goodsId: _.in(ids), date: today })
-        .get();
-      const existList = existingRes.data || [];
+      const existList = (await cloudStore.getUserRows('roi_logs'))
+        .filter(item => ids.includes(item.goodsId) && item.date === today);
       const existMap = {};
       existList.forEach(it => { existMap[it.goodsId] = it; });
 
@@ -202,8 +217,7 @@ Page({
 
         const exist = existMap[g._id];
         if (!exist) {
-          tasks.push(db.collection('roi_logs').add({
-            data: {
+          tasks.push(cloudStore.addUserDoc('roi_logs', {
               goodsId: g._id,
               date: today,
               pct,
@@ -212,19 +226,16 @@ Page({
               buyPrice: P,
               cycleDays: cycleDays,
               usedDays
-            }
           }));
         } else {
           if (Number(exist.pct || 0) !== pct || Number(exist.recovered || 0) !== Number(recovered.toFixed(2))) {
-            tasks.push(db.collection('roi_logs').doc(exist._id).update({
-              data: {
+            tasks.push(cloudStore.updateUserDoc('roi_logs', exist._id, {
                 pct,
                 recovered: Number(recovered.toFixed(2)),
                 gap: Number(gap.toFixed(2)),
                 buyPrice: P,
                 cycleDays: cycleDays,
                 usedDays
-              }
             }));
           }
         }
@@ -269,23 +280,22 @@ Page({
 
   recomputeSummary() {
     const { goods, mode, categories } = this.data;
-    
-    // Filter goods based on current mode
-    const modeGoods = goods.filter(g => {
-      const gType = g.type || (g.buyPrice != null ? 'roi' : 'expire'); 
-      if (mode === 'expire' && gType !== 'expire') return false;
-      if (mode === 'roi' && gType !== 'roi') return false;
-      return true;
-    });
+    const modeGoods = getModeGoods(goods, mode);
 
     let totalAsset = 0;
     let expireSoon = 0;
+    let expiredCount = 0;
+    let validCount = 0;
+    let archivedCount = 0;
     let maxDaily = 0;
     let maxName = '-';
 
     modeGoods.forEach(g => {
       if (g.buyPrice === 0 || g.buyPrice) totalAsset += Number(g.buyPrice);
       if (g.expireEnabled && g.expireDate && g._expireState === 'soon') expireSoon += 1;
+      if (g.expireEnabled && g.expireDate && g._expireState === 'expired') expiredCount += 1;
+      if (mode === 'expire' && g._expireState !== 'expired') validCount += 1;
+      if (mode === 'roi' && (g.status || 'using') === 'archived') archivedCount += 1;
       if ((g._dailyCost||0) > maxDaily) { maxDaily = g._dailyCost; maxName = g.name; }
     });
 
@@ -305,16 +315,103 @@ Page({
         }
     });
 
+    let focusTitle = '暂无重点';
+    let focusValue = '--';
+    let focusUnit = '';
+    let focusMeta = '添加物品后，这里会自动提示最需要关注的一项';
+    let focusTone = 'calm';
+    let guideText = '先添加几个物品，后续会自动帮你排序和提醒。';
+    let quickStats = [];
+
+    if (mode === 'expire') {
+      const datedGoods = modeGoods
+        .filter(g => g.expireEnabled && g.expireDate)
+        .slice()
+        .sort((a, b) => {
+          const scoreA = a._expireState === 'expired' ? -10000 - a._daysDiffAbs : a._daysDiff;
+          const scoreB = b._expireState === 'expired' ? -10000 - b._daysDiffAbs : b._daysDiff;
+          return scoreA - scoreB;
+        });
+      const focusItem = datedGoods[0];
+
+      if (focusItem) {
+        focusTitle = focusItem.name || '未命名物品';
+        focusValue = String(focusItem._daysDiffAbs || 0);
+        focusUnit = '天';
+        if (focusItem._expireState === 'expired') {
+          focusTone = 'danger';
+          focusMeta = `已过期 ${focusItem._daysDiffAbs} 天，建议尽快处理`;
+        } else if (focusItem._expireState === 'soon') {
+          focusTone = 'warn';
+          focusMeta = `还有 ${focusItem._daysDiffAbs} 天到期 · ${focusItem.categoryName || '未分类'}`;
+        } else {
+          focusTone = 'calm';
+          focusMeta = `下一件到期物 · ${focusItem.expireDate}`;
+        }
+      }
+
+      if (expiredCount > 0) {
+        guideText = `有 ${expiredCount} 件已过期，建议先清理或更新有效期。`;
+      } else if (expireSoon > 0) {
+        guideText = `${expireSoon} 件物品 30 天内到期，可以提前补货或处理。`;
+      } else if (modeGoods.length > 0) {
+        guideText = '最近没有紧急到期项，状态不错。';
+      }
+
+      quickStats = [
+        { label: '全部', value: modeGoods.length, suffix: '件', status: 'all' },
+        { label: '临期', value: expireSoon, suffix: '件', status: 'soon' },
+        { label: '已过期', value: expiredCount, suffix: '件', status: 'expired' },
+        { label: '正常', value: validCount, suffix: '件', status: 'valid' }
+      ];
+    } else {
+      const activeGoods = modeGoods.filter(g => (g.status || 'using') === 'using');
+      const costGoods = activeGoods
+        .filter(g => g.buyPrice === 0 || g.buyPrice)
+        .slice()
+        .sort((a, b) => (b._dailyCost || 0) - (a._dailyCost || 0));
+      const focusItem = costGoods[0];
+
+      if (focusItem) {
+        focusTitle = focusItem.name || '未命名物品';
+        focusValue = Number(focusItem._dailyCost || 0).toFixed(2);
+        focusUnit = '元/天';
+        focusTone = Number(focusItem._dailyCost || 0) > 10 ? 'warn' : 'calm';
+        focusMeta = `已用 ${focusItem._useDays || 0} 天 · 回本进度 ${focusItem._roiPct || 0}%`;
+      }
+
+      if (maxDaily > 0) {
+        guideText = `今天总摊销约 ¥${todayCost.toFixed(2)}，最高日成本是「${maxName}」。`;
+      } else {
+        guideText = '填写购买价后，可以自动看到日均成本和回本进度。';
+      }
+
+      quickStats = [
+        { label: '投入', value: totalAsset.toFixed(0), suffix: '元', status: 'all' },
+        { label: '今日摊销', value: todayCost.toFixed(2), suffix: '元', status: 'all' },
+        { label: '使用中', value: activeGoods.length, suffix: '件', status: 'using' },
+        { label: '已归档', value: archivedCount, suffix: '件', status: 'archived' }
+      ];
+    }
+
     this.setData({
       summary: {
         totalAsset: totalAsset.toFixed(2),
         totalCount: modeGoods.length,
         expireSoonCount: expireSoon,
+        expiredCount,
         todayCost: todayCost.toFixed(2),
         maxDailyCost: maxDaily.toFixed(2),
-        maxDailyName: maxName
+        maxDailyName: maxName,
+        focusTitle,
+        focusValue,
+        focusUnit,
+        focusMeta,
+        focusTone,
+        guideText
       },
-      catCounts: catCounts
+      catCounts: catCounts,
+      quickStats
     });
   },
 
@@ -331,7 +428,7 @@ Page({
       // - mode=expire: type='expire' OR (!type AND price is null)
       // - mode=roi: type='roi' OR (!type AND price > 0)
       
-      const gType = g.type || (g.buyPrice != null ? 'roi' : 'expire'); 
+      const gType = getGoodsType(g);
       if (mode === 'expire' && gType !== 'expire') return false;
       if (mode === 'roi' && gType !== 'roi') return false;
 
@@ -349,6 +446,9 @@ Page({
         if (statusFilter === 'valid') {
           return !(g.expireEnabled && g._expireState === 'expired');
         }
+        if (statusFilter === 'soon') {
+          return (g.expireEnabled && g._expireState === 'soon');
+        }
         if (statusFilter === 'expired') {
           return (g.expireEnabled && g._expireState === 'expired');
         }
@@ -363,10 +463,12 @@ Page({
     // sort
     if (mode === 'expire' && sortIndex === 0) {
       list.sort((a,b) => (a.expireDate||'9999-12-31').localeCompare(b.expireDate||'9999-12-31'));
-    } else if (mode === 'roi' && sortIndex === 1) {
-      list.sort((a,b) => (Number(a.buyPrice||0) - Number(b.buyPrice||0)));
+    } else if (mode === 'expire' && sortIndex === 1) {
+      list.sort((a,b) => (b.buyDate||'').localeCompare(a.buyDate||''));
     } else if (mode === 'roi' && sortIndex === 0) {
-      list.sort((a,b) => (a._dailyCost||0) - (b._dailyCost||0));
+      list.sort((a,b) => (b._dailyCost||0) - (a._dailyCost||0));
+    } else if (mode === 'roi' && sortIndex === 1) {
+      list.sort((a,b) => (Number(b.buyPrice||0) - Number(a.buyPrice||0)));
     }
 
     this.setData({ filtered: list });
@@ -374,9 +476,10 @@ Page({
 
   switchMode(e) {
     const mode = e.currentTarget.dataset.mode;
-    const sortIndex = mode === 'expire' ? 0 : 1;
+    const sortOptions = mode === 'expire' ? ['到期日', '购买日'] : ['日成本', '价格'];
+    const sortIndex = 0;
     const statusFilter = 'all';
-    this.setData({ mode, sortIndex, statusFilter }, () => {
+    this.setData({ mode, sortOptions, sortIndex, statusFilter }, () => {
       this.recomputeSummary();
       this.applyFilters();
     });
@@ -392,6 +495,12 @@ Page({
 
   pickStatus(e) {
     this.setData({ statusFilter: e.currentTarget.dataset.s }, () => this.applyFilters());
+  },
+
+  onStatTap(e) {
+    const status = e.currentTarget.dataset.status;
+    if (!status) return;
+    this.setData({ statusFilter: status }, () => this.applyFilters());
   },
 
   onSort(e) {

@@ -1,4 +1,4 @@
-const db = wx.cloud ? wx.cloud.database() : null;
+const cloudStore = require('../../../utils/cloudStore.js');
 const CART_KEY = 'of_cart_v1';
 
 function loadCart() {
@@ -141,9 +141,7 @@ Page({
       };
 
       try {
-        if (db) {
-          await db.collection('orders').add({ data: order });
-        }
+        await cloudStore.addUserDoc('orders', order);
       } catch (e) {
         console.warn('云端订单写入失败，已保留本地订单', e);
       }

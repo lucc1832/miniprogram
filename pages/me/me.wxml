@@ -1,18 +1,47 @@
-<view class="wrap responsive-container">
-  <view class="user-card">
-    <button class="avatar-wrapper" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
-      <image class="avatar" src="{{userInfo.avatarUrl || defaultAvatar}}" mode="aspectFill"></image>
-      <view class="edit-icon">📷</view>
-    </button>
-    <view class="user-info">
-      <input type="nickname" class="nickname-input" placeholder="点击设置昵称" value="{{userInfo.nickName}}" bindchange="onNicknameInput" />
-      <view class="member-badge {{memberInfo.isMember ? 'active' : ''}}">
-        <text class="badge-icon">👑</text>
-        <text>{{memberInfo.isMember ? memberInfo.name : '未开通会员'}}</text>
+<view class="me-page responsive-container">
+  <view class="hero">
+    <view class="hero-glow hero-glow-a"></view>
+    <view class="hero-glow hero-glow-b"></view>
+
+    <view class="profile-row">
+      <view class="avatar-wrapper" bindtap="chooseAvatarImage">
+        <image class="avatar" src="{{userInfo.avatarUrl || defaultAvatar}}" mode="aspectFill"></image>
+        <view class="avatar-edit">📷</view>
+      </view>
+
+      <view class="profile-main">
+        <input
+          type="nickname"
+          class="nickname-input"
+          placeholder="点击设置昵称"
+          value="{{userInfo.nickName}}"
+          bindinput="onNicknameInput"
+        />
+        <view class="chip-row">
+          <view class="profile-chip {{memberInfo.isMember ? 'gold' : ''}}">
+            <text>👑</text>
+            <text>{{memberInfo.isMember ? memberInfo.name : '普通用户'}}</text>
+          </view>
+          <view class="profile-chip {{accountInfo.accountId ? 'bound' : ''}}">
+            <text>{{accountInfo.accountId ? '已登录' : '未登录'}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="login-state {{accountInfo.accountId ? 'active' : ''}}">
+        {{accountInfo.accountId ? '已登录' : '未登录'}}
       </view>
     </view>
-    <view class="status-tag {{hasUserInfo ? 'online' : 'offline'}}">
-      {{hasUserInfo ? '已登录' : '未登录'}}
+
+    <view class="account-strip" bindtap="bindAccount">
+      <view class="strip-left">
+        <text class="strip-icon">🔐</text>
+        <view>
+          <view class="strip-title">云端账号</view>
+          <view class="strip-desc">{{accountInfo.phoneMask || '登录云端账号后，数据只会恢复到自己的账号'}}</view>
+        </view>
+      </view>
+      <view class="strip-action">{{accountInfo.accountId ? '管理' : '去绑定'}}</view>
     </view>
   </view>
 
@@ -21,31 +50,96 @@
       <text class="stat-num">{{stats.daysJoined}}</text>
       <text class="stat-label">陪伴天数</text>
     </view>
-    <view class="stat-divider"></view>
     <view class="stat-item">
       <text class="stat-num">{{stats.totalRecords}}</text>
       <text class="stat-label">累计记录</text>
     </view>
-    <view class="stat-divider"></view>
     <view class="stat-item">
       <text class="stat-num">{{stats.streakDays}}</text>
       <text class="stat-label">连续打卡</text>
     </view>
   </view>
 
+  <view class="sync-panel">
+    <view class="sync-head">
+      <view>
+        <view class="panel-title">云端概览</view>
+        <view class="panel-subtitle">这里只看状态，具体操作在下方“数据管理”</view>
+      </view>
+      <view class="sync-pill {{accountInfo.accountId ? 'ready' : ''}}">
+        {{accountInfo.accountId ? '账号已就绪' : '待绑定'}}
+      </view>
+    </view>
+    <view class="status-grid">
+      <view class="status-box">
+        <view class="status-value">{{accountInfo.phoneMask || '未登录'}}</view>
+        <view class="status-label">云端账号</view>
+      </view>
+      <view class="status-box">
+        <view class="status-value">{{lastSyncLabel}}</view>
+        <view class="status-label">最近同步</view>
+      </view>
+      <view class="status-box">
+        <view class="status-value">{{stats.totalRecords}}</view>
+        <view class="status-label">本机记录</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="data-panel">
+    <view class="group-head data-head">
+      <text class="group-title">数据管理</text>
+      <text class="group-subtitle">同步、恢复和备份</text>
+    </view>
+    <view class="data-action-grid">
+      <view
+        class="data-action-card {{item.danger ? 'danger' : ''}}"
+        wx:for="{{dataActions}}"
+        wx:key="name"
+        bindtap="handleDataAction"
+        data-item="{{item}}"
+      >
+        <view class="data-action-icon">{{item.icon}}</view>
+        <view class="data-action-title">{{item.name}}</view>
+        <view class="data-action-desc">{{item.desc}}</view>
+      </view>
+    </view>
+  </view>
+
   <view class="menu-list">
     <view class="menu-group" wx:for="{{menuGroups}}" wx:key="title">
-      <view class="group-title" wx:if="{{item.title}}">{{item.title}}</view>
+      <view class="group-head">
+        <text class="group-title">{{item.title}}</text>
+        <text class="group-subtitle">{{item.subtitle}}</text>
+      </view>
+
       <view class="group-content">
-        <view class="menu-item" wx:for="{{item.items}}" wx:key="name" wx:for-item="menu" bindtap="handleMenuClick" data-item="{{menu}}">
+        <view
+          class="menu-item {{menu.danger ? 'danger-item' : ''}}"
+          wx:for="{{item.items}}"
+          wx:key="name"
+          wx:for-item="menu"
+          bindtap="handleMenuClick"
+          data-item="{{menu}}"
+        >
           <view class="item-left">
-            <text wx:if="{{menu.icon}}" class="item-icon">{{menu.icon}}</text>
-            <text class="item-name {{menu.danger ? 'text-danger' : ''}}">{{menu.name}}</text>
+            <view class="item-icon">{{menu.icon}}</view>
+            <view class="item-text">
+              <text class="item-name {{menu.danger ? 'text-danger' : ''}}">{{menu.name}}</text>
+              <text wx:if="{{!menu.type && menu.desc}}" class="item-desc">{{menu.desc}}</text>
+            </view>
           </view>
+
           <view class="item-right">
-            <text wx:if="{{!menu.type}}" class="item-desc">{{menu.desc || ''}}</text>
             <text wx:if="{{!menu.type}}" class="arrow">›</text>
-            <switch wx:if="{{menu.type === 'switch'}}" checked="{{settings[menu.key]}}" bindchange="onSwitchChange" data-key="{{menu.key}}" color="#F4C430" style="transform: scale(0.8);" />
+            <switch
+              wx:if="{{menu.type === 'switch'}}"
+              checked="{{settings[menu.key]}}"
+              bindchange="onSwitchChange"
+              data-key="{{menu.key}}"
+              color="#14b887"
+              class="row-switch"
+            />
             <picker wx:if="{{menu.type === 'time'}}" mode="time" value="{{settings[menu.key]}}" bindchange="onTimeChange" data-key="{{menu.key}}">
               <view class="picker-val">{{settings[menu.key]}} ›</view>
             </picker>
@@ -55,7 +149,78 @@
     </view>
   </view>
 
-  <view class="footer-info">
-    <text>{{appVersion}}</text>
+  <view class="footer-info">{{appVersion}}</view>
+
+  <view wx:if="{{modalVisible}}" class="modal-layer" catchtouchmove="noop">
+    <view class="modal-mask" bindtap="closeModal"></view>
+    <view class="modal-card {{modalDanger ? 'danger' : ''}}">
+      <view class="modal-handle"></view>
+      <view class="modal-icon">{{modalIcon}}</view>
+      <view class="modal-title">{{modalTitle}}</view>
+      <view class="modal-desc">{{modalDesc}}</view>
+
+      <view wx:if="{{modalType === 'account'}}" class="account-form">
+        <view class="account-tabs">
+          <view
+            class="account-tab {{accountMode === 'login' ? 'active' : ''}}"
+            data-mode="login"
+            bindtap="switchAccountMode"
+          >
+            登录
+          </view>
+          <view
+            class="account-tab {{accountMode === 'register' ? 'active' : ''}}"
+            data-mode="register"
+            bindtap="switchAccountMode"
+          >
+            注册
+          </view>
+        </view>
+        <input
+          class="account-input"
+          type="number"
+          maxlength="11"
+          value="{{accountPhoneInput}}"
+          placeholder="请输入手机号"
+          bindinput="onAccountPhoneInput"
+          focus="{{modalType === 'account'}}"
+        />
+        <input
+          class="account-input"
+          password="{{true}}"
+          maxlength="32"
+          value="{{accountPasswordInput}}"
+          placeholder="请输入密码，6-32 位"
+          bindinput="onAccountPasswordInput"
+        />
+        <input
+          wx:if="{{accountMode === 'register'}}"
+          class="account-input"
+          password="{{true}}"
+          maxlength="32"
+          value="{{accountPasswordConfirmInput}}"
+          placeholder="请再次输入密码"
+          bindinput="onAccountPasswordConfirmInput"
+        />
+        <view class="form-note">{{accountMode === 'register' ? '注册后会创建云端账号，并立即恢复这个账号下的数据。' : '登录成功后会立即恢复这个账号下的云端数据。'}}</view>
+        <view wx:if="{{accountError}}" class="form-error">{{accountError}}</view>
+      </view>
+
+      <view wx:elif="{{modalType === 'accountManage'}}" class="bound-card">
+        <view class="bound-label">当前账号</view>
+        <view class="bound-value">{{accountInfo.phoneMask}}</view>
+        <view class="bound-note">切换账号需要输入手机号和密码，成功后会自动恢复新账号的数据。</view>
+      </view>
+
+      <view class="modal-actions">
+        <view wx:if="{{modalSecondary}}" class="modal-btn secondary" bindtap="closeModal">{{modalSecondary}}</view>
+        <view
+          class="modal-btn primary {{modalDanger ? 'danger' : ''}} {{modalBusy ? 'disabled' : ''}}"
+          bindtap="confirmModal"
+        >
+          {{modalBusy ? '处理中' : modalPrimary}}
+        </view>
+      </view>
+    </view>
   </view>
 </view>

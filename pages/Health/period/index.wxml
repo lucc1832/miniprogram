@@ -1,0 +1,186 @@
+<view class="wrap responsive-container">
+  <view class="hero">
+    <view class="hero-top">
+      <view>
+        <view class="eyebrow">私密健康记录</view>
+        <view class="title">月经记录</view>
+      </view>
+      <view class="privacy-btn" bindtap="togglePrivacy">{{hideSensitive ? '已隐藏' : '隐私模式'}}</view>
+    </view>
+    <view class="status-title">{{hideSensitive ? '已隐藏' : statusTitle}}</view>
+    <view class="status-meta">{{hideSensitive ? '已隐藏周期、日期和历史详情' : statusMeta}}</view>
+
+    <view class="hero-grid">
+      <view class="hero-cell">
+        <view class="cell-value">{{hideSensitive ? '--' : currentCycleDay}}</view>
+        <view class="cell-label">周期第几天</view>
+      </view>
+      <view class="hero-cell">
+        <view class="cell-value">{{hideSensitive ? '--' : nextDate}}</view>
+        <view class="cell-label">预计下次</view>
+      </view>
+      <view class="hero-cell">
+        <view class="cell-value">{{hideSensitive ? '--' : daysUntil}}</view>
+        <view class="cell-label">剩余/延迟</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="quick-card card">
+    <view class="quick-btn start" bindtap="startToday">今天开始</view>
+    <view class="quick-btn end" bindtap="endToday">今天结束</view>
+  </view>
+
+  <view class="card forecast-card">
+    <view class="section-row">
+      <view>
+        <view class="section-title">预测与统计</view>
+        <view class="section-sub">根据历史记录自动估算，仅供参考</view>
+      </view>
+    </view>
+    <view class="forecast-grid">
+      <view class="forecast-item">
+        <view class="forecast-label">平均周期</view>
+        <view class="forecast-value">{{hideSensitive ? '--' : avgCycle}}</view>
+      </view>
+      <view class="forecast-item">
+        <view class="forecast-label">平均经期</view>
+        <view class="forecast-value">{{hideSensitive ? '--' : avgDuration}}</view>
+      </view>
+      <view class="forecast-item">
+        <view class="forecast-label">排卵估算</view>
+        <view class="forecast-value">{{hideSensitive ? '--' : ovulationDate}}</view>
+      </view>
+      <view class="forecast-item wide">
+        <view class="forecast-label">易孕期估算</view>
+        <view class="forecast-value">{{hideSensitive ? '--' : fertileWindow}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card entry-card">
+    <view>
+      <view class="section-title">补录记录</view>
+      <view class="section-sub">新增或修改历史记录时，会直接打开编辑面板</view>
+    </view>
+    <view class="entry-btn" bindtap="openAddRecord">新增记录</view>
+  </view>
+
+  <view class="card settings-card">
+    <view class="section-title">预测设置</view>
+    <view class="settings-row">
+      <view class="setting-box">
+        <view class="field-label">周期天数</view>
+        <input class="setting-input" type="number" value="{{settings.cycleLength}}" bindinput="onSettingInput" data-field="cycleLength" />
+      </view>
+      <view class="setting-box">
+        <view class="field-label">经期天数</view>
+        <input class="setting-input" type="number" value="{{settings.periodLength}}" bindinput="onSettingInput" data-field="periodLength" />
+      </view>
+    </view>
+    <button class="settings-btn" bindtap="saveCycleSettings">更新预测</button>
+  </view>
+
+  <view class="card history-card">
+    <view class="section-row">
+      <view>
+        <view class="section-title">历史记录</view>
+        <view class="section-sub">最近 {{recentRecords.length}} 条</view>
+      </view>
+    </view>
+
+    <view wx:if="{{recentRecords.length===0}}" class="empty">
+      <view class="empty-title">还没有记录</view>
+      <view class="empty-desc">可以先点“今天开始”，或者手动补录一次历史记录。</view>
+    </view>
+
+    <block wx:for="{{recentRecords}}" wx:key="id">
+      <view class="record-item">
+        <view class="record-main">
+          <view class="record-range">{{hideSensitive ? '已隐藏日期' : item.rangeText}}</view>
+          <view wx:if="{{hideSensitive}}" class="record-meta">记录详情已隐藏</view>
+          <view wx:else class="record-meta">{{item.durationText}} · 经量{{item.flowText}} · 疼痛{{item.painText}}</view>
+          <view wx:if="{{!hideSensitive}}" class="record-tags">{{item.symptomText}} · {{item.moodText}}</view>
+          <view wx:if="{{item.note && !hideSensitive}}" class="record-note">{{item.note}}</view>
+        </view>
+        <view class="record-actions">
+          <view bindtap="editRecord" data-id="{{item.id}}">编辑</view>
+          <view class="danger" bindtap="deleteRecord" data-id="{{item.id}}">删除</view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <view wx:if="{{formSheetVisible}}" class="form-sheet" catchtouchmove="noop">
+    <view class="sheet-mask" bindtap="closeFormSheet"></view>
+    <view class="sheet-panel">
+      <view class="sheet-handle"></view>
+      <view class="sheet-head">
+        <view>
+          <view class="section-title">{{editingId ? '编辑历史记录' : '新增历史记录'}}</view>
+          <view class="section-sub">日期、经量、症状和备注都可以在这里直接改</view>
+        </view>
+        <view class="sheet-close" bindtap="closeFormSheet">关闭</view>
+      </view>
+
+      <scroll-view class="sheet-scroll" scroll-y>
+        <view class="date-row">
+          <view class="date-box">
+            <view class="field-label">开始日期</view>
+            <picker mode="date" value="{{form.startDate}}" start="{{minDate}}" end="{{today}}" bindchange="onStartDate">
+              <view class="picker-value">{{form.startDate}}</view>
+            </picker>
+          </view>
+          <view class="date-box">
+            <view class="field-label">结束日期</view>
+            <view class="switch-row">
+              <switch checked="{{form.hasEndDate}}" color="#d94f82" bindchange="toggleEndDate" />
+            </view>
+            <picker wx:if="{{form.hasEndDate}}" mode="date" value="{{form.endDate}}" start="{{form.startDate}}" end="{{today}}" bindchange="onEndDate">
+              <view class="picker-value end-date">{{form.endDate}}</view>
+            </picker>
+            <view wx:else class="picker-value end-date muted">进行中</view>
+          </view>
+        </view>
+
+        <view class="field-block">
+          <view class="field-label">经量</view>
+          <view class="chip-row">
+            <view class="chip {{form.flow===item.value?'active':''}}" wx:for="{{flowOptions}}" wx:key="value" bindtap="pickFlow" data-value="{{item.value}}">{{item.label}}</view>
+          </view>
+        </view>
+
+        <view class="field-block">
+          <view class="field-label">疼痛程度 <text>{{form.pain}}/10</text></view>
+          <slider value="{{form.pain}}" min="0" max="10" step="1" block-size="18" activeColor="#d94f82" backgroundColor="#e7edf3" bindchange="onPainChange" />
+        </view>
+
+        <view class="field-block">
+          <view class="field-label">症状</view>
+          <view class="chip-row">
+            <view class="chip {{symptomMap[item.value]?'active':''}}" wx:for="{{symptomOptions}}" wx:key="value" bindtap="toggleSymptom" data-value="{{item.value}}">{{item.label}}</view>
+          </view>
+        </view>
+
+        <view class="field-block">
+          <view class="field-label">情绪</view>
+          <view class="chip-row">
+            <view class="chip mood {{moodMap[item.value]?'active':''}}" wx:for="{{moodOptions}}" wx:key="value" bindtap="toggleMood" data-value="{{item.value}}">{{item.label}}</view>
+          </view>
+        </view>
+
+        <view class="field-block">
+          <view class="field-label">备注</view>
+          <textarea class="note" placeholder="例如：睡眠、饮食、药物、特殊感受" placeholder-class="placeholder" value="{{form.note}}" bindinput="onNoteInput"></textarea>
+        </view>
+      </scroll-view>
+
+      <view class="form-actions sheet-actions">
+        <button wx:if="{{editingId}}" class="cancel-btn" bindtap="cancelEdit">取消</button>
+        <button class="save-btn" bindtap="savePeriodRecord">{{saveText}}</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="watermark">预测仅供参考，不用于诊断或避孕判断</view>
+</view>

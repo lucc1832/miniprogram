@@ -1,118 +1,138 @@
 <view class="container">
-  <view class="title">到期便签</view>
+  <view class="page-head">
+    <view class="head-main">
+      <view class="head-kicker">物品管理</view>
+      <view class="title">到期便签</view>
+      <view class="subtitle">{{mode==='expire'?'把快过期的东西提前拎出来':'看清每件物品的真实使用成本'}}</view>
+    </view>
+    <view class="head-date">{{today}}</view>
+  </view>
 
   <view class="seg">
-    <view class="seg-item {{mode==='expire'?'active':''}}" bindtap="switchMode" data-mode="expire">📌 到期了吗</view>
-    <view class="seg-item {{mode==='roi'?'active-green':''}}" bindtap="switchMode" data-mode="roi">🧾 使用成本</view>
+    <view class="seg-item {{mode==='expire'?'active':''}}" bindtap="switchMode" data-mode="expire">到期提醒</view>
+    <view class="seg-item {{mode==='roi'?'active-green':''}}" bindtap="switchMode" data-mode="roi">使用成本</view>
   </view>
 
   <view class="search card">
     <input class="search-input" placeholder="搜索名称或分类" value="{{keyword}}" bindinput="onKeyword" />
-    <view class="search-icon">🔍</view>
+    <view class="search-action">搜索</view>
   </view>
 
-  <!-- summary -->
   <view class="summary card {{mode==='expire'?'summary-purple':'summary-green'}}">
-
-    <!-- 到期模式保持原样 -->
     <block wx:if="{{mode==='expire'}}">
       <view class="sum-left">
         <view class="sum-label">总资产</view>
         <view class="sum-value">¥{{summary.totalAsset}}</view>
         <view class="sum-mini">
-          <text>📅 30天内将到期 </text><text class="sum-strong">{{summary.expireSoonCount}}</text><text> 件</text>
+          <text>30天内到期 </text>
+          <text class="sum-strong">{{summary.expireSoonCount}}</text>
+          <text> 件</text>
         </view>
       </view>
       <view class="sum-right">
         <view class="sum-mini-right">
-          <text>📦 全部物品 </text><text class="sum-strong">{{summary.totalCount}}</text><text> 件</text>
+          <text>全部物品 </text>
+          <text class="sum-strong">{{summary.totalCount}}</text>
+          <text> 件</text>
         </view>
         <view class="date-pill">{{today}}</view>
       </view>
     </block>
 
-    <!-- 使用成本模式：三列布局 -->
     <block wx:if="{{mode==='roi'}}">
       <view class="sum-3col">
-        <!-- 左列 -->
         <view class="sum-col left">
           <view class="sum-label">总投入</view>
           <view class="sum-value">¥{{summary.totalAsset}}</view>
           <view class="sum-mini">
-            <text>📅 今日摊销 </text><text class="sum-strong">¥{{summary.todayCost}}</text>
+            <text>今日摊销 </text>
+            <text class="sum-strong">¥{{summary.todayCost}}</text>
           </view>
         </view>
-
-        <!-- 中列 -->
         <view class="sum-col mid">
-          <view class="sum-mini">🔥 最高日成本</view>
+          <view class="sum-mini">最高日成本</view>
           <view class="sum-value-sm">¥{{summary.maxDailyCost}}/天</view>
         </view>
-
-        <!-- 右列 -->
         <view class="sum-col right">
           <view class="date-pill">{{today}}</view>
         </view>
       </view>
-
-      <view class="sum-bottom muted">最高日成本物品：{{summary.maxDailyName}}</view>
+      <view class="sum-bottom">最高日成本物品：{{summary.maxDailyName}}</view>
     </block>
-
   </view>
 
+  <view class="insight card {{mode==='expire'?'insight-purple':'insight-green'}}">
+    <view class="insight-top">
+      <view class="insight-copy">
+        <view class="section-label">今日关注</view>
+        <view class="insight-title">{{summary.focusTitle}}</view>
+        <view class="insight-meta">{{summary.focusMeta}}</view>
+      </view>
+      <view class="focus-meter {{summary.focusTone}}">
+        <view class="focus-value">{{summary.focusValue}}</view>
+        <view class="focus-unit">{{summary.focusUnit}}</view>
+      </view>
+    </view>
+    <view class="guide-text">{{summary.guideText}}</view>
+  </view>
 
-  <!-- categories -->
+  <view class="stat-grid">
+    <block wx:for="{{quickStats}}" wx:key="label">
+      <view class="mini-stat card {{statusFilter===item.status?'mini-stat-active':''}}" bindtap="onStatTap" data-status="{{item.status}}">
+        <view class="mini-label">{{item.label}}</view>
+        <view class="mini-value">{{item.value}}<text>{{item.suffix}}</text></view>
+      </view>
+    </block>
+  </view>
+
   <view class="cat-wrap card {{mode==='expire'?'cat-purple':'cat-green'}}">
     <view class="cat-head">
-      <text>分类</text>
-      <text class="manage" bindtap="goCategories">管理 ></text>
+      <text>分类筛选</text>
+      <text class="manage" bindtap="goCategories">管理</text>
     </view>
 
     <scroll-view scroll-x="true" class="cat-scroll">
       <view class="cat-item {{selectedCatId===''?'cat-active':''}}" bindtap="pickCat" data-id="">
         <view class="cat-num">{{catCounts.all || 0}}</view>
-        <view class="cat-name">全部 ></view>
+        <view class="cat-name">全部</view>
       </view>
 
       <block wx:for="{{categories}}" wx:key="_id">
         <view class="cat-item {{selectedCatId===item._id?'cat-active':''}}" bindtap="pickCat" data-id="{{item._id}}">
           <view class="cat-num">{{catCounts[item._id] || 0}}</view>
-          <view class="cat-name">{{item.name}} ></view>
+          <view class="cat-name">{{item.name}}</view>
         </view>
       </block>
     </scroll-view>
 
-    <!-- status filter -->
     <view class="pill-row">
-      <view wx:if="{{mode==='expire'}}" class="pill {{statusFilter==='all'?'pill-active':''}}" bindtap="pickStatus"
-        data-s="all">全部物品</view>
-      <view wx:if="{{mode==='expire'}}" class="pill {{statusFilter==='valid'?'pill-active':''}}" bindtap="pickStatus"
-        data-s="valid">未过期</view>
-      <view wx:if="{{mode==='expire'}}" class="pill {{statusFilter==='expired'?'pill-active':''}}" bindtap="pickStatus"
-        data-s="expired">已过期</view>
+      <view wx:if="{{mode==='expire'}}" class="pill {{statusFilter==='all'?'pill-active':''}}" bindtap="pickStatus" data-s="all">全部物品</view>
+      <view wx:if="{{mode==='expire'}}" class="pill {{statusFilter==='valid'?'pill-active':''}}" bindtap="pickStatus" data-s="valid">未过期</view>
+      <view wx:if="{{mode==='expire'}}" class="pill {{statusFilter==='soon'?'pill-active':''}}" bindtap="pickStatus" data-s="soon">临期</view>
+      <view wx:if="{{mode==='expire'}}" class="pill {{statusFilter==='expired'?'pill-active':''}}" bindtap="pickStatus" data-s="expired">已过期</view>
 
-      <view wx:if="{{mode==='roi'}}" class="pill {{statusFilter==='all'?'pill-active':''}}" bindtap="pickStatus"
-        data-s="all">全部物品</view>
-      <view wx:if="{{mode==='roi'}}" class="pill {{statusFilter==='using'?'pill-active':''}}" bindtap="pickStatus"
-        data-s="using">使用中</view>
-      <view wx:if="{{mode==='roi'}}" class="pill {{statusFilter==='archived'?'pill-active':''}}" bindtap="pickStatus"
-        data-s="archived">归档</view>
+      <view wx:if="{{mode==='roi'}}" class="pill {{statusFilter==='all'?'pill-active':''}}" bindtap="pickStatus" data-s="all">全部物品</view>
+      <view wx:if="{{mode==='roi'}}" class="pill {{statusFilter==='using'?'pill-active':''}}" bindtap="pickStatus" data-s="using">使用中</view>
+      <view wx:if="{{mode==='roi'}}" class="pill {{statusFilter==='archived'?'pill-active':''}}" bindtap="pickStatus" data-s="archived">已归档</view>
     </view>
   </view>
 
   <view class="list card">
     <view class="list-head">
-      <text>全部 · {{filtered.length}} 条</text>
+      <text>{{mode==='expire'?'到期清单':'成本清单'}} · {{filtered.length}} 条</text>
       <picker mode="selector" range="{{sortOptions}}" value="{{sortIndex}}" bindchange="onSort">
-        <view class="sort">排序：{{sortOptions[sortIndex]}} ↑</view>
+        <view class="sort">排序：{{sortOptions[sortIndex]}}</view>
       </picker>
     </view>
 
     <block wx:if="{{filtered.length===0}}">
-      <view class="empty muted">暂无数据，点击右下角 + 添加物品</view>
+      <view class="empty">
+        <view class="empty-title">这里还没有记录</view>
+        <view class="empty-desc">{{mode==='expire'?'可以先添加药品、食品、证件等有有效期的物品':'可以先添加一个常用物品，看看每天实际花多少钱'}}</view>
+        <view class="empty-btn" bindtap="goAdd">添加一条</view>
+      </view>
     </block>
 
-    <!-- 列表容器 -->
     <block wx:if="{{mode==='expire'}}">
       <block wx:for="{{filtered}}" wx:key="_id">
         <view class="cost-card expire-card {{item._expireState}}" bindtap="goDetail" data-id="{{item._id}}">
@@ -129,7 +149,7 @@
           </view>
           <view class="days-box {{item._expireState}}">
             <block wx:if="{{item._expireState==='none'}}">
-              <view class="days-num" style="font-size: 40rpx;">∞</view>
+              <view class="days-num days-infinite">∞</view>
               <view class="days-text">长期</view>
             </block>
             <block wx:else>
@@ -138,41 +158,48 @@
             </block>
           </view>
         </view>
-        <view class="divider"></view>
       </block>
     </block>
 
     <block wx:if="{{mode==='roi'}}">
       <block wx:for="{{filtered}}" wx:key="_id">
-        <view class="cost-card" bindtap="goDetail" data-id="{{item._id}}">
-          <view class="cost-left">
-            <view class="cost-name">{{item.name}}</view>
-            <view class="cost-price">
-              <text class="cost-price-num">¥{{item.buyPrice}}</text>
-              <text class="muted">(价格)</text>
+        <view class="cost-card roi-card" bindtap="goDetail" data-id="{{item._id}}">
+          <view class="roi-card-head">
+            <view class="cost-name roi-name">{{item.name}}</view>
+            <view class="roi-tags">
+              <view class="tag">{{item.categoryName || '未分类'}}</view>
+              <view class="tag tag-status">{{item.statusText}}</view>
             </view>
-            <text>¥{{item._dailyCostStr}}/天</text>
+          </view>
+
+          <view class="roi-metrics">
+            <view class="roi-metric price">
+              <view class="metric-value">¥{{item.buyPrice}}</view>
+              <view class="metric-label">价格</view>
+            </view>
+            <view class="roi-metric">
+              <view class="metric-value">¥{{item._dailyCostStr}}</view>
+              <view class="metric-label">日成本</view>
+            </view>
+            <view class="roi-metric">
+              <view class="metric-value">{{item._useDays}}</view>
+              <view class="metric-label">使用天数</view>
+            </view>
+          </view>
+
+          <view class="roi-progress">
+            <view class="roi-progress-row">
+              <view>回本进度</view>
+              <view>{{item._roiPct}}%</view>
+            </view>
             <view class="bar">
               <view class="bar-inner" style="width: {{item._roiPct}}%"></view>
             </view>
-            <text class="expire-date">回本进度：{{item._roiPct}}%</text>
-          </view>
-          <view class="cost-mid">
-            <view class="tag">{{item.categoryName || '未分类'}}</view>
-            <view class="tag tag-status">{{item.statusText}}</view>
-            <view class="cost-date">📅 {{item.buyDate}}</view>
-            <view class="cost-date">⏳ 推算到期 {{item._roiDeadline}}</view>
-            <view class="cost-date" wx:if="{{item._roiBreakevenAt}}">💡 预计回本 {{item._roiBreakevenAt}}</view>
-          </view>
-          <view class="days-box">
-            <view class="days-num">{{item._useDays}}</view>
-            <view class="days-text">使用天数</view>
+            <view class="roi-date">购买日 {{item.buyDate}}</view>
           </view>
         </view>
-        <view class="divider"></view>
       </block>
     </block>
-
   </view>
 
   <view class="fab" bindtap="goAdd">+</view>
