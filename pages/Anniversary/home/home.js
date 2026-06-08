@@ -73,6 +73,7 @@ Page({
       todayCount: 0,
       importantCount: 0
     },
+    activeFilter: 'all',
     loading: true
   },
 
@@ -97,12 +98,13 @@ Page({
   },
 
   processEvents(events) {
+    this.rawEvents = Array.isArray(events) ? events : [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const safeEvents = Array.isArray(events) ? events : [];
 
     // 计算逻辑
-    const processed = safeEvents.filter(e => e && e.date).map(e => {
+    const allProcessed = safeEvents.filter(e => e && e.date).map(e => {
       const calc = calcEventDays(e, today);
       return { 
         ...e, 
@@ -115,6 +117,13 @@ Page({
         tone: getEventTone(e, calc),
         emotion: getEventEmotion(e, calc.days)
       };
+    });
+    const activeFilter = this.data.activeFilter || 'all';
+    const processed = allProcessed.filter(item => {
+      if (activeFilter === 'countdown') return item.type === 'countdown';
+      if (activeFilter === 'today') return item.days === 0;
+      if (activeFilter === 'important') return !!item.isImportant;
+      return true;
     });
 
     const focusSorted = processed.slice().sort((a, b) => {
@@ -148,11 +157,11 @@ Page({
       .slice(0, 6);
 
     const stats = {
-      totalCount: processed.length,
-      countdownCount: processed.filter(item => item.type === 'countdown').length,
-      anniversaryCount: processed.filter(item => item.type !== 'countdown').length,
-      todayCount: processed.filter(item => item.days === 0).length,
-      importantCount: processed.filter(item => item.isImportant).length
+      totalCount: allProcessed.length,
+      countdownCount: allProcessed.filter(item => item.type === 'countdown').length,
+      anniversaryCount: allProcessed.filter(item => item.type !== 'countdown').length,
+      todayCount: allProcessed.filter(item => item.days === 0).length,
+      importantCount: allProcessed.filter(item => item.isImportant).length
     };
 
     this.setData({
@@ -164,6 +173,11 @@ Page({
       stats,
       loading: false
     });
+  },
+
+  setFilter(e) {
+    const activeFilter = e.currentTarget.dataset.filter || 'all';
+    this.setData({ activeFilter }, () => this.processEvents(this.rawEvents || []));
   },
 
   goCreate() {

@@ -182,7 +182,7 @@ Page({
   },
   
   generateCard() {
-    wx.showToast({ title: '生成卡片功能开发中', icon: 'none' });
+    wx.showToast({ title: '纪念卡片正在精心准备中', icon: 'none' });
     // TODO: Navigate to card page with data
     // wx.navigateTo({ url: `/pages/Anniversary/card/card?id=${this.data.id}` });
   }

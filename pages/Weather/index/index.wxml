@@ -1,60 +1,47 @@
-<view class="container {{weatherThemeClass}}">
-  <view class="sky-scene" aria-hidden="true">
-    <view class="sky-light"></view>
-    <view class="star-layer">
-      <view class="star-dot"></view>
-      <view class="star-dot"></view>
-      <view class="star-dot"></view>
-      <view class="star-dot"></view>
-      <view class="star-dot"></view>
+<view class="weather-page {{weatherThemeClass}}">
+  <view class="weather-backdrop" aria-hidden="true">
+    <view class="backdrop-glow"></view>
+    <view class="backdrop-cloud cloud-one"></view>
+    <view class="backdrop-cloud cloud-two"></view>
+    <view class="backdrop-cloud cloud-three"></view>
+    <view class="backdrop-horizon"></view>
+    <view class="backdrop-rain">
+      <view class="rain-streak"></view>
+      <view class="rain-streak"></view>
+      <view class="rain-streak"></view>
+      <view class="rain-streak"></view>
     </view>
-    <view class="sky-cloud cloud-a"></view>
-    <view class="sky-cloud cloud-b"></view>
-    <view class="sky-cloud cloud-c"></view>
-    <view class="rain-layer">
-      <view class="rain-line"></view>
-      <view class="rain-line"></view>
-      <view class="rain-line"></view>
-      <view class="rain-line"></view>
-      <view class="rain-line"></view>
-      <view class="rain-line"></view>
-    </view>
-    <view class="snow-layer">
-      <view class="snow-dot"></view>
-      <view class="snow-dot"></view>
-      <view class="snow-dot"></view>
-      <view class="snow-dot"></view>
-      <view class="snow-dot"></view>
-    </view>
-    <view class="haze-layer"></view>
-    <view class="mountain-layer far"></view>
-    <view class="mountain-layer near"></view>
   </view>
 
-  <!-- Fixed Custom Navigation Bar -->
   <view class="custom-nav" style="height: {{statusBarHeight + navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
-    <view class="nav-content" style="height: {{navBarHeight}}px; line-height: {{navBarHeight}}px;">
-      <view class="back-btn" bindtap="onBack" style="height: {{menuButtonHeight}}px; margin-top: {{menuButtonTop - statusBarHeight}}px;">
-        <text class="back-icon">❮</text>
+    <view class="nav-content" style="height: {{navBarHeight}}px;">
+      <view class="nav-icon-button" bindtap="onBack" style="height: {{menuButtonHeight}}px; margin-top: {{menuButtonTop - statusBarHeight}}px;">
+        <text class="nav-back">‹</text>
       </view>
-      <view class="location-area" bindtap="onSwitchCity" style="height: {{menuButtonHeight}}px; margin-top: {{menuButtonTop - statusBarHeight}}px;">
-        <text class="city-name">{{weatherData.city}}</text>
-        <view class="location-icon">⌄</view>
+      <view class="location-trigger" bindtap="onSwitchCity" style="height: {{menuButtonHeight}}px; margin-top: {{menuButtonTop - statusBarHeight}}px;">
+        <text class="city-name">{{weatherData.city || '天气预报'}}</text>
+        <view class="city-switch-indicator">
+          <view class="city-switch-arrow"></view>
+        </view>
       </view>
-      <view class="menu-btn" bindtap="onShowMenu" style="position: absolute; left: {{menuButtonLeft - 42}}px; top: {{menuButtonTop}}px; height: {{menuButtonHeight}}px; width: 40px;">
-        <text class="menu-icon">⚙</text>
+      <view class="nav-actions" style="right: {{windowWidth - menuButtonLeft + 8}}px; top: {{menuButtonTop - statusBarHeight}}px; height: {{menuButtonHeight}}px;">
+        <view class="nav-action nav-add" bindtap="onAddCity">＋</view>
+        <view class="nav-action nav-more" bindtap="onShowMenu">
+          <view class="more-dot"></view>
+          <view class="more-dot"></view>
+          <view class="more-dot"></view>
+        </view>
       </view>
     </view>
   </view>
 
-  <!-- Loading State -->
   <view class="loading" wx:if="{{loading}}">
     <view class="spinner"></view>
-    <text>正在获取天气...</text>
+    <text>正在获取天气</text>
   </view>
 
   <block wx:else>
-    <!-- Main Content Swiper: only current item renders the full weather page -->
+    <view wx:if="{{cacheNotice}}" class="weather-network-banner">{{cacheNotice}}</view>
     <swiper
       class="content-swiper"
       current="{{currentCityIndex}}"
@@ -62,198 +49,179 @@
       disable-touch="{{cities.length <= 1}}"
       skip-hidden-item-layout="{{true}}"
       bindchange="onSwiperChange"
-      style="height: 100vh;"
     >
       <block wx:for="{{cities}}" wx:key="adcode">
         <swiper-item>
           <block wx:if="{{index === currentCityIndex}}">
             <scroll-view
-            scroll-y 
-            class="content-scroll" 
-            style="padding-top: {{statusBarHeight + navBarHeight}}px; height: 100vh; box-sizing: border-box;"
-            enable-back-to-top
-            refresher-enabled="{{true}}"
-            bindrefresherrefresh="onPullDownRefresh"
-            refresher-triggered="{{isRefreshing}}"
-          >
-            <!-- Content Wrapper to hold everything -->
-            <view class="weather-content-wrapper">
-              
-              <!-- Main Weather Section -->
-              <view class="main-section fade-in-up">
-                <view class="condition-pill">
-                  <text>{{weatherData.condition}}</text>
-                  <text class="pill-dot">·</text>
-                  <text>{{weatherData.windDir}} {{weatherData.windSpeed}}</text>
-                </view>
-                <view class="temp-box">
-                  <text class="temp-val">{{weatherData.temp}}°</text>
-                </view>
-                <view class="condition-box">
-                  <view class="hl-temp">
-                    <text class="temp-chip">最高 {{weatherData.high}}°</text>
-                    <text class="temp-chip">最低 {{weatherData.low}}°</text>
+              scroll-y
+              class="content-scroll"
+              style="padding-top: {{statusBarHeight + navBarHeight}}px;"
+              enable-back-to-top
+              refresher-enabled="{{true}}"
+              bindrefresherrefresh="onPullDownRefresh"
+              refresher-triggered="{{isRefreshing}}"
+            >
+              <view class="weather-content">
+                <view class="hero">
+                  <view class="hero-status">
+                    <text>{{weatherData.condition}}</text>
+                    <text class="status-dot">·</text>
+                    <text>{{weatherData.windDir}} {{weatherData.windSpeed}}</text>
                   </view>
+                  <view class="temperature-row">
+                    <text class="temperature">{{weatherData.temp}}</text>
+                    <text class="degree">°</text>
+                  </view>
+                  <view class="hero-summary">
+                    <text>{{weatherData.condition}}</text>
+                    <text>{{weatherData.low}}° / {{weatherData.high}}°</text>
+                    <text>{{weatherData.humidity}} 湿度</text>
+                  </view>
+                  <view class="hero-source">{{weatherData.source}} · {{weatherData.reportTime}}</view>
                 </view>
-                
-                <!-- Data Source Tag -->
-                <view class="aqi-tag">
-                  <text class="aqi-label">{{weatherData.source}}</text>
-                  <text class="aqi-val" wx:if="{{weatherData.reportTime}}">{{weatherData.reportTime}}</text>
-                </view>
-              </view>
 
-              <!-- Weather Insight -->
-              <view class="insight-card fade-in-up" style="animation-delay: 0.16s;">
-                <view class="insight-top">
-                  <view>
-                    <view class="insight-kicker">今日洞察</view>
-                    <view class="insight-title">{{insightText}}</view>
+                <view class="weather-card advice-card">
+                  <view class="advice-copy">
+                    <view class="section-kicker">今日建议</view>
+                    <view class="advice-title">{{clothingTitle}}</view>
+                    <view class="advice-text">{{clothingAdvice}}</view>
                   </view>
-                  <view class="insight-source">{{weatherData.reportTime}}</view>
+                  <view class="advice-icon">{{clothingIcon}}</view>
                 </view>
-                <view class="insight-grid">
-                  <view class="insight-item" wx:for="{{insightCards}}" wx:key="label">
-                    <view class="insight-icon">{{item.icon}}</view>
-                    <view class="insight-label">{{item.label}}</view>
-                    <view class="insight-value">{{item.value}}</view>
-                    <view class="insight-sub">{{item.sub}}</view>
-                  </view>
-                </view>
-              </view>
 
-              <!-- Clothing Advice Card -->
-              <view class="card clothing-card fade-in-up" style="animation-delay: 0.2s;">
-                <view class="card-header">
-                  <view class="card-title-wrap">
-                    <text class="card-icon">👕</text>
-                    <text class="card-title">穿衣建议</text>
-                  </view>
-                  <text class="card-tag">今日</text>
-                </view>
-                <view class="clothing-content">
-                  <text class="clothing-text">{{clothingAdvice}}</text>
-                </view>
-              </view>
-
-              <!-- Hourly Forecast -->
-              <view class="card hourly-card fade-in-up" style="animation-delay: 0.3s;">
-                <view class="card-header">
-                  <view class="card-title-wrap">
-                    <text class="card-icon">🕒</text>
-                    <text class="card-title">近日趋势</text>
-                  </view>
-                  <text class="card-tag">白天 / 夜间</text>
-                </view>
-                <scroll-view scroll-x class="hourly-scroll" enable-flex>
-                  <block wx:for="{{hourlyForecast}}" wx:key="time">
-                    <view class="hourly-item">
-                      <text class="h-time">{{item.time}}</text>
-                      <text class="h-period">{{item.period}}</text>
-                      <view class="h-icon">{{item.icon}}</view>
-                      <text class="h-temp">{{item.temp}}°</text>
-                      <text class="h-text">{{item.text}}</text>
+                <view class="weather-card">
+                  <view class="card-heading">
+                    <view>
+                      <view class="section-title">昼夜趋势</view>
+                      <view class="section-subtitle">高德天气多日昼夜预报</view>
                     </view>
-                  </block>
-                </scroll-view>
-              </view>
+                    <view class="data-badge">API</view>
+                  </view>
+                  <scroll-view scroll-x class="period-scroll" enable-flex>
+                    <view class="period-item" wx:for="{{hourlyForecast}}" wx:key="key">
+                      <view class="period-time">{{item.time}}</view>
+                      <view class="period-label">{{item.period}}</view>
+                      <view class="period-icon">{{item.icon}}</view>
+                      <view class="period-temp">{{item.temp}}°</view>
+                      <view class="period-weather">{{item.text}}</view>
+                    </view>
+                  </scroll-view>
+                </view>
 
-              <!-- Daily Forecast -->
-              <view class="card daily-card fade-in-up" style="animation-delay: 0.4s;">
-                <view class="card-header">
-                  <view class="card-title-wrap">
-                    <text class="card-icon">📅</text>
-                    <text class="card-title">未来预报</text>
+                <view class="weather-card forecast-card">
+                  <view class="card-heading forecast-heading">
+                    <view>
+                      <view class="section-title">多日天气预报</view>
+                      <view class="section-subtitle">{{forecastBrief.trend}}</view>
+                    </view>
+                    <view class="mode-switch">
+                      <view class="mode-option {{forecastMode === 'trend' ? 'active' : ''}}" bindtap="setForecastMode" data-mode="trend">趋势</view>
+                      <view class="mode-option {{forecastMode === 'list' ? 'active' : ''}}" bindtap="setForecastMode" data-mode="list">列表</view>
+                    </view>
                   </view>
-                  <text class="card-tag">{{dailyForecast.length}}天</text>
-                </view>
-                <view class="forecast-brief" wx:if="{{forecastBrief}}">
-                  <view class="brief-item">
-                    <text class="brief-label">趋势</text>
-                    <text class="brief-value">{{forecastBrief.trend}}</text>
-                  </view>
-                  <view class="brief-divider"></view>
-                  <view class="brief-item">
-                    <text class="brief-label">降水</text>
-                    <text class="brief-value">{{forecastBrief.rain}}</text>
-                  </view>
-                  <view class="brief-divider"></view>
-                  <view class="brief-item">
-                    <text class="brief-label">温度</text>
-                    <text class="brief-value">{{forecastBrief.range}}</text>
-                  </view>
-                </view>
-                <view class="daily-list">
-                  <block wx:for="{{dailyForecast}}" wx:key="day">
-                    <view class="daily-row" wx:if="{{index < 7 || showAllDays}}">
-                      <text class="d-day">{{item.day}}</text>
-                      <view class="d-icon-box">
-                        <text class="d-icon">{{item.icon}}</text>
+
+                  <scroll-view wx:if="{{forecastMode === 'trend'}}" scroll-x class="forecast-trend-scroll" enable-flex>
+                    <view class="forecast-column" wx:for="{{dailyForecast}}" wx:key="date">
+                      <view class="forecast-day">{{item.shortDay}}</view>
+                      <view class="forecast-date">{{item.dateLabel}}</view>
+                      <view class="forecast-cond">{{item.dayWeather}}</view>
+                      <view class="forecast-icon">{{item.dayIcon}}</view>
+                      <view class="forecast-high">{{item.high}}°</view>
+                      <view class="temp-range-track">
+                        <view class="temp-range-fill" style="top: {{item.rangeTop}}%; height: {{item.rangeHeight}}%;"></view>
+                        <view class="temp-range-dot high" style="top: {{item.rangeTop}}%;"></view>
+                        <view class="temp-range-dot low" style="top: {{item.rangeBottom}}%;"></view>
                       </view>
-                      <view class="d-temp-bar-container">
-                        <text class="d-low">{{item.low}}°</text>
-                        <view class="d-bar-bg">
-                          <view class="d-bar-fill" style="left: {{item.barLeft}}%; width: {{item.barWidth}}%;"></view> 
+                      <view class="forecast-low">{{item.low}}°</view>
+                      <view class="forecast-night">{{item.nightWeather}}</view>
+                    </view>
+                  </scroll-view>
+
+                  <view wx:else class="forecast-list">
+                    <view class="forecast-row" wx:for="{{dailyForecast}}" wx:key="date">
+                      <view class="forecast-row-day">
+                        <text>{{item.day}}</text>
+                        <text class="forecast-row-cond">{{item.cond}}</text>
+                      </view>
+                      <view class="forecast-row-icon">{{item.icon}}</view>
+                      <view class="forecast-row-range">
+                        <text>{{item.low}}°</text>
+                        <view class="range-line">
+                          <view class="range-line-fill" style="left: {{item.barLeft}}%; width: {{item.barWidth}}%;"></view>
                         </view>
-                        <text class="d-high">{{item.high}}°</text>
+                        <text>{{item.high}}°</text>
                       </view>
                     </view>
-                  </block>
-                </view>
-                <view class="expand-btn-container" wx:if="{{dailyForecast.length > 7}}" bindtap="toggleForecast">
-                    <view class="expand-btn">{{showAllDays ? '收起' : '展开更多预报'}}</view>
-                </view>
-              </view>
-
-              <!-- Details Grid -->
-              <view class="details-grid fade-in-up" style="animation-delay: 0.5s;">
-                <view class="detail-box">
-                  <view class="d-label">💦 湿度</view>
-                  <view class="d-value">{{weatherData.humidity}}</view>
-                </view>
-                <view class="detail-box">
-                  <view class="d-label">🌡️ 体感</view>
-                  <view class="d-value">{{weatherData.feelsLike}}°</view>
-                </view>
-                <view class="detail-box">
-                  <view class="d-label">🌬️ 风向</view>
-                  <view class="d-value-sm">{{weatherData.windDir}} {{weatherData.windSpeed}}</view>
-                </view>
-                <view class="detail-box">
-                  <view class="d-label">🛰️ 数据源</view>
-                  <view class="d-value">{{weatherData.pressure}}</view>
-                </view>
-                <view class="detail-box">
-                  <view class="d-label">🕒 发布时间</view>
-                  <view class="d-value">{{weatherData.visibility}}</view>
-                </view>
-                <view class="detail-box">
-                  <view class="d-label">🌗 日夜天气</view>
-                  <view class="d-value">{{weatherData.rainProb}}</view>
-                </view>
-                
-                <!-- Sunrise Sunset Full Width -->
-                <view class="detail-box sun-box" wx:if="{{weatherData.sunrise && weatherData.sunset}}">
-                  <view class="d-label">🌅 日出日落</view>
-                  <view class="sun-times">
-                     <view class="sun-item">
-                       <text class="sun-label">日出</text>
-                       <text class="sun-time">{{weatherData.sunrise}}</text>
-                     </view>
-                     <view class="sun-visual">
-                         <view class="sun-line"></view>
-                         <view class="sun-dot" style="left: {{weatherData.sunPosition}}%;"></view>
-                      </view>
-                     <view class="sun-item right">
-                       <text class="sun-label">日落</text>
-                       <text class="sun-time">{{weatherData.sunset}}</text>
-                     </view>
                   </view>
                 </view>
-              </view>
 
-              <view class="footer-safe-area"></view>
-            </view>
+                <view class="weather-card">
+                  <view class="card-heading">
+                    <view>
+                      <view class="section-title">天气实况</view>
+                      <view class="section-subtitle">实时值与本地估算已明确标注</view>
+                    </view>
+                  </view>
+                  <view class="metric-grid">
+                    <view class="metric-item" wx:for="{{detailMetrics}}" wx:key="label">
+                      <view class="metric-icon">{{item.icon}}</view>
+                      <view class="metric-label">{{item.label}}</view>
+                      <view class="metric-value">{{item.value}}</view>
+                      <view class="metric-note">{{item.note}}</view>
+                    </view>
+                  </view>
+                </view>
+
+                <view class="weather-card sun-card" wx:if="{{weatherData.sunrise && weatherData.sunset}}">
+                  <view class="card-heading compact">
+                    <view>
+                      <view class="section-title">日出日落</view>
+                      <view class="section-subtitle">{{weatherData.sunNote}}</view>
+                    </view>
+                  </view>
+                  <view class="sun-labels">
+                    <view>
+                      <view class="sun-name">日出</view>
+                      <view class="sun-time">{{weatherData.sunrise}}</view>
+                    </view>
+                    <view class="sun-icon">☀</view>
+                    <view class="sun-right">
+                      <view class="sun-name">日落</view>
+                      <view class="sun-time">{{weatherData.sunset}}</view>
+                    </view>
+                  </view>
+                  <view class="sun-track">
+                    <view class="sun-track-passed" style="width: {{weatherData.sunPosition}}%;"></view>
+                    <view class="sun-track-dot" style="left: {{weatherData.sunPosition}}%;"></view>
+                  </view>
+                </view>
+
+                <view class="weather-card">
+                  <view class="card-heading">
+                    <view>
+                      <view class="section-title">生活建议</view>
+                      <view class="section-subtitle">根据天气实况和未来预报生成</view>
+                    </view>
+                  </view>
+                  <view class="lifestyle-grid">
+                    <view class="lifestyle-item" wx:for="{{lifestyleItems}}" wx:key="label">
+                      <view class="lifestyle-icon">{{item.icon}}</view>
+                      <view class="lifestyle-value">{{item.value}}</view>
+                      <view class="lifestyle-label">{{item.label}}</view>
+                    </view>
+                  </view>
+                </view>
+
+                <view class="data-note">
+                  <view class="data-note-title">数据说明</view>
+                  <view class="data-note-row" wx:for="{{dataNotes}}" wx:key="text">
+                    <view class="data-note-dot {{item.type}}"></view>
+                    <text>{{item.text}}</text>
+                  </view>
+                </view>
+                <view class="footer-safe-area"></view>
+              </view>
             </scroll-view>
           </block>
           <view wx:else class="city-swipe-preview" style="padding-top: {{statusBarHeight + navBarHeight}}px;">
@@ -267,7 +235,7 @@
   </block>
 
   <view class="city-panel-mask" wx:if="{{showCityPanel}}" catchtap="closeCityPanel"></view>
-  <view class="city-panel {{showCityPanel ? 'show' : ''}}" wx:if="{{showCityPanel}}" catchtap="noop">
+  <view class="city-panel" wx:if="{{showCityPanel}}" catchtap="noop">
     <view class="panel-grabber"></view>
     <view class="panel-head">
       <view>
@@ -276,26 +244,22 @@
       </view>
       <view class="panel-add" bindtap="addCityFromPanel">＋</view>
     </view>
-
     <scroll-view scroll-y class="panel-city-list">
-      <block wx:for="{{cities}}" wx:key="adcode">
-        <view class="panel-city {{index === currentCityIndex ? 'active' : ''}}" bindtap="selectCityFromPanel" data-index="{{index}}">
-          <view class="panel-city-main">
-            <view class="panel-city-name-row">
-              <text class="panel-city-name">{{item.name}}</text>
-              <text class="panel-location-badge" wx:if="{{index === 0}}">定位</text>
-              <text class="panel-current-badge" wx:if="{{index === currentCityIndex}}">当前</text>
-            </view>
-            <view class="panel-city-meta">{{item.province || item.district || '中国'}} · {{item.condition || '待更新'}}</view>
+      <view class="panel-city {{index === currentCityIndex ? 'active' : ''}}" wx:for="{{cities}}" wx:key="adcode" bindtap="selectCityFromPanel" data-index="{{index}}">
+        <view class="panel-city-main">
+          <view class="panel-city-name-row">
+            <text class="panel-city-name">{{item.name}}</text>
+            <text class="panel-location-badge" wx:if="{{index === 0}}">定位</text>
+            <text class="panel-current-badge" wx:if="{{index === currentCityIndex}}">当前</text>
           </view>
-          <view class="panel-weather">
-            <text class="panel-temp">{{item.temp || '--'}}°</text>
-            <text class="panel-check" wx:if="{{index === currentCityIndex}}">✓</text>
-          </view>
+          <view class="panel-city-meta">{{item.province || item.district || '中国'}} · {{item.condition || '待更新'}}</view>
         </view>
-      </block>
+        <view class="panel-weather">
+          <text class="panel-temp">{{item.temp || '--'}}°</text>
+          <text class="panel-check" wx:if="{{index === currentCityIndex}}">✓</text>
+        </view>
+      </view>
     </scroll-view>
-
     <view class="panel-actions">
       <view class="panel-action ghost" bindtap="openCityManager">管理城市</view>
       <view class="panel-action primary" bindtap="addCityFromPanel">添加城市</view>

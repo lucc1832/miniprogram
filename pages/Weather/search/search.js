@@ -1,5 +1,6 @@
 const amapWeather = require('../utils/amapWeather.js');
 const PENDING_CITY_INDEX_KEY = 'weather_pending_city_index';
+const { getNavigationLayout } = require('../../../utils/layout.js');
 
 Page({
   data: {
@@ -26,18 +27,14 @@ Page({
   },
 
   onLoad() {
-    const sysInfo = wx.getSystemInfoSync();
-    const menuButtonInfo = wx.getMenuButtonBoundingClientRect();
-    
-    // Calculate custom navigation bar height
-    const navBarHeight = (menuButtonInfo.top - sysInfo.statusBarHeight) * 2 + menuButtonInfo.height;
+    const layout = getNavigationLayout();
     
     this.setData({ 
-      statusBarHeight: sysInfo.statusBarHeight,
-      navBarHeight: navBarHeight,
-      menuButtonLeft: menuButtonInfo.left,
-      menuButtonTop: menuButtonInfo.top,
-      menuButtonHeight: menuButtonInfo.height
+      statusBarHeight: layout.statusBarHeight,
+      navBarHeight: layout.navBarHeight,
+      menuButtonLeft: layout.menuButtonLeft,
+      menuButtonTop: layout.menuButtonTop,
+      menuButtonHeight: layout.menuButtonHeight
     });
     this.locationTimer = setTimeout(() => {
       this.locationTimer = null;
@@ -89,7 +86,7 @@ Page({
 
     this.searchTimer = setTimeout(() => {
       this.doSearch(val.trim());
-    }, 260);
+    }, 500);
   },
 
   clearSearch() {

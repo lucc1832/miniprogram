@@ -70,6 +70,28 @@
   text-align: center;
 }
 
+.stat-item.active {
+  color: #172033;
+  background: #ffffff;
+  box-shadow: 0 10rpx 24rpx rgba(15, 23, 42, .12);
+}
+
+.stat-item.active .stat-label {
+  opacity: .66;
+}
+
+.empty-illustration {
+  width: 100rpx;
+  height: 100rpx;
+  line-height: 96rpx;
+  margin: 0 auto 22rpx;
+  border-radius: 50%;
+  color: #d86f45;
+  background: #fff0ea;
+  font-size: 54rpx;
+  text-align: center;
+}
+
 .stat-num {
   font-size: 34rpx;
   font-weight: 800;

@@ -117,3 +117,9 @@
 .btn-save::after {
   border: none;
 }
+.unavailable {
+  margin-left: 10rpx;
+  color: #a8afb9;
+  font-size: 20rpx;
+  font-weight: 500;
+}

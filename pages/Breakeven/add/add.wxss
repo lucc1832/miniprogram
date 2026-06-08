@@ -72,13 +72,19 @@ page {
 }
 
 .ocr-panel {
+  position: relative;
+  overflow: hidden;
   margin-bottom: 18rpx;
   padding: 30rpx 24rpx;
-  border-radius: 16rpx;
+  border-radius: 24rpx;
   text-align: center;
-  background: linear-gradient(135deg, #effbf5 0%, #f5f8ff 100%);
-  border: 1rpx solid #e3f1eb;
+  background: #f4fbf8;
+  border: 2rpx dashed #9bd9c3;
   box-sizing: border-box;
+}
+
+.ocr-panel.recognizing {
+  border-style: solid;
 }
 
 .ocr-title {
@@ -156,19 +162,31 @@ page {
   margin-bottom: 18rpx;
 }
 
-.cat-add {
-  display: inline-flex;
+.ocr-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-width: 144rpx;
-  height: 48rpx;
-  margin: 16rpx auto 0;
-  padding: 0 18rpx;
-  border-radius: 999rpx;
-  background: #e9fbf3;
-  color: #10a875;
-  font-size: 23rpx;
-  font-weight: 900;
+  gap: 16rpx;
+  color: #08765a;
+  font-size: 25rpx;
+  font-weight: 800;
+  background: rgba(244, 251, 248, .94);
+}
+
+.ocr-spinner {
+  width: 52rpx;
+  height: 52rpx;
+  border: 6rpx solid #ccecdf;
+  border-top-color: #12a474;
+  border-radius: 50%;
+  animation: ocr-spin .8s linear infinite;
+}
+
+@keyframes ocr-spin {
+  to { transform: rotate(360deg); }
 }
 
 .cat-creator {

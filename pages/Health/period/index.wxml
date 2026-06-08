@@ -7,6 +7,12 @@
       </view>
       <view class="privacy-btn" bindtap="togglePrivacy">{{hideSensitive ? '已隐藏' : '隐私模式'}}</view>
     </view>
+    <view class="cycle-ring">
+      <view class="cycle-ring-inner">
+        <view class="cycle-ring-value">{{hideSensitive ? '--' : currentCycleDay}}</view>
+        <view class="cycle-ring-label">周期天数</view>
+      </view>
+    </view>
     <view class="status-title">{{hideSensitive ? '已隐藏' : statusTitle}}</view>
     <view class="status-meta">{{hideSensitive ? '已隐藏周期、日期和历史详情' : statusMeta}}</view>
 
@@ -27,8 +33,8 @@
   </view>
 
   <view class="quick-card card">
-    <view class="quick-btn start" bindtap="startToday">今天开始</view>
-    <view class="quick-btn end" bindtap="endToday">今天结束</view>
+    <view class="quick-btn start {{activeRecord ? 'disabled' : ''}}" bindtap="startToday">今天开始</view>
+    <view class="quick-btn end {{activeRecord ? '' : 'disabled'}}" bindtap="endToday">今天结束</view>
   </view>
 
   <view class="card forecast-card">

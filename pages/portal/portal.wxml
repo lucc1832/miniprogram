@@ -1,26 +1,34 @@
 <view class="wrap responsive-container">
-  <view class="hero">
-    <view class="hero-top">
+  <view class="top-row">
+    <view>
       <view class="eyebrow">{{todayLabel}}</view>
-      <view class="status-pill">常用工具</view>
+      <view class="page-title">小小工具箱</view>
     </view>
-    <view class="hero-title">小小工具箱</view>
-    <view class="hero-sub">把天气、纪念日、厨房和记录都收在一个顺手的入口里。</view>
+    <view class="status-pill">常用工具</view>
+  </view>
 
-    <view class="quick-row">
-      <view class="quick-item">
-        <view class="quick-num">{{enabledCount}}</view>
-        <view class="quick-label">已启用</view>
-      </view>
-      <view class="quick-divider"></view>
-      <view class="quick-item recent-entry" wx:if="{{recentModule}}" bindtap="openRecent">
-        <view class="quick-num">{{recentModule.icon}}</view>
-        <view class="quick-label">继续 {{recentModule.title}}</view>
-      </view>
-      <view class="quick-item" wx:else>
-        <view class="quick-num">＋</view>
-        <view class="quick-label">选择模块</view>
-      </view>
+  <view class="summary-banner">
+    <text>当前已启用 </text>
+    <text class="summary-strong">{{enabledCount}}</text>
+    <text> 个生活模块</text>
+  </view>
+
+  <view class="recent-card" wx:if="{{recentModule}}" bindtap="openRecent">
+    <view class="recent-icon">{{recentModule.icon}}</view>
+    <view class="recent-copy">
+      <view class="recent-label">最近使用</view>
+      <view class="recent-title">{{recentModule.title}}</view>
+      <view class="recent-desc">{{recentModule.desc}}</view>
+    </view>
+    <view class="continue-btn">继续使用</view>
+  </view>
+
+  <view class="recent-card empty-recent" wx:else>
+    <view class="recent-icon">＋</view>
+    <view class="recent-copy">
+      <view class="recent-label">最近使用</view>
+      <view class="recent-title">选择一个生活模块</view>
+      <view class="recent-desc">打开后会在这里提供快捷入口</view>
     </view>
   </view>
 
@@ -44,7 +52,7 @@
         <view class="card-badge" wx:if="{{item.badge}}">{{item.badge}}</view>
       </view>
       <view class="card-title">{{item.title}}</view>
-      <view class="card-desc">{{item.desc}}</view>
+      <view class="card-desc">{{item.disabled ? item.desc : (item.summary || item.desc)}}</view>
       <view class="card-footer">
         <text>{{item.disabled ? '即将上线' : '进入'}}</text>
         <text class="arrow">›</text>

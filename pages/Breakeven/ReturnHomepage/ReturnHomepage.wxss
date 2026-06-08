@@ -132,6 +132,40 @@ page {
   font-weight: 800;
 }
 
+.filter-toolbar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12rpx;
+  padding: 16rpx;
+  margin-bottom: 18rpx;
+}
+
+.filter-picker {
+  min-width: 0;
+}
+
+.filter-value {
+  height: 60rpx;
+  line-height: 60rpx;
+  padding: 0 10rpx;
+  border-radius: 14rpx;
+  color: #526174;
+  background: #f3f6f9;
+  font-size: 22rpx;
+  font-weight: 800;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filter-manage {
+  grid-column: 1 / -1;
+  height: 42rpx;
+  line-height: 42rpx;
+  text-align: center;
+}
+
 .summary {
   color: #fff;
   min-height: 172rpx;
@@ -524,6 +558,19 @@ page {
   text-align: center;
 }
 
+.empty-illustration {
+  width: 92rpx;
+  height: 92rpx;
+  line-height: 88rpx;
+  margin: 0 auto 20rpx;
+  border-radius: 50%;
+  color: #12a474;
+  background: #eaf8f2;
+  font-size: 48rpx;
+  font-weight: 500;
+  text-align: center;
+}
+
 .empty-title {
   color: #111827;
   font-size: 30rpx;
@@ -777,10 +824,10 @@ page {
   line-height: 104rpx;
   text-align: center;
   border-radius: 50%;
-  background: #111827;
+  background: #12a474;
   color: #fff;
   font-size: 58rpx;
   font-weight: 700;
-  box-shadow: 0 20rpx 40rpx rgba(17, 24, 39, .24);
+  box-shadow: 0 20rpx 40rpx rgba(18, 164, 116, .26);
   z-index: 20;
 }

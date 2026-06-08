@@ -39,12 +39,12 @@
     <view class="card payment-card">
       <view class="payment-option {{paymentMethod === 'wechat' ? 'active' : ''}}" bindtap="selectPayment" data-method="wechat">
         <view class="payment-icon wechat-icon"></view>
-        <text>微信支付</text>
+        <text>微信支付（演示）</text>
         <view class="radio {{paymentMethod === 'wechat' ? 'checked' : ''}}"></view>
       </view>
       <view class="payment-option {{paymentMethod === 'balance' ? 'active' : ''}}" bindtap="selectPayment" data-method="balance">
         <view class="payment-icon balance-icon"></view>
-        <text>余额支付</text>
+        <text>余额支付（演示）</text>
         <view class="radio {{paymentMethod === 'balance' ? 'checked' : ''}}"></view>
       </view>
     </view>
@@ -57,7 +57,7 @@
       <text class="amount">¥{{cartTotal}}</text>
     </view>
     <view class="submit-btn {{isSubmitting ? 'disabled' : ''}}" bindtap="submit">
-      {{isSubmitting ? '提交中...' : '立即支付'}}
+      {{isSubmitting ? '记录中...' : '确认记录'}}
     </view>
   </view>
 </view>

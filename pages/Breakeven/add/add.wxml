@@ -8,11 +8,15 @@
       </view>
     </view>
 
-    <view class="ocr-panel">
+    <view class="ocr-panel {{recognizing ? 'recognizing' : ''}}">
       <view class="ocr-title">截图识别</view>
-      <view class="ocr-desc">识别商品名、购买日期和价格</view>
+      <view class="ocr-desc">上传小红书或网购订单截图，自动识别物品、日期和价格</view>
       <button class="ocr-btn" loading="{{recognizing}}" bindtap="chooseReceiptImage">{{recognizing ? '识别中' : '选择截图'}}</button>
       <view wx:if="{{ocrSummary}}" class="ocr-summary">{{ocrSummary}}</view>
+      <view wx:if="{{recognizing}}" class="ocr-overlay">
+        <view class="ocr-spinner"></view>
+        <view>正在读取订单信息</view>
+      </view>
     </view>
 
     <view class="field-block">
@@ -26,7 +30,6 @@
         <picker mode="selector" range="{{catNames}}" value="{{catIndex}}" bindchange="onCatPick">
           <view class="picker">{{catNames[catIndex] || '未分类'}}</view>
         </picker>
-        <view class="cat-add" bindtap="openCategoryCreator">新增分类</view>
       </view>
 
       <view class="field-block compact">

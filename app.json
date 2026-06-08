@@ -29,7 +29,8 @@
       "pages": [
         "index/index",
         "city/city",
-        "search/search"
+        "search/search",
+        "settings/settings"
       ]
     },
     {
@@ -62,7 +63,7 @@
   },
   "tabBar": {
     "color": "#9aa0a6",
-    "selectedColor": "#6b5cff",
+    "selectedColor": "#27ba9b",
     "list": [
       {
         "pagePath": "pages/portal/portal",

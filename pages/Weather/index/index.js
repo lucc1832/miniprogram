@@ -1,8 +1,9 @@
 const amapWeather = require('../utils/amapWeather.js');
 const iconManager = require('../utils/iconManager.js');
+const { getNavigationLayout } = require('../../../utils/layout.js');
 
 const CACHE_DURATION = 2 * 60 * 60 * 1000;
-const CACHE_VERSION = 3;
+const CACHE_VERSION = 4;
 const MIN_REFRESH_INTERVAL = 10 * 60 * 1000;
 const LOCATION_REFRESH_INTERVAL = 60 * 60 * 1000;
 const LAST_LOCATION_CHECK_KEY = 'weather_last_location_check';
@@ -14,23 +15,26 @@ Page({
     navBarHeight: 44,
     menuButtonTop: 24,
     menuButtonHeight: 32,
+    windowWidth: 375,
     loading: true,
     currentCityIndex: 0,
     cities: [],
     weatherData: null,
     hourlyForecast: [],
     dailyForecast: [],
+    forecastMode: 'trend',
     clothingAdvice: '',
-    insightText: '',
-    insightCards: [],
-    forecastBrief: null,
+    clothingTitle: '舒适出门',
+    clothingIcon: '🧥',
+    detailMetrics: [],
+    lifestyleItems: [],
+    dataNotes: [],
+    forecastBrief: { trend: '' },
     weatherThemeClass: 'theme-blue',
-    showAllDays: false,
-    chartMinTemp: 0,
-    chartMaxTemp: 20,
     isRefreshing: false,
     showCityPanel: false,
-    currentTheme: 'emoji'
+    currentTheme: 'emoji',
+    cacheNotice: ''
   },
 
   onLoad() {
@@ -39,16 +43,15 @@ Page({
     this.deferredWeatherTimer = null;
     this.booting = true;
 
-    const sysInfo = wx.getSystemInfoSync();
-    const menuButtonInfo = wx.getMenuButtonBoundingClientRect();
-    const navBarHeight = (menuButtonInfo.top - sysInfo.statusBarHeight) * 2 + menuButtonInfo.height;
+    const layout = getNavigationLayout();
 
     this.setData({
-      statusBarHeight: sysInfo.statusBarHeight,
-      navBarHeight,
-      menuButtonTop: menuButtonInfo.top,
-      menuButtonHeight: menuButtonInfo.height,
-      menuButtonLeft: menuButtonInfo.left
+      statusBarHeight: layout.statusBarHeight,
+      navBarHeight: layout.navBarHeight,
+      menuButtonTop: layout.menuButtonTop,
+      menuButtonHeight: layout.menuButtonHeight,
+      menuButtonLeft: layout.menuButtonLeft,
+      windowWidth: layout.windowWidth
     });
 
     let cachedCities = wx.getStorageSync('weather_cities') || [];
@@ -284,13 +287,13 @@ Page({
       hourlyForecast: cache.hourlyForecast || [],
       dailyForecast: cache.dailyForecast || [],
       clothingAdvice: cache.clothingAdvice || '',
-      insightText: cache.insightText || '',
-      insightCards: cache.insightCards || [],
-      forecastBrief: cache.forecastBrief || null,
+      clothingTitle: cache.clothingTitle || '舒适出门',
+      clothingIcon: cache.clothingIcon || '🧥',
+      detailMetrics: cache.detailMetrics || [],
+      lifestyleItems: cache.lifestyleItems || [],
+      dataNotes: cache.dataNotes || [],
+      forecastBrief: cache.forecastBrief || { trend: '' },
       weatherThemeClass: this.getWeatherThemeClass(weatherData && weatherData.condition, weatherData && weatherData.reportTime),
-      chartMinTemp: cache.chartMinTemp || 0,
-      chartMaxTemp: cache.chartMaxTemp || 20,
-      showAllDays: false,
       loading: false
     });
     return true;
@@ -328,11 +331,13 @@ Page({
 
       if (!options.force && this.isCacheFresh(cache)) {
         this.applyWeatherCache(cache);
+        this.setData({ cacheNotice: '' });
         return Promise.resolve({ fromCache: true });
       }
 
       if (this.shouldThrottleRefresh(cache, options)) {
         this.applyWeatherCache(cache);
+        this.setData({ cacheNotice: '刷新间隔较短，当前显示最近天气数据' });
         wx.showToast({ title: '已使用最近天气', icon: 'none' });
         return Promise.resolve({ fromCache: true, throttled: true });
       }
@@ -353,12 +358,12 @@ Page({
         const dailyForecast = this.formatDaily(casts);
         const hourlyForecast = this.formatTrend(casts);
         const weatherData = this.formatCurrent(live, casts, resolvedCity);
-        const temps = dailyForecast.reduce((arr, item) => arr.concat([item.low, item.high]), []);
-        const chartMinTemp = temps.length ? Math.min(...temps) - 2 : weatherData.low - 2;
-        const chartMaxTemp = temps.length ? Math.max(...temps) + 2 : weatherData.high + 2;
         const clothingAdvice = this.getClothingAdvice(weatherData.temp, weatherData.condition);
-        const insightText = this.buildInsightText(weatherData, casts);
-        const insightCards = this.buildInsightCards(weatherData, casts);
+        const clothingTitle = this.getClothingTitle(weatherData.temp, weatherData.condition);
+        const clothingIcon = this.getClothingIcon(weatherData.temp, weatherData.condition);
+        const detailMetrics = this.buildDetailMetrics(weatherData);
+        const lifestyleItems = this.buildLifestyleItems(weatherData, casts);
+        const dataNotes = this.buildDataNotes(weatherData);
         const forecastBrief = this.buildForecastBrief(casts);
 
         this.setData({
@@ -366,14 +371,15 @@ Page({
           hourlyForecast,
           dailyForecast,
           clothingAdvice,
-          insightText,
-          insightCards,
+          clothingTitle,
+          clothingIcon,
+          detailMetrics,
+          lifestyleItems,
+          dataNotes,
           forecastBrief,
           weatherThemeClass: this.getWeatherThemeClass(weatherData.condition, weatherData.reportTime),
-          chartMinTemp,
-          chartMaxTemp,
-          showAllDays: false,
-          loading: false
+          loading: false,
+          cacheNotice: ''
         });
 
         const cities = [...this.data.cities];
@@ -393,17 +399,19 @@ Page({
           hourlyForecast,
           dailyForecast,
           clothingAdvice,
-          insightText,
-          insightCards,
-          forecastBrief,
-          chartMinTemp,
-          chartMaxTemp
+          clothingTitle,
+          clothingIcon,
+          detailMetrics,
+          lifestyleItems,
+          dataNotes,
+          forecastBrief
         });
         return { fromCache: false };
       }).catch(err => {
         console.warn('AMap weather failed', err);
         if (cache) {
           this.applyWeatherCache(cache);
+          this.setData({ cacheNotice: '网络暂不可用，当前显示最近缓存天气' });
           this.showWeatherErrorToast('已显示缓存天气');
           return { fromCache: true, failed: true };
         }
@@ -477,9 +485,12 @@ Page({
   formatCurrent(live, casts, city) {
     const first = casts && casts[0];
     const temp = Number(live.temperature || 0);
+    const humidity = Number(live.humidity || 0);
     const dayTemp = first ? Number(first.daytemp) : temp;
     const nightTemp = first ? Number(first.nighttemp) : temp;
     const reportTime = live.reporttime ? live.reporttime.slice(5, 16) : '';
+    const sun = this.estimateSunTimes(city, first && first.date);
+    const uv = this.estimateUvLevel(live.weather, reportTime);
 
     return {
       city: city.name,
@@ -490,16 +501,14 @@ Page({
       windDir: live.winddirection && live.winddirection !== '无风向' ? `${live.winddirection}风` : '无持续风向',
       windSpeed: live.windpower ? `${live.windpower}级` : '--',
       humidity: live.humidity ? `${live.humidity}%` : '--',
-      feelsLike: Math.round(temp),
-      uv: '--',
-      pressure: '高德',
+      feelsLike: this.estimateFeelsLike(temp, humidity, live.windpower),
+      uv: uv.value,
+      uvText: uv.text,
       rainProb: first ? `${first.dayweather}/${first.nightweather}` : '--',
-      sunrise: '',
-      sunset: '',
-      sunPosition: 50,
-      visibility: reportTime || '--',
-      aqi: '',
-      aqiLevel: '',
+      sunrise: sun.sunrise,
+      sunset: sun.sunset,
+      sunPosition: sun.position,
+      sunNote: '按城市经纬度估算',
       source: '高德天气',
       reportTime
     };
@@ -512,6 +521,7 @@ Page({
     (casts || []).forEach((item, index) => {
       const label = relative[index] || this.formatMonthDay(item.date);
       result.push({
+        key: `${item.date}-day`,
         time: label,
         period: '白天',
         temp: Math.round(Number(item.daytemp)),
@@ -520,6 +530,7 @@ Page({
         wind: `${item.daywind || '--'} ${item.daypower || '--'}级`
       });
       result.push({
+        key: `${item.date}-night`,
         time: label,
         period: '夜间',
         temp: Math.round(Number(item.nighttemp)),
@@ -540,9 +551,15 @@ Page({
 
       return {
         day: `${this.formatMonthDay(item.date)} ${relative}`,
+        shortDay: relative,
+        dateLabel: this.formatMonthDay(item.date),
         date: item.date,
         cond: `${item.dayweather}/${item.nightweather}`,
         icon: this.getIcon(item.dayweather, false),
+        dayIcon: this.getIcon(item.dayweather, false),
+        nightIcon: this.getIcon(item.nightweather, true),
+        dayWeather: item.dayweather,
+        nightWeather: item.nightweather,
         high,
         low
       };
@@ -558,6 +575,9 @@ Page({
       result.forEach(item => {
         item.barLeft = ((item.low - min) / range) * 100;
         item.barWidth = Math.max(((item.high - item.low) / range) * 100, 2);
+        item.rangeTop = ((max - item.high) / range) * 100;
+        item.rangeBottom = ((max - item.low) / range) * 100;
+        item.rangeHeight = Math.max(item.rangeBottom - item.rangeTop, 8);
       });
     }
 
@@ -637,64 +657,165 @@ Page({
     return base;
   },
 
-  buildInsightText(weatherData, casts) {
-    const humidity = parseInt(weatherData.humidity, 10);
-    const first = casts && casts[0];
-    const tempGap = first
-      ? Math.abs(Number(first.daytemp) - Number(first.nighttemp))
-      : Math.abs(weatherData.high - weatherData.low);
-    const parts = [`${weatherData.city}现在${weatherData.condition}，${weatherData.temp}°`];
-
-    if (!Number.isNaN(humidity)) {
-      if (humidity >= 75) parts.push('空气偏潮');
-      else if (humidity <= 35) parts.push('空气偏干');
-      else parts.push('湿度舒适');
-    }
-
-    if (tempGap >= 8) parts.push('早晚温差明显');
-    else parts.push('昼夜温差平稳');
-
-    return `${parts.join('，')}。`;
+  getClothingTitle(temp, condition) {
+    const weather = condition || '';
+    if (weather.includes('雨')) return '带伞再出门';
+    if (weather.includes('雪')) return '保暖防滑';
+    if (temp <= 12) return '注意保暖';
+    if (temp >= 30) return '轻薄防晒';
+    if (temp >= 22) return '清爽穿搭';
+    return '携带外套';
   },
 
-  buildInsightCards(weatherData, casts) {
-    const humidity = parseInt(weatherData.humidity, 10);
-    const windLevel = this.extractWindLevel(weatherData.windSpeed);
-    const first = casts && casts[0];
-    const tempGap = first
-      ? Math.abs(Number(first.daytemp) - Number(first.nighttemp))
-      : Math.abs(weatherData.high - weatherData.low);
-    const rainCast = (casts || []).find(item => {
-      const text = `${item.dayweather || ''}${item.nightweather || ''}`;
-      return text.includes('雨') || text.includes('雪') || text.includes('雷');
-    });
+  getClothingIcon(temp, condition) {
+    const weather = condition || '';
+    if (weather.includes('雨')) return '☂️';
+    if (weather.includes('雪')) return '🧣';
+    if (temp >= 30) return '👕';
+    if (temp <= 12) return '🧥';
+    return '🧢';
+  },
 
+  estimateFeelsLike(temp, humidity, windPower) {
+    const windLevel = this.extractWindLevel(windPower);
+    let feelsLike = Number(temp || 0);
+
+    if (feelsLike >= 27 && humidity > 40) {
+      feelsLike += Math.min((humidity - 40) / 15, 4);
+    } else if (feelsLike <= 15 && windLevel >= 3) {
+      feelsLike -= Math.min(windLevel / 2, 3);
+    }
+
+    return Math.round(feelsLike);
+  },
+
+  estimateUvLevel(condition, reportTime) {
+    const weather = condition || '';
+    const match = String(reportTime || '').match(/\s(\d{1,2}):/);
+    const hour = match ? Number(match[1]) : new Date().getHours();
+    let value = hour >= 10 && hour <= 15 ? 5 : 2;
+
+    if (weather.includes('晴')) value += 2;
+    if (weather.includes('阴') || weather.includes('雨') || weather.includes('雪')) value -= 2;
+    value = Math.max(1, Math.min(value, 8));
+
+    let text = '弱';
+    if (value >= 6) text = '强';
+    else if (value >= 3) text = '中等';
+
+    return { value, text };
+  },
+
+  estimateSunTimes(city, dateStr) {
+    const date = dateStr ? new Date(`${dateStr}T12:00:00`) : new Date();
+    const start = new Date(date.getFullYear(), 0, 0);
+    const dayOfYear = Math.floor((date - start) / 86400000);
+    const lat = Number(city && city.lat);
+    const lon = Number(city && city.lon);
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+      return { sunrise: '06:00', sunset: '18:00', position: 50 };
+    }
+
+    const latitude = lat * Math.PI / 180;
+    const declination = 23.44 * Math.sin((2 * Math.PI / 365) * (dayOfYear - 81)) * Math.PI / 180;
+    const cosHourAngle = Math.max(-1, Math.min(1, -Math.tan(latitude) * Math.tan(declination)));
+    const daylight = (24 / Math.PI) * Math.acos(cosHourAngle);
+    const solarNoon = 12 + (120 - lon) * 4 / 60;
+    const sunriseMinutes = Math.round((solarNoon - daylight / 2) * 60);
+    const sunsetMinutes = Math.round((solarNoon + daylight / 2) * 60);
+    const now = new Date();
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    const position = Math.max(0, Math.min(100, ((nowMinutes - sunriseMinutes) / Math.max(sunsetMinutes - sunriseMinutes, 1)) * 100));
+
+    return {
+      sunrise: this.formatMinutes(sunriseMinutes),
+      sunset: this.formatMinutes(sunsetMinutes),
+      position: Math.round(position)
+    };
+  },
+
+  formatMinutes(totalMinutes) {
+    const normalized = ((Math.round(totalMinutes) % 1440) + 1440) % 1440;
+    const hours = String(Math.floor(normalized / 60)).padStart(2, '0');
+    const minutes = String(normalized % 60).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  },
+
+  buildDetailMetrics(weatherData) {
     return [
       {
+        icon: '☀️',
+        label: '紫外线',
+        value: `${weatherData.uv} ${weatherData.uvText}`,
+        note: '天气与时段估算'
+      },
+      {
         icon: '🌡️',
-        label: '体感',
-        value: this.getTempComfort(weatherData.temp),
-        sub: `${weatherData.low}° / ${weatherData.high}°`
+        label: '体感温度',
+        value: `${weatherData.feelsLike}°`,
+        note: '温湿度与风力估算'
       },
       {
         icon: '💧',
         label: '湿度',
-        value: Number.isNaN(humidity) ? '--' : `${humidity}%`,
-        sub: this.getHumidityText(humidity)
+        value: weatherData.humidity,
+        note: '高德实时值'
       },
       {
         icon: '🌬️',
-        label: '风力',
-        value: weatherData.windSpeed || '--',
-        sub: windLevel >= 5 ? '户外风感明显' : '风力较平稳'
+        label: '风向风力',
+        value: `${weatherData.windDir} ${weatherData.windSpeed}`,
+        note: '高德实时值'
       },
       {
-        icon: rainCast ? '☔' : '↕️',
-        label: rainCast ? '降水' : '温差',
-        value: rainCast ? this.formatMonthDay(rainCast.date) : `${tempGap}°`,
-        sub: rainCast ? `${rainCast.dayweather}/${rainCast.nightweather}` : (tempGap >= 8 ? '注意早晚添衣' : '全天变化不大')
+        icon: '🌓',
+        label: '昼夜天气',
+        value: weatherData.rainProb,
+        note: '高德预报值'
+      },
+      {
+        icon: '🕒',
+        label: '发布时间',
+        value: weatherData.reportTime || '--',
+        note: '数据更新时间'
       }
     ];
+  },
+
+  buildLifestyleItems(weatherData, casts) {
+    const condition = weatherData.condition || '';
+    const humidity = parseInt(weatherData.humidity, 10);
+    const windLevel = this.extractWindLevel(weatherData.windSpeed);
+    const hasRain = this.hasPrecipitation(condition)
+      || (casts || []).some(item => this.hasPrecipitation(`${item.dayweather}${item.nightweather}`));
+    const hot = weatherData.temp >= 30;
+    const cold = weatherData.temp <= 12;
+
+    return [
+      { icon: '🧥', value: this.getClothingTitle(weatherData.temp, condition), label: '穿衣' },
+      { icon: '☂️', value: hasRain ? '建议携带' : '暂时不用', label: '雨伞' },
+      { icon: '🏃', value: hasRain || windLevel >= 5 ? '室内更佳' : '适宜户外', label: '运动' },
+      { icon: '🚗', value: hasRain ? '不宜洗车' : '适宜洗车', label: '洗车' },
+      { icon: '👕', value: hasRain || humidity >= 80 ? '晾晒较慢' : '适宜晾晒', label: '晾晒' },
+      { icon: '😷', value: cold ? '注意保暖' : '风险较低', label: '感冒' },
+      { icon: '🧴', value: hot || weatherData.uv >= 6 ? '加强防晒' : '日常防护', label: '防晒' },
+      { icon: '🎣', value: hasRain || windLevel >= 5 ? '不太适宜' : '较适宜', label: '垂钓' },
+      { icon: '🧳', value: hasRain ? '留意降水' : '出行顺畅', label: '出行' }
+    ];
+  },
+
+  buildDataNotes() {
+    return [
+      { type: 'api', text: '温度、湿度、风向风力、天气状况与多日预报来自高德天气 Web 服务。' },
+      { type: 'estimate', text: '体感、紫外线、日出日落与生活建议为本地算法估算，仅作日常参考。' },
+      { type: 'estimate', text: '当前接口未返回空气质量、气压和能见度，因此页面不展示伪实时数据。' }
+    ];
+  },
+
+  hasPrecipitation(text) {
+    const value = text || '';
+    return value.includes('雨') || value.includes('雪') || value.includes('雷');
   },
 
   buildForecastBrief(casts) {
@@ -726,23 +847,6 @@ Page({
   extractWindLevel(text) {
     const match = String(text || '').match(/\d+/);
     return match ? Number(match[0]) : 0;
-  },
-
-  getTempComfort(temp) {
-    if (temp <= 5) return '寒冷';
-    if (temp <= 12) return '偏冷';
-    if (temp <= 20) return '清爽';
-    if (temp <= 28) return '舒适';
-    if (temp <= 34) return '偏热';
-    return '炎热';
-  },
-
-  getHumidityText(humidity) {
-    if (Number.isNaN(humidity)) return '暂无湿度';
-    if (humidity >= 80) return '空气湿润';
-    if (humidity >= 60) return '略有潮感';
-    if (humidity >= 35) return '体感舒适';
-    return '空气偏干';
   },
 
   onPullDownRefresh() {
@@ -779,7 +883,6 @@ Page({
 
     this.setData({
       currentCityIndex: index,
-      showAllDays: false,
       ...(cache ? {} : { loading: true })
     });
 
@@ -885,8 +988,10 @@ Page({
     });
   },
 
-  toggleForecast() {
-    this.setData({ showAllDays: !this.data.showAllDays });
+  setForecastMode(e) {
+    const mode = e.currentTarget.dataset.mode;
+    if (!mode || mode === this.data.forecastMode) return;
+    this.setData({ forecastMode: mode });
   },
 
   noop() {

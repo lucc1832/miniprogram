@@ -236,7 +236,7 @@
 
 /* Current Weight Card */
 .current-card {
-  background: linear-gradient(135deg, #6b5cff 0%, #8ca6ff 100%);
+  background: linear-gradient(135deg, #132238 0%, #167b68 100%);
   color: #fff;
 }
 .card-label {
@@ -496,9 +496,9 @@
   transition: all 0.2s;
 }
 .status-chip.active {
-  background: #eef0ff;
-  border-color: #6b5cff;
-  color: #6b5cff;
+  background: #e9f8f2;
+  border-color: #27ba9b;
+  color: #148a71;
 }
 .chip-label {
   font-size: 22rpx;

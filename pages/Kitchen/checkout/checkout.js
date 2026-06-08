@@ -150,7 +150,7 @@ Page({
       saveCart([]);
 
       wx.hideLoading();
-      wx.showToast({ title: '订单已记录', icon: 'success', duration: 1600 });
+      wx.showToast({ title: '演示记录成功', icon: 'success', duration: 1600 });
 
       setTimeout(() => {
         wx.navigateBack({ delta: 1 });

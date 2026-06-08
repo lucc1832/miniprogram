@@ -1,3 +1,5 @@
+const { getNavigationLayout } = require('../../../utils/layout.js');
+
 Page({
   data: {
     currentTab: 0,
@@ -20,13 +22,11 @@ Page({
       this.setData({ currentTab: 1, menuReady: true }); // Switch to Menu tab
     }
 
-    const sysInfo = wx.getSystemInfoSync();
-    const menuButtonInfo = wx.getMenuButtonBoundingClientRect();
-    const navBarHeight = (menuButtonInfo.top - sysInfo.statusBarHeight) * 2 + menuButtonInfo.height;
+    const layout = getNavigationLayout();
     
     this.setData({ 
-      statusBarHeight: sysInfo.statusBarHeight,
-      navBarHeight: navBarHeight
+      statusBarHeight: layout.statusBarHeight,
+      navBarHeight: layout.navBarHeight
     });
   },
 

@@ -368,6 +368,24 @@ page {
   box-sizing: border-box;
 }
 
+.data-action-card.primary {
+  color: #fff;
+  background: #132238;
+}
+
+.data-action-card.primary .data-action-title,
+.data-action-card.primary .data-action-desc {
+  color: #fff;
+}
+
+.data-action-card.primary .data-action-desc {
+  opacity: .72;
+}
+
+.data-action-card.secondary {
+  min-height: 118rpx;
+}
+
 .data-action-card:active {
   transform: scale(0.98);
 }
@@ -561,6 +579,21 @@ page {
   display: flex;
   align-items: flex-end;
   justify-content: center;
+}
+
+.modal-layer.centered {
+  align-items: center;
+}
+
+.modal-layer.centered .modal-card {
+  width: calc(100% - 72rpx);
+  padding: 34rpx;
+  border-radius: 28rpx;
+  box-shadow: 0 24rpx 70rpx rgba(15, 23, 42, .3);
+}
+
+.modal-layer.centered .modal-handle {
+  display: none;
 }
 
 .modal-mask {

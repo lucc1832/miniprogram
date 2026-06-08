@@ -119,7 +119,7 @@
               wx:for="{{statusOptions}}" wx:key="val" 
               bindtap="onStatusSelect" data-val="{{item.val}}">
           <text>{{item.icon}}</text>
-          <text class="chip-label">{{item.label}}</text>
+          <text class="chip-label">{{selectedStatus===item.val?'✓ ':''}}{{item.label}}</text>
         </view>
       </view>
     </view>

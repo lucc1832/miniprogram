@@ -84,7 +84,7 @@ Page({
   async loadCategories() {
     const categories = (await cloudStore.getUserRows('categories'))
       .sort((a, b) => Number(a.sort || 0) - Number(b.sort || 0));
-    const catNames = ['未分类', ...categories.map(c => c.name)];
+    const catNames = ['未分类', ...categories.map(c => c.name), '+ 新增分类'];
     this.setData({ categories, catNames });
   },
 
@@ -195,9 +195,11 @@ Page({
       this.setData({
         ocrSummary: message
       });
-      wx.showToast({
-        title: message,
-        icon: 'none'
+      wx.showModal({
+        title: '无法识别该截图',
+        content: `已为您切换为手动填写。\n${message}`,
+        showCancel: false,
+        confirmText: '继续填写'
       });
     } finally {
       this.setData({ recognizing: false });
@@ -332,6 +334,10 @@ Page({
 
   onCatPick(e) {
     const idx = Number(e.detail.value);
+    if (idx === this.data.catNames.length - 1) {
+      this.openCategoryCreator();
+      return;
+    }
     let cid = '';
     if (idx > 0) cid = this.data.categories[idx - 1]._id;
     this.setData({ catIndex: idx, 'form.categoryId': cid });
@@ -382,7 +388,7 @@ Page({
         createdAt: Date.now()
       };
       const categories = [...list, category];
-      const catNames = ['未分类', ...categories.map(c => c.name)];
+      const catNames = ['未分类', ...categories.map(c => c.name), '+ 新增分类'];
 
       this.setData({
         categories,

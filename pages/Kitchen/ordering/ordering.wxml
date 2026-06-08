@@ -17,6 +17,7 @@
     </scroll-view>
     <!-- 右侧：按分类与关键字筛选后的菜品列表 -->
     <scroll-view class="menu-list" scroll-y="true">
+      <view class="food-grid">
       <block wx:for="{{filteredFoods}}" wx:key="id">
         <view class="food-row">
           <image class="food-img" src="{{item.img}}" mode="aspectFill"></image>
@@ -35,6 +36,7 @@
           </view>
         </view>
       </block>
+      </view>
     </scroll-view>
   </view>
   <!-- 页面底部结算条：显示已选总数与合计，点击打开购物车抽屉 -->

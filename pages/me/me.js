@@ -76,10 +76,10 @@ const BASE_MENU_GROUPS = [
 ];
 
 const DATA_ACTIONS = [
-  { name: '同步云端', icon: '🔄', desc: '上传当前全部数据', action: 'syncData' },
-  { name: '云端恢复', icon: '☁️', desc: '登录账号后恢复', action: 'restoreCloudData' },
+  { name: '同步云端', icon: '🔄', desc: '上传当前全部数据', action: 'syncData', primary: true },
+  { name: '云端恢复', icon: '☁️', desc: '登录账号后恢复', action: 'restoreCloudData', primary: true },
   { name: '导出备份', icon: '📤', desc: '复制一份本机数据', action: 'exportData' },
-  { name: '清空数据', icon: '🗑️', desc: '清空前会先备份', action: 'resetData', danger: true }
+  { name: '清空数据', icon: '🗑️', desc: '备份后清空全部数据', action: 'resetData', danger: true }
 ];
 
 function cloneMenuGroups() {
@@ -795,7 +795,7 @@ Page({
     }
   },
 
-  exportData() {
+  buildLocalSnapshot() {
     const info = wx.getStorageInfoSync();
     const snapshot = {
       version: APP_VERSION,
@@ -808,14 +808,28 @@ Page({
         snapshot.keys[key] = wx.getStorageSync(key);
       }
     });
+    return snapshot;
+  },
 
-    wx.setClipboardData({
-      data: JSON.stringify(snapshot, null, 2),
-      success: () => {
-        this.openResultModal('导出完成', '已把本机数据备份复制到剪贴板，可以粘贴保存或发给自己留档。', {
-          icon: '📤'
-        });
-      }
+  copySnapshotToClipboard(snapshot) {
+    return new Promise(resolve => {
+      wx.setClipboardData({
+        data: JSON.stringify(snapshot, null, 2),
+        success: () => resolve(true),
+        fail: () => resolve(false)
+      });
+    });
+  },
+
+  async exportData() {
+    const snapshot = this.buildLocalSnapshot();
+    const copied = await this.copySnapshotToClipboard(snapshot);
+    if (!copied) {
+      this.openResultModal('导出失败', '暂时无法复制本机备份，请稍后重试。', { icon: '⚠️', danger: true });
+      return;
+    }
+    this.openResultModal('导出完成', '已把本机数据备份复制到剪贴板，可以粘贴保存或发给自己留档。', {
+      icon: '📤'
     });
   },
 
@@ -858,6 +872,7 @@ Page({
         return;
       }
 
+      const snapshotCopied = await this.copySnapshotToClipboard(this.buildLocalSnapshot());
       const info = wx.getStorageInfoSync();
       const keys = info.keys.filter(key => this.shouldResetStorageKey(key));
       const storageClearResult = await cloudStore.clearCurrentStorage(keys);
@@ -879,7 +894,7 @@ Page({
         clearResult.failed || storageClearResult.failed ? '部分清空完成' : '清空完成',
         clearResult.failed || storageClearResult.failed
           ? `本机已清空 ${keys.length} 项，业务记录已清空 ${clearResult.documents} 条；还有部分云端镜像未清空，请检查云端权限。`
-          : `本机已清空 ${keys.length} 项，业务记录已清空 ${clearResult.documents} 条。需要找回时重新登录账号并点“云端恢复”。`,
+          : `本机已清空 ${keys.length} 项，业务记录已清空 ${clearResult.documents} 条。${snapshotCopied ? '清空前的本机备份也已复制到剪贴板。' : '云端备份已完成，需要找回时重新登录并恢复。'}`,
         { icon: '✅' }
       );
     } catch (e) {

@@ -64,7 +64,7 @@
     <view class="sync-head">
       <view>
         <view class="panel-title">云端概览</view>
-        <view class="panel-subtitle">这里只看状态，具体操作在下方“数据管理”</view>
+        <view class="panel-subtitle">账号状态与数据安全集中管理</view>
       </view>
       <view class="sync-pill {{accountInfo.accountId ? 'ready' : ''}}">
         {{accountInfo.accountId ? '账号已就绪' : '待绑定'}}
@@ -93,7 +93,7 @@
     </view>
     <view class="data-action-grid">
       <view
-        class="data-action-card {{item.danger ? 'danger' : ''}}"
+        class="data-action-card {{item.primary ? 'primary' : 'secondary'}} {{item.danger ? 'danger' : ''}}"
         wx:for="{{dataActions}}"
         wx:key="name"
         bindtap="handleDataAction"
@@ -151,7 +151,7 @@
 
   <view class="footer-info">{{appVersion}}</view>
 
-  <view wx:if="{{modalVisible}}" class="modal-layer" catchtouchmove="noop">
+  <view wx:if="{{modalVisible}}" class="modal-layer {{modalDanger ? 'centered' : ''}}" catchtouchmove="noop">
     <view class="modal-mask" bindtap="closeModal"></view>
     <view class="modal-card {{modalDanger ? 'danger' : ''}}">
       <view class="modal-handle"></view>

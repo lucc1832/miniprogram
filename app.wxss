@@ -1,13 +1,123 @@
 
-page { background: #f6f7fb; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial; }
-.card { border-radius: 16rpx; background: #fff; box-shadow: 0 8rpx 24rpx rgba(20,20,20,.06); }
-.muted { color: #8a8f99; }
+page {
+  background: #f7f8fa;
+  color: #1a1a1a;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 28rpx;
+  line-height: 1.5;
+}
+
+button,
+input,
+textarea {
+  font-family: inherit;
+  letter-spacing: 0;
+}
+
+button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+button::after {
+  border: 0;
+}
+
+.card {
+  border: 1rpx solid #edf0f4;
+  border-radius: 24rpx;
+  background: #ffffff;
+  box-shadow: 0 10rpx 28rpx rgba(26, 26, 26, 0.05);
+  box-sizing: border-box;
+}
+
+.muted {
+  color: #7a7a7a;
+}
+
+.text-placeholder {
+  color: #c0c4cc;
+}
+
+.text-success {
+  color: #27ba9b;
+}
+
+.text-warning {
+  color: #ff9500;
+}
+
+.text-danger {
+  color: #ff4d4f;
+}
+
+.text-info {
+  color: #409eff;
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 320rpx;
+  padding: 40rpx 32rpx;
+  color: #7a7a7a;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.empty-illustration {
+  width: 240rpx;
+  height: 240rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #c0c4cc;
+  background: #f1f3f5;
+  font-size: 72rpx;
+  line-height: 1;
+}
+
+.empty-copy {
+  max-width: 520rpx;
+  margin-top: 24rpx;
+  color: #7a7a7a;
+  font-size: 26rpx;
+  line-height: 1.5;
+}
+
+.network-banner {
+  display: flex;
+  align-items: center;
+  min-height: 68rpx;
+  padding: 14rpx 20rpx;
+  border-radius: 16rpx;
+  color: #8a5800;
+  background: #fff7e8;
+  border: 1rpx solid #ffe0aa;
+  font-size: 24rpx;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
 
 /* 响应式容器：移动端默认全宽，平板/桌面端居中并限制最大宽度 */
 .responsive-container {
   width: 100%;
-  max-width: 600px; /* 平板/桌面最大宽度 */
-  margin: 0 auto;   /* 水平居中 */
+  max-width: 600px;
+  margin: 0 auto;
   box-sizing: border-box;
 }
 
@@ -38,4 +148,3 @@ page { background: #f6f7fb; font-family: -apple-system, BlinkMacSystemFont, "Pin
     grid-template-columns: repeat(4, 1fr);
   }
 }
-

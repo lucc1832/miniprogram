@@ -15,7 +15,21 @@
 
   <view class="search card">
     <input class="search-input" placeholder="搜索名称或分类" value="{{keyword}}" bindinput="onKeyword" />
-    <view class="search-action">搜索</view>
+    <view wx:if="{{keyword}}" class="search-action" bindtap="clearKeyword">清除</view>
+    <view wx:else class="search-action">搜索</view>
+  </view>
+
+  <view class="filter-toolbar card">
+    <picker class="filter-picker" mode="selector" range="{{categoryNames}}" value="{{categoryIndex}}" bindchange="onCategoryFilter">
+      <view class="filter-value">{{categoryNames[categoryIndex]}}⌄</view>
+    </picker>
+    <picker class="filter-picker" mode="selector" range="{{statusNames}}" value="{{statusIndex}}" bindchange="onStatusFilter">
+      <view class="filter-value">{{statusNames[statusIndex]}}⌄</view>
+    </picker>
+    <picker class="filter-picker" mode="selector" range="{{sortOptions}}" value="{{sortIndex}}" bindchange="onSort">
+      <view class="filter-value">{{sortOptions[sortIndex]}}⌄</view>
+    </picker>
+    <view class="manage filter-manage" bindtap="goCategories">分类管理</view>
   </view>
 
   <view class="summary card {{mode==='expire'?'summary-purple':'summary-green'}}">
@@ -85,48 +99,15 @@
     </block>
   </view>
 
-  <view class="cat-wrap card {{mode==='expire'?'cat-purple':'cat-green'}}">
-    <view class="cat-head">
-      <text>分类筛选</text>
-      <text class="manage" bindtap="goCategories">管理</text>
-    </view>
-
-    <scroll-view scroll-x="true" class="cat-scroll">
-      <view class="cat-item {{selectedCatId===''?'cat-active':''}}" bindtap="pickCat" data-id="">
-        <view class="cat-num">{{catCounts.all || 0}}</view>
-        <view class="cat-name">全部</view>
-      </view>
-
-      <block wx:for="{{categories}}" wx:key="_id">
-        <view class="cat-item {{selectedCatId===item._id?'cat-active':''}}" bindtap="pickCat" data-id="{{item._id}}">
-          <view class="cat-num">{{catCounts[item._id] || 0}}</view>
-          <view class="cat-name">{{item.name}}</view>
-        </view>
-      </block>
-    </scroll-view>
-
-    <view class="pill-row">
-      <view wx:if="{{mode==='expire'}}" class="pill {{statusFilter==='all'?'pill-active':''}}" bindtap="pickStatus" data-s="all">全部物品</view>
-      <view wx:if="{{mode==='expire'}}" class="pill {{statusFilter==='valid'?'pill-active':''}}" bindtap="pickStatus" data-s="valid">未过期</view>
-      <view wx:if="{{mode==='expire'}}" class="pill {{statusFilter==='soon'?'pill-active':''}}" bindtap="pickStatus" data-s="soon">临期</view>
-      <view wx:if="{{mode==='expire'}}" class="pill {{statusFilter==='expired'?'pill-active':''}}" bindtap="pickStatus" data-s="expired">已过期</view>
-
-      <view wx:if="{{mode==='roi'}}" class="pill {{statusFilter==='all'?'pill-active':''}}" bindtap="pickStatus" data-s="all">全部物品</view>
-      <view wx:if="{{mode==='roi'}}" class="pill {{statusFilter==='using'?'pill-active':''}}" bindtap="pickStatus" data-s="using">使用中</view>
-      <view wx:if="{{mode==='roi'}}" class="pill {{statusFilter==='archived'?'pill-active':''}}" bindtap="pickStatus" data-s="archived">已归档</view>
-    </view>
-  </view>
-
   <view class="list card">
     <view class="list-head">
       <text>{{mode==='expire'?'到期清单':'成本清单'}} · {{filtered.length}} 条</text>
-      <picker mode="selector" range="{{sortOptions}}" value="{{sortIndex}}" bindchange="onSort">
-        <view class="sort">排序：{{sortOptions[sortIndex]}}</view>
-      </picker>
+      <text class="sort">{{sortOptions[sortIndex]}}</text>
     </view>
 
     <block wx:if="{{filtered.length===0}}">
       <view class="empty">
+        <view class="empty-illustration">＋</view>
         <view class="empty-title">这里还没有记录</view>
         <view class="empty-desc">{{mode==='expire'?'可以先添加药品、食品、证件等有有效期的物品':'可以先添加一个常用物品，看看每天实际花多少钱'}}</view>
         <view class="empty-btn" bindtap="goAdd">添加一条</view>

@@ -13,19 +13,19 @@
     </view>
 
     <view class="stats-row">
-      <view class="stat-item">
+      <view class="stat-item {{activeFilter==='all'?'active':''}}" bindtap="setFilter" data-filter="all">
         <view class="stat-num">{{stats.totalCount}}</view>
         <view class="stat-label">全部</view>
       </view>
-      <view class="stat-item">
+      <view class="stat-item {{activeFilter==='countdown'?'active':''}}" bindtap="setFilter" data-filter="countdown">
         <view class="stat-num">{{stats.countdownCount}}</view>
         <view class="stat-label">倒数</view>
       </view>
-      <view class="stat-item">
+      <view class="stat-item {{activeFilter==='today'?'active':''}}" bindtap="setFilter" data-filter="today">
         <view class="stat-num">{{stats.todayCount}}</view>
         <view class="stat-label">今天</view>
       </view>
-      <view class="stat-item">
+      <view class="stat-item {{activeFilter==='important'?'active':''}}" bindtap="setFilter" data-filter="important">
         <view class="stat-num">{{stats.importantCount}}</view>
         <view class="stat-label">重要</view>
       </view>
@@ -53,8 +53,9 @@
   </view>
 
   <view class="empty-state" wx:if="{{!mainEvent && !loading}}">
-    <view class="empty-title">还没有纪念日</view>
-    <view class="empty-text">把生日、第一次见面、旅行和重要节点都收进来，首页会自动排出最值得关注的日子。</view>
+    <view class="empty-illustration">♡</view>
+    <view class="empty-title">{{stats.totalCount ? '这个筛选下还没有记录' : '还没有纪念日'}}</view>
+    <view class="empty-text">{{stats.totalCount ? '换一个筛选条件，或者添加新的重要日子。' : '把生日、第一次见面、旅行和重要节点都收进来，首页会自动排出最值得关注的日子。'}}</view>
     <view class="empty-btn" bindtap="goCreate">添加第一个</view>
   </view>
 

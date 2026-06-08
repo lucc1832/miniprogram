@@ -36,8 +36,8 @@
     </picker>
   </view>
   <view class="section row" style="margin-top: -20rpx; border-bottom: none;">
-    <view class="label sub">农历</view>
-    <switch checked="{{isLunar}}" color="#333" bindchange="onLunarChange" style="transform: scale(0.8);"/>
+    <view class="label sub">农历 <text class="unavailable">暂未开放</text></view>
+    <switch checked="{{false}}" disabled="{{true}}" color="#333" style="transform: scale(0.8);"/>
   </view>
 
   <!-- 4. 标签 -->
@@ -70,8 +70,8 @@
 
   <!-- 6. 提醒 -->
   <view class="section row">
-    <view class="label">提醒</view>
-    <switch checked="{{remind.enable}}" color="#333" bindchange="onRemindChange" />
+    <view class="label">提醒 <text class="unavailable">暂未开放</text></view>
+    <switch checked="{{false}}" disabled="{{true}}" color="#333" />
   </view>
 
   <view class="footer">

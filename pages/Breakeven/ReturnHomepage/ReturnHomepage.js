@@ -38,9 +38,15 @@ Page({
     keyword: '',
     today: '',
     categories: [],
+    categoryNames: ['全部分类'],
+    categoryIds: [''],
+    categoryIndex: 0,
     catCounts: { all: 0 },
     selectedCatId: '',
     statusFilter: 'all',
+    statusNames: ['全部状态', '未过期', '临期', '已过期'],
+    statusValues: ['all', 'valid', 'soon', 'expired'],
+    statusIndex: 0,
     sortOptions: ['到期日', '购买日'],
     sortIndex: 0,
     goods: [],
@@ -81,7 +87,11 @@ Page({
   async loadCategories() {
     const categories = (await cloudStore.getUserRows('categories'))
       .sort((a, b) => Number(a.sort || 0) - Number(b.sort || 0));
-    this.setData({ categories });
+    this.setData({
+      categories,
+      categoryNames: ['全部分类', ...categories.map(item => item.name)],
+      categoryIds: ['', ...categories.map(item => item._id)]
+    });
   },
 
   async loadGoods() {
@@ -479,7 +489,13 @@ Page({
     const sortOptions = mode === 'expire' ? ['到期日', '购买日'] : ['日成本', '价格'];
     const sortIndex = 0;
     const statusFilter = 'all';
-    this.setData({ mode, sortOptions, sortIndex, statusFilter }, () => {
+    const statusNames = mode === 'expire'
+      ? ['全部状态', '未过期', '临期', '已过期']
+      : ['全部状态', '使用中', '已归档'];
+    const statusValues = mode === 'expire'
+      ? ['all', 'valid', 'soon', 'expired']
+      : ['all', 'using', 'archived'];
+    this.setData({ mode, sortOptions, sortIndex, statusFilter, statusNames, statusValues, statusIndex: 0 }, () => {
       this.recomputeSummary();
       this.applyFilters();
     });
@@ -487,6 +503,22 @@ Page({
 
   onKeyword(e) {
     this.setData({ keyword: e.detail.value }, () => this.applyFilters());
+  },
+
+  clearKeyword() {
+    this.setData({ keyword: '' }, () => this.applyFilters());
+  },
+
+  onCategoryFilter(e) {
+    const categoryIndex = Number(e.detail.value);
+    const selectedCatId = this.data.categoryIds[categoryIndex] || '';
+    this.setData({ categoryIndex, selectedCatId }, () => this.applyFilters());
+  },
+
+  onStatusFilter(e) {
+    const statusIndex = Number(e.detail.value);
+    const statusFilter = this.data.statusValues[statusIndex] || 'all';
+    this.setData({ statusIndex, statusFilter }, () => this.applyFilters());
   },
 
   pickCat(e) {
@@ -500,7 +532,8 @@ Page({
   onStatTap(e) {
     const status = e.currentTarget.dataset.status;
     if (!status) return;
-    this.setData({ statusFilter: status }, () => this.applyFilters());
+    const statusIndex = Math.max(0, this.data.statusValues.indexOf(status));
+    this.setData({ statusFilter: status, statusIndex }, () => this.applyFilters());
   },
 
   onSort(e) {

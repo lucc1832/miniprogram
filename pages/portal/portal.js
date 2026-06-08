@@ -1,4 +1,5 @@
 const RECENT_KEY = 'portal_recent_module';
+const cloudStore = require('../../utils/cloudStore.js');
 
 Page({
   data: {
@@ -81,14 +82,94 @@ Page({
 
   onShow() {
     this.loadRecentModule();
+    this.loadModuleSummaries();
   },
 
   setTodayLabel() {
     const now = new Date();
-    const weeks = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
     this.setData({
-      todayLabel: `${now.getMonth() + 1}月${now.getDate()}日 ${weeks[now.getDay()]}`
+      todayLabel: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
     });
+  },
+
+  async loadModuleSummaries() {
+    const modules = this.data.modules.map(item => ({ ...item }));
+    const updateSummary = (key, summary) => {
+      const module = modules.find(item => item.key === key);
+      if (module && summary) module.summary = summary;
+    };
+
+    const cities = wx.getStorageSync('weather_cities') || [];
+    if (cities[0]) {
+      updateSummary('weather', cities[0].temp !== undefined
+        ? `${cities[0].name} ${cities[0].temp}℃`
+        : `${cities[0].name} · 等待更新`);
+    }
+
+    const anniversaries = wx.getStorageSync('anniversary_events_v2') || [];
+    updateSummary('anniversary', anniversaries.length ? `${anniversaries.length} 个重要日子` : '还没有添加纪念日');
+
+    const kitchenOrders = wx.getStorageSync('kitchen_orders') || [];
+    updateSummary('kitchen', kitchenOrders.length ? `${kitchenOrders.length} 条食记` : '今天想吃点什么');
+
+    const weightRecords = this.getWeightRecordCount();
+    updateSummary('weight', weightRecords ? `${weightRecords} 条体重记录` : '开始记录第一次变化');
+
+    const periodRecords = this.getPeriodRecordCount();
+    updateSummary('period', periodRecords ? `${periodRecords} 条私密记录` : '记录周期与身体状态');
+
+    this.setData({ modules });
+
+    try {
+      const goods = await cloudStore.getUserRows('goods');
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const soon = goods.filter(item => {
+        if (!item.expireEnabled || !item.expireDate) return false;
+        const target = new Date(String(item.expireDate).replace(/-/g, '/') + ' 00:00:00');
+        const days = Math.ceil((target.getTime() - today.getTime()) / 86400000);
+        return days >= 0 && days <= 30;
+      }).length;
+      updateSummary('breakeven', soon ? `${soon} 个项目临期` : `${goods.length} 个物品在管理`);
+      this.setData({ modules });
+    } catch (err) {
+      console.warn('portal goods summary failed', err);
+    }
+  },
+
+  getWeightRecordCount() {
+    const enc = wx.getStorageSync('weight_records_enc') || '';
+    const key = wx.getStorageSync('weight_key') || '';
+    if (!enc || !key || enc.length % 2 !== 0) return 0;
+    try {
+      let text = '';
+      for (let i = 0; i < enc.length; i += 2) {
+        const value = parseInt(enc.slice(i, i + 2), 16);
+        text += String.fromCharCode(value ^ key.charCodeAt((i / 2) % key.length));
+      }
+      const parsed = JSON.parse(text);
+      if (Array.isArray(parsed)) return parsed.length;
+      return Object.keys(parsed || {}).reduce((sum, name) => sum + (Array.isArray(parsed[name]) ? parsed[name].length : 0), 0);
+    } catch (err) {
+      return 0;
+    }
+  },
+
+  getPeriodRecordCount() {
+    const enc = wx.getStorageSync('period_records_enc') || '';
+    const key = wx.getStorageSync('period_private_key') || '';
+    if (!enc || !key || enc.length % 2 !== 0) return 0;
+    try {
+      let text = '';
+      for (let i = 0; i < enc.length; i += 2) {
+        const value = parseInt(enc.slice(i, i + 2), 16);
+        text += String.fromCharCode(value ^ key.charCodeAt((i / 2) % key.length));
+      }
+      const parsed = JSON.parse(text);
+      return Array.isArray(parsed) ? parsed.length : 0;
+    } catch (err) {
+      return 0;
+    }
   },
 
   loadRecentModule() {
@@ -153,6 +234,6 @@ Page({
   },
 
   toast() {
-    wx.showToast({ title: '这个模块还在打磨中', icon: 'none' });
+    wx.showToast({ title: '记账模块正在抓紧开发中，即将上线，敬请期待', icon: 'none' });
   }
 });
